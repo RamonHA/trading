@@ -1,5 +1,5 @@
 # path for data to work with
-pwd = ""
+ROUTE = ""
 
 ## Brokers tokens
 
@@ -8,4 +8,10 @@ pwd = ""
 # Bitso
 
 # Dictionary of comissions
+COMISION = {
+    "Bitso":0.0065,
+    "Binance":0.001,
+    "GBM":0.0025,
+    "Tesis":0
+}
 
