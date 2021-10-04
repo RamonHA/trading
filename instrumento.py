@@ -642,8 +642,12 @@ class Instrumento(TimeSeries):
 
         return df
 
-    def google_trends(self):
-        return self.google_trends_api if self.desde_api else self.google_trends_archivo
+    def google_trends(self, actualizar = False):
+        df = self.google_trends_api if self.desde_api else self.google_trends_archivo
+        
+        if actualizar: df.to_csv( PWD( "{}/Sentimientos/GoogleTrends/{}.csv".format( self.broker, self.simblo ) ) )
+        
+        return df
     
     def google_trends_api(self):
         assert Bitso[ self.simbolo ].get("google_trends", False), "No hay ´keywords´ en instrumentos.py de Bitso para la busqueda en Google Trends"
@@ -667,7 +671,9 @@ class Instrumento(TimeSeries):
         return df
 
     def google_trends_archivo(self):
-        raise NotImplementedError
+        df = pd.read_csv( PWD( "{}/Sentimientos/GoogleTrends/{}.csv".format( self.broker, self.simblo ) ) )
+
+        return df
 
     # # Fundamental Analyzers
 
