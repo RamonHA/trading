@@ -1,5 +1,31 @@
 Bitso  = {
-    'BTC':{}, 'ETH':{}, 'XRP':{}, 'MANA':{}, 'LTC':{}, 'BCH':{}, 'TUSD':{}, 'BAT':{}, 'DAI':{}
+    'BTC':{
+        "google_trends":["bitcoin", "BTC"],
+    }, 
+    'ETH':{
+        "google_trends":["ethereum", "ETH"],
+    }, 
+    'XRP':{
+        "google_trends":["XRP", "ripple"],
+    }, 
+    'MANA':{
+        "google_trends":["MANA", "Decentraland"],
+    }, 
+    'LTC':{
+        "google_trends":["litecoin", "LTC"],
+    }, 
+    'BCH':{
+        "google_trends":["BCH", "bitcoin cash"],
+    }, 
+    'TUSD':{
+        "google_trends":["TUSD", "TrueUSD", "TrustToken"],
+    }, 
+    'BAT':{
+        "google_trends":["BAT", "basic attention token"],
+    }, 
+    'DAI':{
+        "google_trends":["DAI", "MakerDAO", "stablecoin"],
+    }
 }
 
 Binance = {
@@ -1875,18 +1901,4 @@ Tesis = {
         "sector":"consumo frecuente",
         "tipo":"nacional"
     }
-}
-
-
-# Google Trends
-nombre_cryptos ={
-    "BTC":["bitcoin", "BTC"],
-    "ETH":["ethereum", "ETH"],
-    "LTC":["litecoin", "LTC"],
-    "XRP":["XRP", "ripple"],
-    "MANA":["MANA", "Decentraland"],
-    "BCH":["BCH", "bitcoin cash"],
-    "BAT":["BAT", "basic attention token"],
-    "DAI":["DAI", "MakerDAO", "stablecoin"], # MakerDAO es la compañia que lo regula
-    "TUSD":["TUSD", "TrueUSD", "TrustToken"]
 }
