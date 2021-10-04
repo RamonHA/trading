@@ -28,6 +28,9 @@ from dccd.histo_dl import binance
 # Bitso
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
 
+# Google Trends
+from pytrends import dailydata
+
 from .instrumentos import *
 
 # Py de llaves secretas para APIs
@@ -639,66 +642,32 @@ class Instrumento(TimeSeries):
 
         return df
 
-    # def _from_mysql(self, squema, compute = "sum"):
-    #     """ 
-    #     table (str): "bitcoin", "ethereum", "litecoin", "dogecoin"
-    #     self.intervalo (str): Frecuencia para descargar la informacion
-    #                 "h" -> hora
-    #                 "min" -> minutos
-    #                 Default: "h"
+    def google_trends(self):
+        return self.google_trends_api if self.desde_api else self.google_trends_archivo
+    
+    def google_trends_api(self):
+        assert Bitso[ self.simbolo ].get("google_trends", False), "No hay ´keywords´ en instrumentos.py de Bitso para la busqueda en Google Trends"
 
-    #     squema (str): "Twitter" o "Reddit". Defualt: "Twitter"
-    #     compute (str): "sum" o "avg". Default: "sum"
+        df = pd.DataFrame()
+        for i in Bitso[ self.simbolo ][ "google_trends" ]:
+            data = dailydata.get_daily_data(i, 
+                                        self.inicio.year, 
+                                        self.inicio.month, 
+                                        self.fin.year, 
+                                        self.fin.month, 
+                                        geo = "",
+                                        verbose = False,
+                                        wait_time = 20
+                            )
+            
+            df = pd.concat([df, data[i]], axis = 1)
 
-    #     """
+            time.sleep(2)
 
-    #     # Descarga de informacion de MySQL
-    #     engine = sqlalchemy.create_engine('mysql+mysqlconnector://root:Guitarra2021-@localhost/{}'.format(squema))
+        return df
 
-    #     sep = {
-    #         'd':{'sep':' ', 'places':'1'},
-    #         'h':{'sep':':', 'places':'1'},
-    #         'min':{'sep':':', 'places':'2'},
-    #     }
-
-    #     table_ ={
-    #         'btc':'bitcoin',
-    #         'eth':'ethereum',
-    #         'ltc':'litecoin',
-    #         'doge':'dogecoin',
-    #         'bat':'bat',
-    #         'bch':'bitcoincash',
-    #         'dai':'dai',
-    #         'mana':'mana',
-    #         'tusd':'trueusd',
-    #         'xrp':'xrp'
-    #     }
-
-    #     if self.simbolo.lower() not in table_:
-    #         raise Exception("No hay tabla MySql de", self.simbolo)
-
-    #     cols = {
-    #         "Twitter":['replies_count', 'retweets_count', 'likes_count', 'sentimiento'],
-    #         "Reddit":["comentarios", "score", "upvote_ratio", "sentimiento_titulo", "sentimiento_texto"]
-    #     }
-
-    #     # substring of separator and place of separation order
-    #     substring = "substring_index(date,'"+ sep[self.intervalo]['sep'] +"',"+ sep[self.intervalo]['places'] +")"
-        
-    #     # Create str of queries
-    #     query_select = "select "+ substring +" as date"
-        
-    #     query_sum = ''
-    #     for i in cols[squema]:
-    #         query_sum += ( ', {}({}) as {}'.format(compute, i, i) )
-        
-    #     query_from_order = " from "+ table_[self.simbolo.lower()] +" group by "+ substring +" order by "+ substring +" desc "
-        
-    #     query = query_select + query_sum + query_from_order
-
-    #     df = pd.read_sql(query, engine, index_col = "date")
-        
-    #     return df
+    def google_trends_archivo(self):
+        raise NotImplementedError
 
     # # Fundamental Analyzers
 
