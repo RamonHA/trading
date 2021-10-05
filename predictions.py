@@ -45,8 +45,8 @@ class MyGridSearch():
     
     @error.setter
     def error(self, value):
-        if value in _ERRORS:
-            self._error = _ERRORS[ value ]
+        if value in self._ERRORS:
+            self._error = self._ERRORS[ value ]
         elif callable( value ):
             self._error = value
         else:
