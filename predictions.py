@@ -27,7 +27,7 @@ class MyGridSearch():
 
     def __init__(self, df, regr, parameters, train_test_split = 0.8, target = "target", error = "mae"):
         
-        assert df == pd.DataFrame, "Df no es tipo Pandas DataFrame. Se entrego {}.".format( type(df) )
+        assert type(df) == pd.DataFrame, "Df no es tipo Pandas DataFrame. Se entrego {}.".format( type(df) )
 
         self.df = df
         self.regr = regr
