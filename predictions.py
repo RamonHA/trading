@@ -75,8 +75,8 @@ class MyGridSearch():
     def train_test(self):
         train_size = int(  len(self.df)*self.train_test_split  )
 
-        train = df.iloc[ :train_size ]
-        test = df.iloc[ -train_size: ]
+        train = self.df.iloc[ :train_size ]
+        test = self.df.iloc[ -train_size: ]
 
         train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
         test = test.replace( [np.inf, -np.inf], np.nan ).dropna()
@@ -113,8 +113,8 @@ class MyGridSearch():
 
         for j, v in self.best["param"].items(): self.regr.__dict__[j] = v
 
-        tain = df.iloc[ :-1 ]
-        test = df.iloc[ -1: ]
+        tain = self.df.iloc[ :-1 ]
+        test = self.df.iloc[ -1: ]
 
         train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
 
