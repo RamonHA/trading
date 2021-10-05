@@ -464,7 +464,13 @@ class Instrumento(TimeSeries):
         try:
             df = pd.read_csv(PWD("/Binance/Mercado/{}/{}.csv".format(aux[ self.intervalo ], self.simbolo + self.fiat )))
         except:
-            print("CSV de {} no existe en intervalo {}".format(self.simbolo + self.fiat, aux[self.intervalo]))
+            print(
+                "CSV de {} no existe en intervalo {} en el path {}.".format(
+                    self.simbolo + self.fiat, 
+                    aux[self.intervalo],
+                    PWD("/Binance/Mercado/{}/{}.csv".format(aux[ self.intervalo ], self.simbolo + self.fiat ))
+                )
+            )
             return None
 
         col = ["Open","High","Low","Close","Volume","Quotevolume"]
