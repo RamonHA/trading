@@ -4,16 +4,125 @@
 
 from datetime import date, timedelta, datetime
 import pandas as pd
+import numpy as np
 import parser
 import time
 import random
 from scipy.sparse import data
 
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import ParameterGrid
 
 from .procesos import Setter
 from .instrumento import Instrumento
 from .func_aux import *
+
+
+class MyGridSearch():
+
+    _ERRORS = {
+        "rmse":mean_absolute_error,
+        "mae":mean_absolute_error,
+    }
+
+    def __init__(self, df, regr, parameters, train_test_split = 0.8, target = "target", error = "mae"):
+        
+        assert df == pd.DataFrame, "Df no es tipo Pandas DataFrame. Se entrego {}.".format( type(df) )
+
+        self.df = df
+        self.regr = regr
+        self.parameters = parameters
+        self.best = None
+        self.train_test_split = train_test
+        self.cache = []
+        self.target = target
+
+        self.error = error
+
+    @property
+    def error(self):
+        return self._error
+    
+    @error.setter
+    def error(self, value):
+        if value in _ERRORS:
+            self._error = _ERRORS[ value ]
+        elif callable( value ):
+            self._error = value
+        else:
+            raise ValueError("Error no es callable ni esta en la lista de funciones.")
+            
+    @property
+    def regr(self):
+        return self._regr
+    
+    @regr.setter
+    def regr(self, value):
+        # if regr tipo sklearn
+        self._regr = value
+
+    @property
+    def parameters(self):
+        return self._parameters
+    
+    @parameters.setter
+    def parameters(self, value):
+        if isinstance(value, dict):
+            self._parameters = list( ParameterGrid(value) )
+        else:
+            raise NotImplementedError
+
+    def train_test(self):
+        train_size = int(  len(self.df)*self.train_test_split  )
+
+        train = df.iloc[ :train_size ]
+        test = df.iloc[ -train_size: ]
+
+        train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
+        test = test.replace( [np.inf, -np.inf], np.nan ).dropna()
+    
+        return train, test
+
+    def test(self):
+        train, test = self.train_test( )
+
+        if isinstance(self.cache, pd.DataFrame): self.cache = []
+
+        for i in self.parameters:
+            for j, v in i.items(): self.regr.__dict__[j] = v
+
+            self.regr.fit( train.drop(columns = self.target), train[self.target] )
+
+            predict = self.regr.predict( test.drop(columns = self.target) )
+
+            error = self.error( test[ self.target ], predict )
+
+            self.cache.append([
+                i, error
+            ])
+        
+        self.cache = pd.DataFrame( self.cache )
+        self.cache.columns = ["param", "error"]
+        self.cache.sort_values(by = "error", ascending = True).reset_index(drop = True)
+        self.best = self.cache.iloc[0]
+
+        print( self.best )
+    
+    def predict(self):
+        assert self.best is not None, "No se ha corrido la prueba test"
+
+        for j, v in self.best["param"].items(): self.regr.__dict__[j] = v
+
+        tain = df.iloc[ :-1 ]
+        test = df.iloc[ -1: ]
+
+        train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
+
+        self.regr.fit( train.drop(columns = self.target), train[self.target] )
+
+        predict = self.regr.predict( test.drop(columns = self.target) )
+
+        return predict[-1]
 
 
 class Prediction(Setter):
