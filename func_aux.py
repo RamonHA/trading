@@ -4,7 +4,7 @@ import os
 from .tokens import *
 
 def PWD(pwd):
-    return os.path.normpath( "{}{}".format(ROUTE, pwd) )
+    return os.path.normpath( ROUTE.format(pwd) )
 
 def creacion_carpeta(pwd, verbose = True):
     # Creacion de carpeta de la estrategia completa, para guardar los correspondientes CSV y JSON
