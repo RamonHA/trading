@@ -33,7 +33,7 @@ class MyGridSearch():
         self.regr = regr
         self.parameters = parameters
         self.best = None
-        self.train_test_split = train_test
+        self.train_test_split = train_test_split
         self.cache = []
         self.target = target
 
