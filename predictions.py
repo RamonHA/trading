@@ -126,7 +126,7 @@ class MyGridSearch():
 
         for j, v in self.best["param"].items(): self.regr.__dict__[j] = v
 
-        tain = self.df.iloc[ :-1 ]
+        train = self.df.iloc[ :-1 ]
         test = self.df.iloc[ -1: ]
 
         train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
