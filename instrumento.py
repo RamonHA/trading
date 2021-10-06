@@ -287,7 +287,7 @@ class Instrumento(TimeSeries):
         if hasattr(self, "_df") and self._df is not None:
             return self._df
         elif all( [ self.simbolo, self.inicio, self.broker, self.fiat ] ):
-            self._df = {
+            self.df = {
                 "Binance":self.df_binance,
                 "Bitso":self.df_bitso,
                 "GBM":self.df_gbm,
@@ -574,6 +574,19 @@ class Instrumento(TimeSeries):
                         break
 
                     time.sleep(2)
+
+        # Assertions of data
+        if self.intervalo == "m":
+            df.reset_index(inplace = True)
+            df = df[ df["Date"].astype(str).str.endswith("01") ]
+            df.set_index("Date", inplace = True)
+        elif self.intervalo == "w" and self.broker == "Tesis":
+            df.index = df.index.map( lambda x: x - timedelta(days = 1) )
+            df = df.reindex( pd.date_range( df.index[0], df.index[-1], freq = "1W" ), fill_values = "NaN" )
+            
+            for j in df.columns: df[j] = pd.to_numeric( df[j], errors = "coerce" )
+
+            df.ffill( inplace = True )
 
         return df
 
