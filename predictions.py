@@ -73,10 +73,12 @@ class MyGridSearch():
             raise NotImplementedError
 
     def train_test(self, verbose = True):
-        train_size = int(  len(self.df)*self.train_test_split  )
+        df = self.df.replace( [np.inf, -np.inf], np.nan ).dropna()
 
-        train = self.df.iloc[ :train_size ]
-        test = self.df.iloc[ train_size: ]
+        train_size = int(  len(df)*self.train_test_split  )
+
+        train = df.iloc[ :train_size ]
+        test = df.iloc[ train_size: ]
 
         if verbose:
             print("Train: {}".format(train.shape))
