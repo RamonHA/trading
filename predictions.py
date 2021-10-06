@@ -76,7 +76,7 @@ class MyGridSearch():
         train_size = int(  len(self.df)*self.train_test_split  )
 
         train = self.df.iloc[ :train_size ]
-        test = self.df.iloc[ -train_size: ]
+        test = self.df.iloc[ train_size: ]
 
         if verbose:
             print("Train: {}".format(train.shape))
