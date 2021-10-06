@@ -72,7 +72,7 @@ class MyGridSearch():
         else:
             raise NotImplementedError
 
-    def train_test(self, verbose = True):
+    def train_test(self, verbose = False):
         df = self.df.replace( [np.inf, -np.inf], np.nan ).dropna()
 
         train_size = int(  len(df)*self.train_test_split  )
@@ -89,7 +89,7 @@ class MyGridSearch():
     
         return train, test
 
-    def test(self, verbose = True):
+    def test(self, verbose = False):
         train, test = self.train_test(verbose = verbose )
 
         if verbose:
