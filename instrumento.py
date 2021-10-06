@@ -1074,5 +1074,5 @@ class Instrumento(TimeSeries):
         return ta.momentum.WilliamsRIndicator(high=self.df[high], low=self.df[low], close=self.df[close], \
             lbp=lookback_p).wr()
 
-    
+  
 
