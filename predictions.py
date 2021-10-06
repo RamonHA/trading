@@ -94,6 +94,9 @@ class MyGridSearch():
             print("Train: {}".format(train.shape))
             print("Test: {}".format(train.shape))
 
+        if len(train) == 0 or len(test) == 0:
+            return None
+
         if isinstance(self.cache, pd.DataFrame): self.cache = []
 
         for i in self.parameters:
