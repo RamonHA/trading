@@ -603,6 +603,32 @@ class Instrumento(TimeSeries):
 
         return df.loc[self.inicio:self.fin]
 
+    def update(self, df = True):
+        self.desde_api = True
+        
+        if df: self.update_df()
+    
+    def update_df(self):
+        aux = {
+            'min':'Minutos',
+            'h':'Hora',
+            'd':'Diario',
+            'w':'Semanal',
+            'm':'Mensual'
+        }
+
+        simbolo = self.simbolo.replace(".", "") if self.broker in ["Tesis", "GBM"] else self.simbolo + self.fiat
+
+        self.df.to_csv( 
+            PWD( 
+                "/{}/Mercado/{}/{}.csv".format( 
+                    self.broker, 
+                    aux[ self.intervalo ],  
+                    simbolo
+                ) 
+            ) 
+        )
+
     # Sentiment
     def sentimiento(self, social_media = ["Twitter", "Reddit", "Google"], desde_api = False, update = True, keywords = [], dropna = True):
         """  
