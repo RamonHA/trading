@@ -643,6 +643,7 @@ class Instrumento(TimeSeries):
         )
 
     # Sentiment
+    
     def sentimiento(self, social_media = ["Twitter", "Reddit", "Google"], desde_api = False, update = True, keywords = [], dropna = True):
         """  
             social_media (list): Lista de las redes sociales usadas para la descarga de informacion.
