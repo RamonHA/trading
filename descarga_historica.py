@@ -37,15 +37,6 @@ def data_instrumentos( broker ):
     
     return data
 
-def extract_load(asset, broker, fiat):
-    print(i)
-
-    inst = Instrumento(
-        simbolo=asset,
-        inicio=date(1990, 1, 1),
-
-    )
-
 if __name__ == "__main__":
 
     broker = sys.argv[1]
@@ -60,3 +51,14 @@ if __name__ == "__main__":
 
     for i in data:
         print(i)
+
+        inst = Instrumento(
+            simbolo = i,
+            inicio = date(1990, 1, 1),
+            fin = date.today() - timedelta(days = 1),
+            frecuencia = frecuencia,
+            broker = broker,
+            fiat = fiat,
+        ).update()
+    
+    print("Done!")
