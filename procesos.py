@@ -1105,12 +1105,15 @@ class Simulacion(Proceso):
                 exp_return = False,
                 preanalisis = True,
                 dropdown = None,
+                dynamic_target = False,
                 **kwargs
         ):
         """  
             factor_reduccion (float): Del valor del portafolio, cuanto realmente considerar para las posiciones minimas
                                     Default = 0.95
         """
+
+        assert not( exp_return != dynamic_target ), "Si dynamic_target entonces debe ser exp_return."
 
         if tiempo_testeo is None:
             self.tiempo_testeo_balanceo = None
@@ -1120,7 +1123,7 @@ class Simulacion(Proceso):
         aux = r"{}_{}\{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, frecuencia, tiempo_balanceo )
 
         if optimizacion == "EfficientReturn":
-            aux += ( "_" + str(  kwargs["target_return"]  ) )
+            aux += ( "_" + str(  kwargs["target_return"] if not dynamic_target else "dynamictarget"  ) )
         
         if dropdown is not None: 
             aux += ( "_dropdown{}".format(dropdown)  )
@@ -1143,6 +1146,7 @@ class Simulacion(Proceso):
                 exp_return = exp_return,
                 preanalisis = preanalisis,
                 dropdown = dropdown,
+                dynamic_target = dynamic_target,
                 **kwargs
             )
     
@@ -1157,6 +1161,7 @@ class Simulacion(Proceso):
                 exp_return = False,
                 preanalisis = True,
                 dropdown = None,
+                dynamic_target = False,
                 **kwargs
         ):
 
@@ -1249,6 +1254,10 @@ class Simulacion(Proceso):
                 except:
                     print(type(data))
                     print(data)
+
+            if dynamic_target:
+                pos = data[ data > 0 ].sort_values(ascending = False).head( int( 1//min_position ) )
+                kwargs["target"] = round( pos.median(), 3)
 
             allocation = {}
             discrete_weights = {}
