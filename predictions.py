@@ -119,7 +119,7 @@ class MyGridSearch():
         self.cache.sort_values(by = "error", ascending = True).reset_index(drop = True)
         self.best = self.cache.iloc[0]
 
-        print( self.best )
+        if verbose: print( self.best )
     
     def predict(self):
         assert self.best is not None, "No se ha corrido la prueba test"
