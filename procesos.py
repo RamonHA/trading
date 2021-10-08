@@ -742,7 +742,6 @@ class Proceso(Setter):
         ef = EfficientFrontier(mu, s, weight_bounds = kwargs["limites"], solver = kwargs.get("solver", None) )
         
         try:
-
             if optimizacion == "MaxSharpe":
                 raw_weights = ef.max_sharpe()
             elif optimizacion == "MinVol":
