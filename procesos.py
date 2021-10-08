@@ -1032,13 +1032,13 @@ class Simulacion(Proceso):
         aux_mejor = "_".join( aux )
 
         if carpeta is None:
-            self.pwd_analisis = self.pwd.format( "{}_{}\{}\{}_{}".format( frecuencia, tiempo_testeo, aux_analisis, aux_param, aux_mejor ) )
+            self.pwd_analisis = self.pwd.format( "{}_{}/{}/{}_{}".format( frecuencia, tiempo_testeo, aux_analisis, aux_param, aux_mejor ) )
         else:
-            self.pwd_analisis = self.pwd.format( "{}_{}\{}\{}_{}\{}".format( frecuencia, tiempo_testeo, aux_analisis, aux_param, aux_mejor, carpeta ) )
+            self.pwd_analisis = self.pwd.format( "{}_{}/{}/{}_{}/{}".format( frecuencia, tiempo_testeo, aux_analisis, aux_param, aux_mejor, carpeta ) )
 
         creacion_carpeta(self.pwd_analisis)
         
-        self.pwd_analisis += "\{}"
+        self.pwd_analisis += "/{}"
 
         if self.intervalo_analisis == "m":
             self.inicio = self.fin - relativedelta(months = self.cant_simulaciones - 1)
@@ -1119,7 +1119,7 @@ class Simulacion(Proceso):
         else:
             self.tiempo_testeo_balanceo = tiempo_testeo
 
-        aux = r"{}_{}\{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, frecuencia, tiempo_balanceo )
+        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, frecuencia, tiempo_balanceo )
 
         if optimizacion == "EfficientReturn":
             aux += ( "_" + str(  kwargs["target_return"] if not dynamic_target else "dynamictarget"  ) )
@@ -1131,7 +1131,7 @@ class Simulacion(Proceso):
 
         creacion_carpeta( self.pwd_balanceo )
 
-        self.pwd_balanceo += "\{}"
+        self.pwd_balanceo += "/{}"
 
         if correr_analisis:
             self._balanceo_(
