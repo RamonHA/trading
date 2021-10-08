@@ -1257,7 +1257,7 @@ class Simulacion(Proceso):
 
             if dynamic_target:
                 pos = data[ data > 0 ].sort_values(ascending = False).head( int( 1//min_position ) )
-                kwargs["target"] = round( pos.median(), 3)
+                kwargs["target_return"] = round( pos.median(), 3)
 
             allocation = {}
             discrete_weights = {}
