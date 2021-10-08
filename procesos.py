@@ -740,7 +740,7 @@ class Proceso(Setter):
         }[ kwargs.get("risk_comp", "exp") ](df, frequency = 1 if tiempo_testeo is not None else tiempo_testeo)
 
         ef = EfficientFrontier(mu, s, weight_bounds = kwargs["limites"], solver = kwargs.get("solver", None) )
-
+        
         try:
 
             if optimizacion == "MaxSharpe":
@@ -772,7 +772,7 @@ class Proceso(Setter):
             return None
         
         if kwargs.get("plotting", False): self.portfolio_plotting(ef = ef, optimizacion = optimizacion, mu = mu, s = s, target_return = kwargs.get("target_return", 0.01))
-
+        
         return ef
 
     def portfolio_plotting(self, ef, optimizacion, mu, s, target_return = None):
