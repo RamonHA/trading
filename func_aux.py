@@ -27,3 +27,31 @@ def min_max(df, exception = []):
         df[i] = ( df[i] - df[i].min() ) / ( df[i].max() - df[i].min())
     
     return df
+
+def bring_results(pwd, data = {}):
+
+    files = os.listdir(pwd)
+
+    if "resumen.csv" in files:
+        
+        try:
+            d = pd.read_csv(pwd + "/resumen.csv")
+            data[pwd] = {}
+            data[pwd]["sharpe"] = d["net"].mean() / d["net"].std()
+            data[pwd]["sortino"] = d["net"].mean() / d[d["net"] < 0]["net"].std()
+            data[pwd]["std"] = d["net"].std()
+            data[pwd]["neg std"] = d[d["net"] < 0]["net"].std()
+            data[pwd]["min net"] = d["net"].min()
+            data[pwd]["acc"] = d["acc"].iloc[-1]
+            data[pwd]["mean net"] = d["net"].mean()
+        except:
+            pass
+
+    else:
+        new_files = [j for j in files if j.split(".")[-1] not in ["csv", "json", "txt", "png"] ]
+
+        if len(new_files) > 0:
+            for i in new_files:
+                data = bring_results( pwd + "/{}".format(i), data )
+
+    return data
