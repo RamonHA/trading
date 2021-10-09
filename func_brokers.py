@@ -74,16 +74,16 @@ def octetos(broker, fiat):
 def data_instrumentos( broker ):
     
     if broker == "Bitso":
-        from instrumentos import Bitso
+        from .instrumentos import Bitso
         data = Bitso
     elif broker == "Binance":
-        from instrumentos import Binance
+        from .instrumentos import Binance
         data = Binance
     elif broker == "GBM":
-        from instrumentos import GBM
+        from .instrumentos import GBM
         data = GBM
     elif broker == "Tesis":
-        from instrumentos import Tesis
+        from .instrumentos import Tesis
         data = Tesis
     else:
         raise ValueError("Broker {} es incorrecto.".format(broker) )
