@@ -21,7 +21,6 @@ def cantidad_por_sector(acciones, porcentaje = True):
 
     return counter.to_dict()
 
-
 def octetos(broker, fiat):
     """ Funcion auxiliar para guardar en JSON una lista con 
         los octetos de cada crypto.
@@ -71,3 +70,56 @@ def octetos(broker, fiat):
             json.dump(octetos, fp)
         
         print("Done!")
+
+def data_instrumentos( broker ):
+    
+    if broker == "Bitso":
+        from instrumentos import Bitso
+        data = Bitso
+    elif broker == "Binance":
+        from instrumentos import Binance
+        data = Binance
+    elif broker == "GBM":
+        from instrumentos import GBM
+        data = GBM
+    elif broker == "Tesis":
+        from instrumentos import Tesis
+        data = Tesis
+    else:
+        raise ValueError("Broker {} es incorrecto.".format(broker) )
+    
+    return data
+
+def descarga_historica(broker, fiat, frecuencia):
+
+    carpeta = {
+        "1min":"Minutos",
+        "1h":"Hora",
+        "1d":"Diario",
+        "1w":"Semanal",
+        "1m":"Mensual"
+    }
+
+    # broker = sys.argv[1]
+    # fiat = sys.argv[2]
+    # frecuencia = sys.argv[3]
+
+    broker = broker.capitalize()
+
+    tiempo_dormir = 14 if broker == "Bitso" else 0.5
+
+    data = data_instrumentos( broker )
+
+    for i in data:
+        print(i)
+
+        inst = Instrumento(
+            simbolo = i,
+            inicio = date(1990, 1, 1),
+            fin = date.today() - timedelta(days = 1),
+            frecuencia = frecuencia,
+            broker = broker,
+            fiat = fiat,
+        ).update()
+    
+    print("Done!")
