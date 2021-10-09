@@ -1398,7 +1398,24 @@ class Simulacion(Proceso):
 
         return dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
 
+    def comportamiento(self, route):
+        assert route, "Se necesita una ruta de donde obtener el comportamiento atraves de tiempo de la estrategia de interes."
 
+        route = route if "resumen.csv" in route else ( route + "/resumen.csv" )
+
+        try:
+            df = pd.read_csv( route )
+        except:
+            print("No hay un archivo resumen en la ruta {}".format(route))
+            return None
+        
+        if "Unnamed: 0" in df.columns:
+            df.drop(columns = ["Unnamed: 0"], inplace = True)
+        
+        df.set_index("fin", inplace = True)
+        df.index = pd.to_datetime( df.index ) 
+
+        return df
 
 
 class Bot(Proceso):
