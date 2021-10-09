@@ -1002,6 +1002,7 @@ class Simulacion(Proceso):
                                 }
 
         """
+        self.tiempo_analisis = tiempo_testeo
         self.analisis = analisis
         self.frecuencia_analisis = frecuencia
         self.periodo_analisis, self.intervalo_analisis = re.findall(r'(\d+)(\w+)', frecuencia)[0]
@@ -1389,7 +1390,16 @@ class Simulacion(Proceso):
     @resumen.setter
     def resumen(self, value):
         self._resumen = value
-        
+    
+    def recopilador_resultados(self, path = None):
+        path = path if path is not None else PWD( "/{}/Resultados/{}/{}_{}".format( self.broker, self.fiat, self.frecuencia_analisis, self.tiempo_analisis ) )
+
+        dicc = pd.DataFrame.from_dict( bring_results(path) , orient="index").reset_index().rename(columns = {"index":"route"})
+
+        return dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
+
+
+
 
 class Bot(Proceso):
     def __init__(self, 
