@@ -300,6 +300,8 @@ class Instrumento(TimeSeries):
     def df(self, value):
         if isinstance(value, pd.DataFrame):
             self._df = value
+        elif value is None:
+            self._df = value
         else:
             raise ValueError("No es tipo DataFrame")
 
