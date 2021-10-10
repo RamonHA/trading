@@ -39,7 +39,7 @@ from .tokens import *
 
 from .func_aux import *
 
-def remuestreo(df, intervalo):
+def remuestreo(df, intervalo, frecuencia):
 
     assert isinstance(df, pd.DataFrame), "Df no es tipo DataFrame"
 
@@ -61,23 +61,23 @@ def remuestreo(df, intervalo):
         aux.index = pd.to_datetime( aux.index )
 
     # Tabla de frecuencias
-    aux = {
-        's': 0,
-        'min': 1,
-        'h': 2,
-        'd': 3,
-        'b':3,
-        'w': 4,
-        'm': 5,
-        'sm': 6,
-        'qs': 7,
-        'q': 7,
-        'a': 8,
-        'as':8,
+    fr = {
+        's': "S",
+        'min': "min",
+        'h': "H",
+        'd': "D",
+        'w': "W",
+        'm': "M",
+        'sm': "MS",
     }
 
     aux.reset_index(inplace = True)
-    aux = aux.resample( intervalo, on = "date" ).agg( {"Open":"first", "Close":"last", "High":"max", "Low":"min", "Volume":"sum"} )
+    aux = aux.resample( 
+        "{}{}".format(intervalo, fr.get(frecuencia, frecuencia) ), 
+        on = "date" 
+        ).agg( 
+            {"Open":"first", "Close":"last", "High":"max", "Low":"min", "Volume":"sum"} 
+        )
 
     # # Disminuir granularidad, Dia a Mes
     # if aux[self.intervalo] < aux[intervalo]:  
@@ -307,6 +307,9 @@ class Instrumento(TimeSeries):
                 "Tesis":self.df_gbm
             }[self.broker]()
             
+            if self.periodo != 1:
+                self.df = remuestreo( self.df, self.periodo, self.intervalo )
+
             return self._df
 
     @df.setter
