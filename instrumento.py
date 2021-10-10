@@ -46,15 +46,14 @@ def remuestreo(df, intervalo, frecuencia):
     aux = df.copy()
 
     aux.reset_index(inplace = True)
-    aux.columns = [ x.lower() for x in aux.columns ]
 
     # Nos aseguramos que haya la columna DF
-    if 'date' not in aux.columns :
+    if 'Date' not in aux.columns :
         aux.reset_index(inplace = True)
-        if 'date' not in aux.columns:
+        if 'Date' not in aux.columns:
             raise Exception("No hay columna date en df")
         
-    aux.set_index("date", inplace = True)
+    aux.set_index("Date", inplace = True)
 
     # Nos aseguramos que el indice se datetime
     if aux.index.dtype != np.dtype('<M8[ns]'):
