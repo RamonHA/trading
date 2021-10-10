@@ -108,6 +108,24 @@ class TimeSeries():
     def __init__(self):
         self.target = "Close" if type(self) == Instrumento else "Data"
     
+    def __repr__(self):
+        return '{}: {}'.format(type(self).__name__,  self.simbolo )
+
+    # Propiedades de yahoo finanzas
+    @property
+    def yf(self):
+        if hasattr( self, "_yf" ):
+            return self._yf
+        else:
+            self.yf = yf.Ticker( self.simbolo )
+            return self._yf
+    
+    @yf.setter
+    def yf(self, value):
+        self._yf = value
+    
+    # Trend TA
+
     @property
     def target(self):
         return self._target
@@ -118,11 +136,6 @@ class TimeSeries():
             assert value in self.df.columns, "No hay {} en Dataframe".format( value )
         else:
             self._target = value
-
-    def __repr__(self):
-        return '{}: {}'.format(type(self).__name__,  self.simbolo )
-    
-    # Trend TA
 
     def dema(self, length, target = None):
         """ Regresa un SERIE de una Doble EMA 
