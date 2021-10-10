@@ -73,7 +73,7 @@ def remuestreo(df, intervalo, frecuencia):
     aux.reset_index(inplace = True)
     aux = aux.resample( 
         "{}{}".format(intervalo, fr.get(frecuencia, frecuencia) ), 
-        on = "date" 
+        on = "Date" 
         ).agg( 
             {"Open":"first", "Close":"last", "High":"max", "Low":"min", "Volume":"sum"} 
         )
