@@ -113,13 +113,16 @@ def descarga_historica(broker, fiat, frecuencia):
     for i in data:
         print(i)
 
-        inst = Instrumento(
-            simbolo = i,
-            inicio = date(1990, 1, 1),
-            fin = date.today() - timedelta(days = 1),
-            frecuencia = frecuencia,
-            broker = broker,
-            fiat = fiat,
-        ).update()
+        try:
+            inst = Instrumento(
+                simbolo = i,
+                inicio = date(1990, 1, 1),
+                fin = date.today() - timedelta(days = 1),
+                frecuencia = frecuencia,
+                broker = broker,
+                fiat = fiat,
+            ).update()
+        except:
+            continue
     
     print("Done!")
