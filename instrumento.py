@@ -296,7 +296,7 @@ class Instrumento(TimeSeries):
     # Data download
     @property
     def df(self):
-        if hasattr(self, "_df") and self._df is not None:
+        if hasattr(self, "_df"):#and self._df is not None:
             return self._df
         elif all( [ self.simbolo, self.inicio, self.broker, self.fiat ] ):
             self.df = {
