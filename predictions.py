@@ -240,7 +240,7 @@ class Prediction(Setter):
     def assertions(self):
         pass
 
-    def run(self, verbose = True, timing = True):
+    def run(self, verbose = False, timing = True):
         
         if self.multiple_errors:
             assert ( self.error is None or isinstance(self.error, list) ), "Se ha indicado de multiples errores, pero error no es una lista, o "
