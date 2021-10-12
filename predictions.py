@@ -72,29 +72,31 @@ class MyGridSearch():
         else:
             raise NotImplementedError
 
-    def train_test(self, verbose = False):
+    def train_test(self, debug = False):
         df = self.df.replace( [np.inf, -np.inf], np.nan ).dropna()
+
+        assert len(df) > 0, "Al remover nan e inf, no hay informacion con la cual trabajar"
 
         train_size = int(  len(df)*self.train_test_split  )
 
         train = df.iloc[ :train_size ]
         test = df.iloc[ train_size: ]
 
-        if verbose:
-            print("Train: {}".format(train.shape))
-            print("Test: {}".format(train.shape))
+        if debug:
+            print("train_test Train: {}".format(train.shape))
+            print("train_test Test: {}".format(train.shape))
 
         train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
         test = test.replace( [np.inf, -np.inf], np.nan ).dropna()
     
         return train, test
 
-    def test(self, verbose = False):
-        train, test = self.train_test(verbose = verbose )
+    def test(self, debug = False):
+        train, test = self.train_test(debug = debug )
 
-        if verbose:
-            print("Train: {}".format(train.shape))
-            print("Test: {}".format(train.shape))
+        if debug:
+            print("test Train: {}".format(train.shape))
+            print("test Test: {}".format(train.shape))
 
         if len(train) == 0 or len(test) == 0:
             return None
@@ -119,7 +121,7 @@ class MyGridSearch():
         self.cache.sort_values(by = "error", ascending = True).reset_index(drop = True)
         self.best = self.cache.iloc[0]
 
-        if verbose: print( self.best )
+        if debug: print( self.best )
     
     def predict(self):
         assert self.best is not None, "No se ha corrido la prueba test"
