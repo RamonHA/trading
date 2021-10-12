@@ -41,7 +41,9 @@ from .func_aux import *
 
 def remuestreo(df, intervalo, frecuencia):
 
-    assert isinstance(df, pd.DataFrame), "Df no es tipo DataFrame"
+    if not isinstance(df, pd.DataFrame):
+        print( "Df no es tipo DataFrame, es {}".format( type(df) ) )
+        return None
 
     aux = df.copy()
 
