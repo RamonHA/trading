@@ -75,7 +75,9 @@ class MyGridSearch():
     def train_test(self, debug = False):
         df = self.df.replace( [np.inf, -np.inf], np.nan ).dropna()
 
-        assert len(df) > 0, "Al remover nan e inf, no hay informacion con la cual trabajar"
+        if len(df) == 0: 
+            print("Al remover nan e inf, no hay informacion con la cual trabajar")
+            return [], []
 
         train_size = int(  len(df)*self.train_test_split  )
 
