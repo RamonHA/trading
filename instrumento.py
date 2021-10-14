@@ -435,8 +435,11 @@ class Instrumento(TimeSeries):
 
             while True:
                 
-                aux_start = fin - timedelta(days = days_aux)
-                
+                if self.intervalo == "d":
+                    aux_start = fin - timedelta(days = days_aux)
+                elif self.intervalo == "h":
+                    aux_start = fin - timedelta( seconds = days_aux*3600 )
+
                 try:
                     df_aux = b.import_data(start = str(aux_start), end = str(fin)).get_data()
                 except:
@@ -444,7 +447,10 @@ class Instrumento(TimeSeries):
 
                 df = pd.concat([df, df_aux], axis = 0)
 
-                days_aux = (aux_start - self.inicio).days
+                if self.intervalo == "d":
+                    days_aux = (aux_start - self.inicio).days
+                elif self.intervalo == "h":
+                    days_aux = (aux_start - self.inicio).total_seconds() / 3600
 
                 if days_aux == 0:
                     break
@@ -452,6 +458,10 @@ class Instrumento(TimeSeries):
                 elif days_aux >= aux[self.intervalo]:
                     days_aux = aux[self.intervalo]
             
+                elif len(df_aux) == 0:
+                    # Ya se termino
+                    break
+
                 fin = aux_start
 
                 time.sleep(0.2)
