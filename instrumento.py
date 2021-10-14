@@ -269,7 +269,7 @@ class Instrumento(TimeSeries):
     @simbolo.setter
     def simbolo(self, value):
         if self.broker in ["Bitso", "Binance"]:
-            self._simbolo = value
+            self._simbolo = value  
         elif self.broker == "GBM":
             self._simbolo = GBM[value]["ticker"] if value in GBM else value
         elif self.broker == "Tesis":
