@@ -12,31 +12,58 @@
 
 import numpy as np
 import pandas as pd
+import random
+import copy
 
+from instrumento import Instrumento
+
+from .procesos import Setter
 from .instrumentos import *
 from .tokens import BROKERS
 
 class Estrategia():
-
-    def __init__(self, broker, frecuencia = None, asset = None):
+    def __init__(
+            self, 
+            inst,
+            reglas = [],
+            **kwargs
+        ):
         """  
             asset (str): Asset con el cual trabajar
                         Default = None, Se escoge uno random de la lista de instrumentos del correspondiente broker
         """
 
+        self.reglas = reglas
+        self.inst = inst
 
-        assert broker in BROKERS, "broker no esta en lista brokers {}".format( BROKERS )
-        self.broker = broker
+        self.broker = inst.broker
+        self.fiat = inst.fiat
+        self.comision = inst.comision
 
-        self.frecuencia
 
-        self.asset = asset
-    
     @property
-    def asset(self):
-        return self._asset
+    def inst(self):
+        if hasattr(self, "_inst"):
+            return self._inst
+        else:
+            return None
     
-    @asset.setter
-    def asset(self, value):
-        if value is None:
-            pass
+    @inst.setter
+    def inst(self, value):
+        if isinstance(value, Instrumento):
+            self._inst = value
+        else:
+            raise ValueError("Se tiene que entregar un objeto Instrumento, pero se entrego {}".format( type(value) ))
+    
+    def separar_reglas(self, regla):
+        regla = regla.split(" ")
+        return regla[0], regla[1], regla[2]
+
+    def backtest(self):
+        df = copy( self.inst.df )
+
+        for r in self.reglas:
+            # Column, Operator, Value
+            c, o, v = self.separar_reglas( r )
+
+            
