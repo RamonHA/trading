@@ -12,34 +12,45 @@
 
 import numpy as np
 import pandas as pd
-import random
-import copy
 
-from instrumento import Instrumento
-
-from .procesos import Setter
-from .instrumentos import *
-from .tokens import BROKERS
+from trading.instrumento import Instrumento
+from trading.procesos import Setter
+from trading.instrumentos import *
+from trading.tokens import BROKERS
 
 class Estrategia():
     def __init__(
             self, 
             inst,
             reglas = [],
+            periodo = 1,
             **kwargs
         ):
         """  
-            asset (str): Asset con el cual trabajar
-                        Default = None, Se escoge uno random de la lista de instrumentos del correspondiente broker
+            reglas (list str):
+                Ejemplo: "rsi_14 <= 30"
         """
 
+        assert isinstance(reglas, dict), "reglas"
         self.reglas = reglas
         self.inst = inst
 
         self.broker = inst.broker
         self.fiat = inst.fiat
-        self.comision = inst.comision
+        # self.comision = inst.comision
 
+        self.periodo = periodo
+        self.col = { "buy":[], "sell":[] }
+
+    @property
+    def reglas(self):
+        return self._reglas
+    
+    @reglas.setter
+    def reglas(self, value):
+        assert isinstance(value, dict), "reglas no es tipo diccionario, se entrego {}".format(type(value))
+        assert ( "buy" in value and "sell" in value ), "Diccionario tiene que indicar si son señales de compra o venta"
+        self._reglas = value
 
     @property
     def inst(self):
@@ -54,16 +65,49 @@ class Estrategia():
             self._inst = value
         else:
             raise ValueError("Se tiene que entregar un objeto Instrumento, pero se entrego {}".format( type(value) ))
-    
+
     def separar_reglas(self, regla):
-        regla = regla.split(" ")
-        return regla[0], regla[1], regla[2]
-
-    def backtest(self):
-        df = copy( self.inst.df )
-
-        for r in self.reglas:
-            # Column, Operator, Value
-            c, o, v = self.separar_reglas( r )
-
+        by_ands = regla.split(" AND ")
+        
+        regla = []
+        for i in by_ands:
+            r = i.split(" ")
             
+            regla.append( ( r[0], r[1], float( r[2] ) ) )
+        
+        return regla
+
+    def aplicar(self, t, c, o, v):
+        # Column and parameters
+        c_aux = c.split("_")
+        ta = c_aux[0]
+        param = tuple( c_aux[1:] ) 
+        col = "{} {} {}".format( c, o, v )
+
+        # Calcular analyzador tecnico
+        exec(
+            "self.inst.df[ c ] = self.inst.{}{}".format( ta, param )
+        )
+
+        exec(
+            "self.inst.df[ col ] = self.inst.df[ c ].apply( lambda x : 1 if x {} {} else 0)".format(o, v)
+        )
+
+        if t == "sell": self.inst.df[col] *= (-1)
+
+        self.col[t].append( col )
+
+    def backtest(self, type = "buy"):
+
+        for t, r in self.reglas.items():
+            # Column, Operator, Value
+            reglas = self.separar_reglas( r )
+
+            for c, o, v in reglas: self.aplicar( t, c, o, v )
+
+            self.evaluacion()
+
+    def evaluacion(self):
+        self.inst.df["target"] = self.inst.df["Close"].pct_change(periods= self.periodo).shift( -self.periodo)
+
+
