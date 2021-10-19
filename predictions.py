@@ -10,7 +10,7 @@ import time
 import random
 from scipy.sparse import data
 
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, precision_score
 from sklearn.model_selection import ParameterGrid
 
 from .procesos import Setter
@@ -23,6 +23,7 @@ class MyGridSearch():
     _ERRORS = {
         "rmse":mean_absolute_error,
         "mae":mean_absolute_error,
+        "precision":precision_score
     }
 
     def __init__(self, df, regr, parameters, train_test_split = 0.8, target = "target", error = "mae"):
