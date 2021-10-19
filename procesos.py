@@ -909,7 +909,9 @@ class Proceso(Setter):
         for i in allocation:
             pct_weights[i] = (latest_prices[i]*allocation[i]) / total_money
 
-        return allocation, pct_weights 
+        qty = { i:( v*latest_prices[i] ) for i,v in allocation.items() }
+
+        return allocation, pct_weights, qty
 
     # Funciones aux
     @property
