@@ -574,7 +574,14 @@ class Proceso(Setter):
             data,
             inicio, 
             fin, 
-            frecuencia
+            frecuencia,
+            valor_portafolio,
+            metodo = "EfficientFrontier",
+            optimizacion = "MaxSharpe",
+            exp_return = True,
+            dynamic_target = False,
+            min_position = 0,
+            **kwargs
         ):
 
         df = pd.DataFrame()
@@ -600,6 +607,43 @@ class Proceso(Setter):
         if self.broker in ["Binance", "Bitso"]:
             for i in df.columns: df[i] /= pow(10, self.octetos.get(i, 1))
 
+        if exp_return:
+            assert isinstance(data, dict), "Data tiene que ser un tipo diccionario, pero se entrego {}".format(type(data))
+            data = pd.DataFrame.from_dict(data, orient = "index")
+
+            try:
+                data = data.loc[ df.columns ][0]
+            except:
+                print(type(data))
+                print(data)
+                
+            if dynamic_target:
+                pos = data[ data > 0  ].sort_values( asceding = False ).head( int(1 // min_position) ) 
+                kwargs[ "target_return" ] = round( pos.median(), 3 )
+
+        allocation, qty = {}, {}, {}
+
+        try:
+            allocation, qty = self.optimizacion_portafolio(
+                                                df, 
+                                                valor_portafolio = valor_portafolio,
+                                                exp_return = data if exp_return else None,  
+                                                metodo = metodo,
+                                                optimizacion = optimizacion, 
+                                                limites = (min_position, 1),
+                                                tiempo_testeo = self.tiempo_testeo_balanceo,
+                                                **kwargs
+                                            )
+
+        except Exception as e:
+            print("No se pudo generar un portafolio.\nException: {}".format(e))
+            return None, None
+        
+        if self.broker in ["Binance", "Bitso"]:
+            qty = { i:(v*10**(self.octetos.get(i, 1))) for i, v in qty.items() }
+
+        return allocation, qty
+        
 
     def optimizacion_portafolio(self,
                 df, 
@@ -937,13 +981,9 @@ class Proceso(Setter):
         for i in allocation:
             total_money += ( latest_prices[i]*allocation[i] )
 
-        pct_weights = {}
-        for i in allocation:
-            pct_weights[i] = (latest_prices[i]*allocation[i]) / total_money
-
         qty = { i:( v*latest_prices[i] ) for i,v in allocation.items() }
 
-        return allocation, pct_weights, qty
+        return allocation, qty
 
     # Funciones aux
     @property
