@@ -569,6 +569,38 @@ class Proceso(Setter):
         else:
             raise ValueError("No se puede hacer un filtro con tipo {}".format(tipos))
 
+    def _balanceo(
+            self, 
+            data,
+            inicio, 
+            fin, 
+            frecuencia
+        ):
+
+        df = pd.DataFrame()
+
+        for i in data:
+            inst = Instrumento(i, inicio, fin, frecuencia=frecuencia, fiat = self.fiat, broker = self.broker, desde_api=False)
+
+            if inst.df is None or len(inst.df) == 0: continue
+
+            df = pd.concat([ df, inst.df["Close"] ], axis = 1)
+
+            df.rename(columns = {"Close":i}, inplace = True)
+
+        if df.isnull().any().any():
+            df.interpolate(method = "linear", inplace = True)
+
+            if df.isnull().any().any():
+                df.drop(
+                    columns = list( df.isnull().any().any()[df.isnull().any().any()].index ),
+                    inplace = True
+                )
+        
+        if self.broker in ["Binance", "Bitso"]:
+            for i in df.columns: df[i] /= pow(10, self.octetos.get(i, 1))
+
+
     def optimizacion_portafolio(self,
                 df, 
                 valor_portafolio,
