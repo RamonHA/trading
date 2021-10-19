@@ -469,7 +469,14 @@ class Proceso(Setter):
 
         return next_instrumentos
 
-    def preanalisis(self, valor_portafolio, pwd = None, min_qty = 0, data = None, **kwargs):
+    def preanalisis(
+            self, 
+            valor_portafolio, 
+            pwd = None, 
+            min_qty = 0, 
+            data = None, 
+            **kwargs
+        ):
         """  
             Preanalisis se encarga de la lectura de los archivos analisis.
                 - Posteriormente se filtran de acuerdo a All, Positivos y Greatest.
@@ -644,7 +651,6 @@ class Proceso(Setter):
 
         return allocation, qty
         
-
     def optimizacion_portafolio(self,
                 df, 
                 valor_portafolio,
@@ -1224,19 +1230,20 @@ class Simulacion(Proceso):
                 **kwargs
             )
     
-    def _balanceo_(self, 
-                frecuencia, 
-                tiempo_balanceo,
-                valor_portafolio = 0,
-                min_qty = 0,
-                metodo = "EfficientFrontier",
-                optimizacion = "MaxSharpe",
-                if_save = True,
-                exp_return = False,
-                preanalisis = True,
-                dropdown = None,
-                dynamic_target = False,
-                **kwargs
+    def _balanceo_(
+            self, 
+            frecuencia, 
+            tiempo_balanceo,
+            valor_portafolio = 0,
+            min_qty = 0,
+            metodo = "EfficientFrontier",
+            optimizacion = "MaxSharpe",
+            if_save = True,
+            exp_return = False,
+            preanalisis = True,
+            dropdown = None,
+            dynamic_target = False,
+            **kwargs
         ):
 
         # Variables finales para el testeo
@@ -1303,71 +1310,26 @@ class Simulacion(Proceso):
 
             if data is None: continue 
 
-            # Descarga de la informacion historia de los instrumentos seleccionados
-            aux = pd.DataFrame()
-
-            for i in data:
-                
-                inst = Instrumento(i, inicio_analisis, fin_analisis, frecuencia=frecuencia, fiat = self.fiat, broker = self.broker, desde_api=False)
-
-                if inst.df is None or len(inst.df) == 0: continue    
-                
-                aux = pd.concat([aux, inst.df["Close"]  ] , axis = 1)
-
-                aux.rename(columns = {'Close':i}, inplace = True)
-
-            if self.broker in ["Binance", "Bitso"]:
-                for i in aux.columns: aux[i] /= pow(10, self.octetos.get(i, 1) )
-
-                        
-            if exp_return:
-                # data = pd.Series(data)
-                data = pd.DataFrame.from_dict(data, orient = "index")
-                try:
-                    data = data.loc[ aux.columns ][0]
-                except:
-                    print(type(data))
-                    print(data)
-
-            if dynamic_target:
-                pos = data[ data > 0 ].sort_values(ascending = False).head( int( 1//min_position ) )
-                kwargs["target_return"] = round( pos.median(), 3)
-
-            allocation = {}
-            discrete_weights = {}
-
-            try:
-                allocation, discrete_weights = self.optimizacion_portafolio(
-                                                        aux, 
-                                                        valor_portafolio = valor_portafolio,
-                                                        exp_return = data if exp_return else None,  
-                                                        metodo = metodo,
-                                                        optimizacion = optimizacion, 
-                                                        limites = (min_position, 1),
-                                                        tiempo_testeo = self.tiempo_testeo_balanceo,
-                                                        **kwargs
-
-                                                )
-            except Exception as e:
-                print("No se pudo generar un portafolio.\nException: {}".format(e))
-
-            if (allocation is None and discrete_weights is None) or (len(allocation) == 0 and len(discrete_weights) == 0):
-                print("La simulacion {} no tendra un portafolio, su DataFrame tiene {}, sin NaN {}.".format(simulacion, len(aux), len(aux.dropna())) )
-                continue
-
-            else:
-                if self.broker in ["Binance", "Bitso"]:
-                    allocation = { i:(v / 10**self.octetos.get( i, 1 ))  for i, v in allocation.items() }
-                    # for i in allocation:
-                    #     if i in octetos.keys():
-                    #         allocation[i] /= 10**octetos[i]
+            allocation, qty = self._balanceo(
+                data = data,
+                inicio = inicio_analisis,
+                fin = fin_analisis,
+                frecuencia = frecuencia,
+                valor_portafolio = valor_portafolio,
+                metodo = metodo,
+                optimizacion = optimizacion,
+                exp_return = exp_return,
+                dynamic_target = dynamic_target,
+                min_position = min_position,
+                **kwargs
+            )            
 
             if if_save:
                 with open( self.pwd_balanceo.format( str(inicio) + "_" + str(fin) + "_allocation.json" ), "w" ) as fp:
-                    json.dump( discrete_weights, fp )
+                    json.dump( allocation, fp )
 
             # Testeo
-            total_return = self.test( discrete_weights, 
+            total_return = self.test( allocation, 
                                         inicio, 
                                         fin, 
                                         kwargs.get("frecuencia_testeo", "1d"),
@@ -1394,7 +1356,7 @@ class Simulacion(Proceso):
 
         self.df.to_csv( self.pwd_balanceo.format( "resumen.csv" ) )
 
-    def test(self, discrete_weights, inicio, fin, frecuencia, verbose = False, dropdown = None,**kwargs):
+    def test(self, allocation, inicio, fin, frecuencia, verbose = False, dropdown = None,**kwargs):
         """  
             dropdown (float): Procentaje limite de caida para vender antes de tiempo
         """
@@ -1406,12 +1368,10 @@ class Simulacion(Proceso):
         else: 
             dia = "Close"
 
-        for i, v in discrete_weights.items():
+        for i, v in allocation.items():
             inst = Instrumento(i, inicio, fin, frecuencia=frecuencia, fiat = self.fiat, broker = self.broker, desde_api=False)
 
-            if inst.df is None or len(inst.df) == 0:
-                print("{} no tiene df".format(i))
-                continue
+            if inst.df is None or len(inst.df) == 0: continue
 
             if dropdown is not None:
                 first = inst.df.iloc[0][dia]
@@ -1548,6 +1508,8 @@ class Bot(Proceso):
             data = None,
             metodo = "EfficientFrontier",
             optimizacion = "MaxSharpe",
+            exp_return = False,
+            dynamic_return = False,
             **kwargs
         ):
 
@@ -1566,6 +1528,7 @@ class Bot(Proceso):
 
         if data is not None:
             data, min_position = self.preanalisis(
+                                            data = data,
                                             valor_portafolio = valor_portafolio, 
                                             min_qty = min_qty, 
                                             **kwargs
@@ -1577,59 +1540,18 @@ class Bot(Proceso):
             min_position = 0
             data = self.instrumentos
 
-        # Descarga de la informacion historia de los instrumentos seleccionados
-        aux = pd.DataFrame()
-        for i in data:            
-            inst = Instrumento(i, inicio_analisis, self.fin, frecuencia=frecuencia, fiat = self.fiat, broker = self.broker, desde_api=True)
-                
-            if inst.df is None or len(inst.df) < 3: continue
-
-            aux = pd.concat([aux, inst.df["Close"]], axis = 1)
-            aux = aux.rename(columns = {'Close':i})
-
-        data = pd.DataFrame.from_dict(data, orient = "index")[0][ aux.columns ]
-
-        if self.broker in ["Binance", "Bitso"]: aux = aux.applymap( lambda x : x / pow( 10, self.octetos.get(x.name, 1) ) )
-
-        qty = {}
-        pct_weights =  {}
-        discrete_weights = {}
-
-        if len(aux.dropna()) > 2:
-            aux.dropna(inplace = True)
-
-            try:
-                discrete_weights, pct_weights = self.optimizacion_portafolio(
-                                                        aux, 
-                                                        valor_portafolio = valor_portafolio,
-                                                        exp_return = data,  
-                                                        metodo = metodo,
-                                                        optimizacion = optimizacion, 
-                                                        limites = (min_position, 1),
-                                                        **kwargs
-
-                                                )
-            except Exception as e:
-                print("No se pudo generar un portafolio")
-                print("Exception: {}".format(e))
-
-        if self.broker in ["Binance", "Bitso"]:
-            pct_weights = { i:(v / 10**self.octetos.get( i, 1 ))  for i, v in pct_weights.items() }
-            qty = { i:(v * aux.iloc[-1][i] * 10**self.octetos.get( i, 1 ))  for i, v in discrete_weights.items() }
-            
-            # for i in discrete_weights:
-            #     if i in self.octetos.keys():
-            #         pct_weights[i] /= 10**self.octetos[i]
-
-            #     print("{} a {}".format(i, aux.iloc[-1][i]))
-            #     qty[i] = discrete_weights[i]*aux.iloc[-1][i]*10**self.octetos[i]
-
-        else:
-            qty = { i:discrete_weights[i]*aux.iloc[-1][i] for i in discrete_weights }
-            # for i in discrete_weights:
-            #     qty[i] = discrete_weights[i]*aux.iloc[-1][i]
-
-        return pct_weights, discrete_weights, qty
+        return self._balanceo(
+            data = data,
+            inicio = inicio_analisis,
+            fin = self.fin,
+            frecuencia=frecuencia,
+            valor_portafolio = valor_portafolio,
+            metodo = metodo,
+            optimizacion = optimizacion,
+            exp_return = exp_return,
+            dynamic_return = dynamic_return,
+            min_position = min_position
+        )
 
     def posiciones_abiertas(self, verbose = True):
         """ 
