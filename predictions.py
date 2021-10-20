@@ -122,7 +122,7 @@ class MyGridSearch():
         
         self.cache = pd.DataFrame( self.cache )
         self.cache.columns = ["param", "error"]
-        self.cache.sort_values(by = "error", ascending = True).reset_index(drop = True)
+        self.cache = self.cache.sort_values(by = "error", ascending = True).reset_index(drop = True)
         self.best = self.cache.iloc[0]
 
         if debug: print( self.best )
