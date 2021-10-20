@@ -35,191 +35,6 @@ from .instrumentos  import *
 from .func_aux import *
 from .func_brokers import cantidad_por_sector
 
-def estrategias_analisis( i, estrategia, parametros, fin, frecuencia, fiat, broker, desde_api = False, **kwargs):
-    """  
-    
-        estrategia (str): Estrategias disponibles
-            DEMATEMA: Calcula la pendiente de una DEMA[0] y TEMA[1], de acuerdo a sus slopes [2] y [3]
-                    Si la pendiente es alta y positiva, entonces ambas van a la alza y es buen punto de compra 
-    """
-
-    periodo_analisis, intervalo_analisis = re.findall(r'(\d+)(\w+)', frecuencia)[0]
-    periodo_analisis = int(periodo_analisis)
-
-    if len(parametros) == 0:
-
-        if estrategia == "PE":
-            # if inst._price_earnings
-            try: df = pd.read_csv(PWD("/{}/Mercado/Informacion Fundamental/PE/{}.csv".format(broker, i )  ))
-            except: return None
-
-            df.set_index("index", inplace = True)
-            df.index = pd.to_datetime( df.index )
-            aux = df.loc[ :str(fin) ].iloc[-1]["PE_RATIO"]
-            aux = float(aux)
-        
-        else: raise ValueError("Estrategia {} no valida.".format(estrategia))
-        
-        return aux
-
-    max_valor = max(parametros)
-    max_valor = max_valor if max_valor > 0 else 1
-
-    if intervalo_analisis == "m":
-        inicio = fin - relativedelta(months = 3*max_valor*periodo_analisis) 
-        inicio = inicio.replace(day = 1)
-    elif intervalo_analisis == "w":
-        inicio = fin - timedelta(days = 3*7*max_valor*periodo_analisis)
-    elif intervalo_analisis == "d":
-        inicio = fin - timedelta(days = 3*max_valor*periodo_analisis ) 
-    elif intervalo_analisis == "h":
-        inicio = fin - timedelta(seconds = 3600*3*max_valor*periodo_analisis )
-
-    inst = Instrumento( i, inicio, fin, frecuencia = frecuencia, fiat = fiat, broker = broker, desde_api = desde_api )
-
-    if inst.df is None or len(inst.df) <= max_valor: return None
-
-    if estrategia == "Momentum":
-        aux = inst.df.iloc[-parametros[0]:]['Close'].pct_change() + 1    
-        aux = aux.cumprod().iloc[-1]
-
-    elif estrategia == "RSI":
-        aux = inst.rsi(parametros[0])
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'Stoch':
-        aux, _ = inst.stoch( parametros[0] , 3)
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'CCI':
-        aux = inst.cci( parametros[0] )
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'MassIndex':
-        aux = inst.mass_index( parametros[0] )
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'ADX':
-        aux, *_ = inst.adx(parametros[0] )
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'ROC':
-        aux = inst.roc(parametros[0])
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'TRIX':
-        aux = inst.trix(parametros[0])
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'VI':
-        aux, _ = inst.vortex_indicator(parametros[0])
-        aux = aux.iloc[-1]
-
-    elif estrategia == 'MACD':
-        _, aux = inst.macd(parametros[0], parametros[1], parametros[2])
-        aux = aux.iloc[-1]
-
-    elif estrategia == "DEMATEMA":
-        aux1 = inst.dema( parametros[0] )
-        aux2 = inst.tema( parametros[1] )
-
-        aux1 = aux1.pct_change(periods = parametros[2] )
-        aux2 = aux2.pct_change(periods = parametros[3] )
-
-        aux = aux1 * aux2
-        aux = aux.iloc[-1]
-
-    else: raise ValueError("Estrategia {} no valida.".format(estrategia))
-
-    return aux
-
-def estrategias_filtros( i, fin, frecuencia, fiat, broker, desde_api = False, estrategia = None, parametros = None, **kwargs):
-    """  
-        Muchas estategias tienen limites inferiores y superiores para indicar si es tiempo de comprar o vender
-
-
-    """
-    max_valor = max(parametros)
-
-    periodo_analisis, intervalo_analisis = re.findall(r'(\d+)(\w+)', frecuencia)[0]
-    periodo_analisis = int(periodo_analisis)
-
-    if intervalo_analisis == "m":
-        inicio = fin - relativedelta(months = 3*max_valor*periodo_analisis) 
-        inicio = inicio.replace(day = 1)
-    elif intervalo_analisis == "w":
-        inicio = fin - timedelta(days = 3*7*max_valor*periodo_analisis)
-    elif intervalo_analisis == "d":
-        inicio = fin - timedelta(days = 3*max_valor*periodo_analisis ) 
-    elif intervalo_analisis == "h":
-        inicio = fin - timedelta(seconds = 3600*3*max_valor*periodo_analisis )
-
-    inst = Instrumento( i, inicio, fin, frecuencia = frecuencia, fiat = fiat, broker = broker, desde_api = desde_api )
-
-    if inst.df is None or len(inst.df) <= max_valor:
-        return None
-
-    if estrategia == "RSI":
-        aux = inst.rsi(parametros[0])
-        
-        # Si esta debajo del limite inferior de compra
-        aux = True if aux.iloc[-1] <= parametros[1] else False
-    
-    elif estrategia == "CCI":
-        aux = inst.cci( parametros[0] )
-        aux = True if aux.iloc[-1] <= parametros[1] else False
-
-    elif estrategia == "SMA":
-        aux = inst.sma(length = parametros[0])
-        aux = True if inst.df["Close"].iloc[-1] >= aux.iloc[-1] else False
-
-    elif estrategia == "EMA":
-        aux = inst.ema(length = parametros[0])
-        aux = True if inst.df["Close"].iloc[-1] >= aux.iloc[-1] else False
-
-    elif estrategia == "DEMA":
-        aux = inst.dema(length = parametros[0])
-        aux = True if inst.df["Close"].iloc[-1] >= aux.iloc[-1] else False
-
-    elif estrategia == "TEMA":
-        aux = inst.tema(length = parametros[0])
-        aux = True if inst.df["Close"].iloc[-1] >= aux.iloc[-1] else False
-
-    return aux
-
-def estrategias_retornos( i, tiempo, funcion, fin, frecuencia, fiat, broker, desde_api = False, sentimiento = False ):
-    """  
-        Este tipo de estrategias se encargara de la prediccion de retornos
-        del instrumento indicado.
-
-        Se tendra que ingresar una Funcion que tome como parametro un objeto Instrumento
-        Este generara el modelo de ML correspondiente, y hara la prediccion a como este lo vea
-        conveniente.
-            La razon por la que ingresar el Instrumento, es que el tiempo, la ventana de tiempo
-            se ira moviendo de acuerdo a la simulacion.
-            Haciendolo asi, la funcion a programar no tendra que preocuparse por esto.
-    """
-
-    periodo_analisis, intervalo_analisis = re.findall(r'(\d+)(\w+)', frecuencia)[0]
-    periodo_analisis = int(periodo_analisis)
-
-    if intervalo_analisis == "m":
-        inicio = fin - relativedelta(months = tiempo*periodo_analisis) 
-        inicio = inicio.replace(day = 1)
-    elif intervalo_analisis == "w":
-        inicio = fin - timedelta(days = 7*tiempo*periodo_analisis)
-    elif intervalo_analisis == "d":
-        inicio = fin - timedelta(days = tiempo*periodo_analisis ) 
-    elif intervalo_analisis == "h":
-        inicio = fin - timedelta(seconds = 3600*tiempo*periodo_analisis )
-
-    # print(i, inicio, fin, frecuencia, fiat, broker)
-    inst = Instrumento( i, inicio, fin, frecuencia = frecuencia, fiat = fiat, broker = broker, desde_api = desde_api, sentimiento = sentimiento)
-
-    if inst.df is None or len(inst.df) <= 3:
-        return None
-
-    return funcion(inst)
 
 def estrategia( i, tiempo, funcion, fin, frecuencia, fiat, broker, desde_api = False, sentimiento = False ):
     """  
@@ -342,7 +157,6 @@ def optimizacion_portafolio(
         discrete_weights[i] = (latest_prices[i]*allocation[i]) / total_money
 
     return allocation, discrete_weights
-
 
 
 class Setter():
@@ -1021,7 +835,6 @@ class Proceso(Setter):
             "DAI":2,
             "MANA":8
         }
-
 
 
 class Simulacion(Proceso):
