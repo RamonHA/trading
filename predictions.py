@@ -17,14 +17,13 @@ from .procesos import Setter
 from .instrumento import Instrumento
 from .func_aux import *
 
-
-class MyGridSearch():
-
-    _ERRORS = {
+ERRORS = {
         "rmse":mean_absolute_error,
         "mae":mean_absolute_error,
         "precision":precision_score
     }
+
+class MyGridSearch():
 
     def __init__(self, df, regr, parameters, train_test_split = 0.8, target = "target", error = "mae"):
         
@@ -46,8 +45,8 @@ class MyGridSearch():
     
     @error.setter
     def error(self, value):
-        if value in self._ERRORS:
-            self._error = self._ERRORS[ value ]
+        if value in ERRORS:
+            self._error = ERRORS[ value ]
         elif callable( value ):
             self._error = value
         else:
@@ -145,10 +144,6 @@ class MyGridSearch():
 
 
 class Prediction(Setter):
-    _ERRORS = {
-        "rmse":mean_absolute_error,
-        "mae":mean_absolute_error,
-    }
 
     def __init__(
             self,
@@ -186,7 +181,7 @@ class Prediction(Setter):
         
         self.data_manipulation = data_manipulation
         self.regr = regr
-        self.error = self._ERRORS.get( error, None )
+        self.error = error
         self.multiple_errors = multiple_errors
 
         self.instrumentos = random.choices( list( self.instrumentos ), k = num_assets )
@@ -201,7 +196,22 @@ class Prediction(Setter):
             "regr" : [],
             "error" : []
         }
-           
+
+    @property
+    def error(self):
+        return self._error
+    
+    @error.setter
+    def error(self, value):
+        if value is None:
+            self._error = value
+        elif isinstance(value, str):
+            self._error = ERRORS[ value ]
+        elif callable(value):
+            self._error = value
+        else:
+            raise ValueError("Error tiene que ser un str del diccionario de posibles o una funcion callable, pero se entrego {}".format(type(value)))
+
     @property
     def frecuencia(self):
         return self._frecuencia
