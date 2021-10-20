@@ -3,7 +3,6 @@ from multiprocessing import Value
 import numpy as np
 import pandas as pd
 import re
-import parser
 import time
 import math
 from datetime import date, datetime, timedelta
