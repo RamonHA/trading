@@ -318,6 +318,8 @@ class Prediction(Setter):
                 else:
                     y_true, y_pred = regr
                 
+                if y_true is None and y_pred is None: continue
+
                 if self.multiple_errors:    aux += [ j( y_true, y_pred ) for j in self.error ]
                 else:                       aux.append( self.error( y_true, y_pred ) )
             
