@@ -580,8 +580,7 @@ class Proceso(Setter):
             self, 
             data,
             inicio, 
-            fin, 
-            frecuencia,
+            fin,
             valor_portafolio,
             metodo = "EfficientFrontier",
             optimizacion = "MaxSharpe",
@@ -594,7 +593,7 @@ class Proceso(Setter):
         df = pd.DataFrame()
 
         for i in data:
-            inst = Instrumento(i, inicio, fin, frecuencia=frecuencia, fiat = self.fiat, broker = self.broker, desde_api=False)
+            inst = Instrumento(i, inicio, fin, frecuencia=self.frecuencia_balanceo, fiat = self.fiat, broker = self.broker, desde_api=False)
 
             if inst.df is None or len(inst.df) == 0: continue
 
@@ -1172,10 +1171,8 @@ class Simulacion(Proceso):
                 with open( self.pwd_analisis.format( "{}_{}_analisis.json".format(  inicio  ,   fin   ) ), "w" ) as fp:
                     json.dump( resultados, fp )
 
-    def balanceo(self, 
-                frecuencia, 
+    def balanceo(self,  
                 tiempo_balanceo,
-                tiempo_testeo = None,
                 valor_portafolio = 0,
                 min_qty = 0,
                 metodo = "EfficientFrontier",
@@ -1195,12 +1192,10 @@ class Simulacion(Proceso):
 
         assert not( exp_return != dynamic_target ), "Si dynamic_target entonces debe ser exp_return."
 
-        if tiempo_testeo is None:
-            self.tiempo_testeo_balanceo = None
-        else:
-            self.tiempo_testeo_balanceo = tiempo_testeo
+        self.tiempo_testeo_balanceo = kwargs.get("tiempo_testeo", self.tiempo_analisis)
+        self.frecuecia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
 
-        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, frecuencia, tiempo_balanceo )
+        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, self.frecuecia_balanceo, tiempo_balanceo )
 
         if optimizacion == "EfficientReturn":
             aux += ( "_" + str(  kwargs["target_return"] if not dynamic_target else "dynamictarget"  ) )
@@ -1216,7 +1211,6 @@ class Simulacion(Proceso):
 
         if correr_analisis:
             self._balanceo_(
-                frecuencia = frecuencia,
                 tiempo_balanceo = tiempo_balanceo,
                 valor_portafolio = valor_portafolio,
                 min_qty = min_qty,
@@ -1232,7 +1226,6 @@ class Simulacion(Proceso):
     
     def _balanceo_(
             self, 
-            frecuencia, 
             tiempo_balanceo,
             valor_portafolio = 0,
             min_qty = 0,
@@ -1250,7 +1243,7 @@ class Simulacion(Proceso):
         acumulado = 1
         self.df = []
 
-        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', frecuencia)[0]
+        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', self.frecuecia_balanceo)[0]
         periodo_balanceo = int( periodo_balanceo )
 
         if self.broker in ["Tesis", "GBM"] and kwargs.get("filtro_tipo", "All") == "Greatest": 
@@ -1314,7 +1307,6 @@ class Simulacion(Proceso):
                 data = data,
                 inicio = inicio_analisis,
                 fin = fin_analisis,
-                frecuencia = frecuencia,
                 valor_portafolio = valor_portafolio,
                 metodo = metodo,
                 optimizacion = optimizacion,
@@ -1326,7 +1318,10 @@ class Simulacion(Proceso):
 
             if if_save:
                 with open( self.pwd_balanceo.format( str(inicio) + "_" + str(fin) + "_allocation.json" ), "w" ) as fp:
-                    json.dump( allocation, fp )
+                    json.dump( 
+                        {"allocation":allocation, "qty":qty}, 
+                        fp 
+                    )
 
             # Testeo
             total_return = self.test( allocation, 
@@ -1500,8 +1495,6 @@ class Bot(Proceso):
         return self._estrategia( self.fin , desde_api = desde_api)
     
     def balanceo(self, 
-            frecuencia, 
-            tiempo_testeo, 
             tiempo_balanceo,
             valor_portafolio,
             min_qty = 0,
@@ -1514,9 +1507,10 @@ class Bot(Proceso):
         ):
 
         self.min_qty = min_qty
-        self.tiempo_testeo_balanceo = tiempo_testeo
+        self.tiempo_testeo_balanceo = kwargs.get("tiempo_testeo", self.tiempo_analisis)
+        self.frecuecia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
 
-        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', frecuencia)[0]
+        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', self.frecuecia_balanceo)[0]
         periodo_balanceo = int( periodo_balanceo )
 
         if intervalo_balanceo == "d":
@@ -1544,7 +1538,6 @@ class Bot(Proceso):
             data = data,
             inicio = inicio_analisis,
             fin = self.fin,
-            frecuencia=frecuencia,
             valor_portafolio = valor_portafolio,
             metodo = metodo,
             optimizacion = optimizacion,
