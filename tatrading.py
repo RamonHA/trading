@@ -23,7 +23,6 @@ class Estrategia():
             self, 
             inst,
             reglas = [],
-            periodo = 1,
             **kwargs
         ):
         """  
@@ -39,7 +38,6 @@ class Estrategia():
         self.fiat = inst.fiat
         # self.comision = inst.comision
 
-        self.periodo = periodo
         self.col = { "buy":[], "sell":[] }
 
     @property
@@ -73,7 +71,7 @@ class Estrategia():
         for i in by_ands:
             r = i.split(" ")
             
-            regla.append( ( r[0], r[1], float( r[2] ) ) )
+            regla.append( ( r[0], r[1], r[2] ) )
         
         return regla
 
@@ -89,9 +87,21 @@ class Estrategia():
             "self.inst.df[ c ] = self.inst.{}{}".format( ta, param )
         )
 
-        exec(
-            "self.inst.df[ col ] = self.inst.df[ c ].apply( lambda x : 1 if x {} {} else 0)".format(o, v)
-        )
+        based_on = False
+        try: 
+            v = float(v)
+        except: 
+            based_on = True
+
+        # Calcular si la regla se cumple en col
+        if not based_on:
+            exec(
+                "self.inst.df[ col ] = self.inst.df[ c ].apply( lambda x : 1 if x {} {} else 0)".format(o, v)
+            )
+        else:
+            exec(
+                "self.inst.df[ col ] = (self.inst.df[ c ] - self.inst.df[ v ] ).apply( lambda x : 1 if x {} 0 else 0)".format(o)
+            )
 
         if t == "sell": self.inst.df[col] *= (-1)
 
@@ -107,7 +117,6 @@ class Estrategia():
 
             self.evaluacion()
 
-    def evaluacion(self):
-        self.inst.df["target"] = self.inst.df["Close"].pct_change(periods= self.periodo).shift( -self.periodo)
-
-
+    def evaluacion(self, period = 1):
+        self.inst.df["net"] = self.inst.df[ self.col ].prod(axis = 1).apply(lambda x : 1 if x > 0 else 0) * self.inst.df["Close"].pct_change(periods = period)
+        self.inst.df["acc"] = ( self.inst.df["net"] + 1 ).cumprod()
