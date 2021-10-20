@@ -25,7 +25,7 @@ ERRORS = {
 
 class MyGridSearch():
 
-    def __init__(self, df, regr, parameters, train_test_split = 0.8, target = "target", error = "mae"):
+    def __init__(self, df = pd.DataFrame(), regr = None, parameters = None, train_test_split = 0.8, target = "target", error = "mae"):
         
         assert type(df) == pd.DataFrame, "Df no es tipo Pandas DataFrame. Se entrego {}.".format( type(df) )
 
@@ -67,7 +67,9 @@ class MyGridSearch():
     
     @parameters.setter
     def parameters(self, value):
-        if isinstance(value, dict):
+        if value is None:
+            self._parameters = value
+        elif isinstance(value, dict):
             self._parameters = list( ParameterGrid(value) )
         else:
             raise NotImplementedError
