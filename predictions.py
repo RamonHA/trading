@@ -140,7 +140,8 @@ class MyGridSearch():
 
         predict = self.regr.predict( test.drop(columns = self.target) )
 
-        return predict[-1]
+        if one: return predict[-1]
+        else: return predict
 
 
 class Prediction(Setter):
