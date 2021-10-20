@@ -25,7 +25,16 @@ ERRORS = {
 
 class MyGridSearch():
 
-    def __init__(self, df = pd.DataFrame(), regr = None, parameters = None, train_test_split = 0.8, target = "target", error = "mae"):
+    def __init__(
+            self, 
+            df = pd.DataFrame(), 
+            regr = None, 
+            parameters = None, 
+            train_test_split = 0.8, 
+            target = "target", 
+            error = "mae",
+            error_ascending = True
+        ):
         
         assert type(df) == pd.DataFrame, "Df no es tipo Pandas DataFrame. Se entrego {}.".format( type(df) )
 
@@ -36,6 +45,7 @@ class MyGridSearch():
         self.train_test_split = train_test_split
         self.cache = []
         self.target = target
+        self.error_ascending = error_ascending
 
         self.error = error
 
@@ -122,7 +132,7 @@ class MyGridSearch():
         
         self.cache = pd.DataFrame( self.cache )
         self.cache.columns = ["param", "error"]
-        self.cache = self.cache.sort_values(by = "error", ascending = True).reset_index(drop = True)
+        self.cache = self.cache.sort_values(by = "error", ascending = self.error_ascending).reset_index(drop = True)
         self.best = self.cache.iloc[0]
 
         if debug: print( self.best )
