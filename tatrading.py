@@ -120,3 +120,6 @@ class Estrategia():
     def evaluacion(self, period = 1):
         self.inst.df["net"] = self.inst.df[ self.col ].prod(axis = 1).apply(lambda x : 1 if x > 0 else 0) * self.inst.df["Close"].pct_change(periods = period)
         self.inst.df["acc"] = ( self.inst.df["net"] + 1 ).cumprod()
+
+    def optimize(self):
+        raise NotImplementedError
