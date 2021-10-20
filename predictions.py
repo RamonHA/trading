@@ -126,13 +126,13 @@ class MyGridSearch():
 
         if debug: print( self.best )
     
-    def predict(self):
+    def predict(self, one = True):
         assert self.best is not None, "No se ha corrido la prueba test"
 
         for j, v in self.best["param"].items(): self.regr.__dict__[j] = v
 
-        train = self.df.iloc[ :-1 ]
-        test = self.df.iloc[ -1: ]
+        if one: train, test = self.df.iloc[ :-1 ], self.df.iloc[ -1: ]
+        else: train, test = self.train_test()
 
         train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
 
