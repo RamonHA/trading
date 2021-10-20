@@ -77,8 +77,7 @@ def estrategias_analisis( i, estrategia, parametros, fin, frecuencia, fiat, brok
 
     inst = Instrumento( i, inicio, fin, frecuencia = frecuencia, fiat = fiat, broker = broker, desde_api = desde_api )
 
-    if inst.df is None or len(inst.df) <= max_valor:
-        return None
+    if inst.df is None or len(inst.df) <= max_valor: return None
 
     if estrategia == "Momentum":
         aux = inst.df.iloc[-parametros[0]:]['Close'].pct_change() + 1    
@@ -134,7 +133,7 @@ def estrategias_analisis( i, estrategia, parametros, fin, frecuencia, fiat, brok
 
     return aux
 
-def estrategias_filtros( i, estrategia, parametros, fin, frecuencia, fiat, broker, desde_api = False, **kwargs):
+def estrategias_filtros( i, fin, frecuencia, fiat, broker, desde_api = False, estrategia = None, parametros = None, **kwargs):
     """  
         Muchas estategias tienen limites inferiores y superiores para indicar si es tiempo de comprar o vender
 
@@ -189,6 +188,40 @@ def estrategias_filtros( i, estrategia, parametros, fin, frecuencia, fiat, broke
     return aux
 
 def estrategias_retornos( i, tiempo, funcion, fin, frecuencia, fiat, broker, desde_api = False, sentimiento = False ):
+    """  
+        Este tipo de estrategias se encargara de la prediccion de retornos
+        del instrumento indicado.
+
+        Se tendra que ingresar una Funcion que tome como parametro un objeto Instrumento
+        Este generara el modelo de ML correspondiente, y hara la prediccion a como este lo vea
+        conveniente.
+            La razon por la que ingresar el Instrumento, es que el tiempo, la ventana de tiempo
+            se ira moviendo de acuerdo a la simulacion.
+            Haciendolo asi, la funcion a programar no tendra que preocuparse por esto.
+    """
+
+    periodo_analisis, intervalo_analisis = re.findall(r'(\d+)(\w+)', frecuencia)[0]
+    periodo_analisis = int(periodo_analisis)
+
+    if intervalo_analisis == "m":
+        inicio = fin - relativedelta(months = tiempo*periodo_analisis) 
+        inicio = inicio.replace(day = 1)
+    elif intervalo_analisis == "w":
+        inicio = fin - timedelta(days = 7*tiempo*periodo_analisis)
+    elif intervalo_analisis == "d":
+        inicio = fin - timedelta(days = tiempo*periodo_analisis ) 
+    elif intervalo_analisis == "h":
+        inicio = fin - timedelta(seconds = 3600*tiempo*periodo_analisis )
+
+    # print(i, inicio, fin, frecuencia, fiat, broker)
+    inst = Instrumento( i, inicio, fin, frecuencia = frecuencia, fiat = fiat, broker = broker, desde_api = desde_api, sentimiento = sentimiento)
+
+    if inst.df is None or len(inst.df) <= 3:
+        return None
+
+    return funcion(inst)
+
+def estrategia( i, tiempo, funcion, fin, frecuencia, fiat, broker, desde_api = False, sentimiento = False ):
     """  
         Este tipo de estrategias se encargara de la prediccion de retornos
         del instrumento indicado.
@@ -392,81 +425,46 @@ class Proceso(Setter):
         # Diccionario que sera Regresado de la funcion
         # Contendra el nombre del instrumento y su correspondiente valor
         
-
         for a in self.analisis:
             next_instrumentos = {}
-            to_eliminate = []
             frecuecia_de_analisis = self.analisis[a].get("frecuencia", self.frecuencia_analisis)
+
+            pool = mp.Pool(mp.cpu_count() // 2)
+            r = pool.starmap( 
+                    estrategia, 
+                    [( 
+                        i, 
+                        self.analisis[a]["tiempo"], 
+                        self.analisis[a]["funcion"], 
+                        fin, 
+                        frecuecia_de_analisis, 
+                        self.fiat, 
+                        self.broker, 
+                        desde_api, 
+                        kwargs.get("sentimiento", False) 
+                    ) for i in or_instrumentos ]            
+                )
+            pool.close()
+
+            next_instrumentos = { inst:valor for inst, valor in zip(or_instrumentos, r) if valor }
 
             if self.analisis[a]["tipo"] == "analisis":
 
-                r = [ estrategias_analisis( i, a, self.analisis[a]["parametros"], fin, frecuecia_de_analisis, self.fiat, self.broker, desde_api ) for i in or_instrumentos ]
-
-                # pool = mp.Pool(mp.cpu_count() // 2)
-                # r = pool.starmap( self._estrategias_analisis, [ (i, a, self.analisis[a]["parametros"], fin, desde_api ) for i in or_instrumentos ] )
-                # pool.close()
-            
-                for inst, valor in zip(or_instrumentos, r):                    
-                    if not valor:
-                        continue
-
-                    next_instrumentos[inst] = valor
-                
                 # False: Menor a Mayor 
                 # True: Mayor a Menor
                 n = len(or_instrumentos)
                 n = n if "qty" not in self.analisis[a] else math.ceil( n*self.analisis[a]["qty"] )
 
-                next_instrumentos = sorted( next_instrumentos.items(), 
+                next_instrumentos = { k:v for k,v in sorted( 
+                                            next_instrumentos.items(), 
                                             key = lambda item: item[1] , 
                                             reverse = True if self.analisis[a]["mejor"] == "mayor" else False 
-                                    )[ 0: n ]
-                next_instrumentos = { k:v for k,v in next_instrumentos }
+                                        )[ 0: n ] 
+                                    }
 
-                or_instrumentos = copy(next_instrumentos)
+            or_instrumentos = copy(next_instrumentos)
 
-            elif self.analisis[a]["tipo"] == "filtro":
-
-                r = [ estrategias_filtros( i, a, self.analisis[a]["parametros"], fin, frecuecia_de_analisis, self.fiat, self.broker, desde_api ) for i in or_instrumentos ]
-
-                # pool = mp.Pool(mp.cpu_count() // 2)
-                # r = pool.starmap( self._estrategias_filtros, [ (i, a, self.analisis[a]["parametros"], fin, desde_api ) for i in or_instrumentos ] )
-                # pool.close()
-                
-                for inst, valor in zip(or_instrumentos, r):                    
-                    if not valor:
-                        to_eliminate.append(inst)
-                        continue
-                        
-                    next_instrumentos[inst] = valor
-
-                # Eliminar si hace falta
-                for i in to_eliminate:
-                    or_instrumentos.pop( i , None)
-
-            elif self.analisis[a]["tipo"] == "prediccion":
-
-                pool = mp.Pool(mp.cpu_count() // 2)
-                r = pool.starmap( estrategias_retornos, 
-                                [ ( i, self.analisis[a]["tiempo"], self.analisis[a]["funcion"], fin, frecuecia_de_analisis, self.fiat, self.broker, desde_api, kwargs.get("sentimiento", False) ) for i in or_instrumentos ] 
-                                )
-                pool.close()
-            
-                for inst, valor in zip(or_instrumentos, r):                    
-                    if not valor:
-                        continue
-
-                    # Esto se tiene que manejar ya cuando se va a balancear
-                    # if self.analisis[a]["filtro"] == "positivos" and valor < 0:
-                    #     # print(inst, valor)
-                    #     continue
-
-                    next_instrumentos[inst] = valor
-
-                or_instrumentos = copy(next_instrumentos)
-
-
-        return next_instrumentos
+        return next_instrumentos # Al fin: or_instrumentos = next_instrumentos
 
     def preanalisis(
             self, 
