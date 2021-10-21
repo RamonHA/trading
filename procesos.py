@@ -1005,9 +1005,9 @@ class Simulacion(Proceso):
         assert not( exp_return != dynamic_target ), "Si dynamic_target entonces debe ser exp_return."
 
         self.tiempo_testeo_balanceo = kwargs.get("tiempo_testeo", self.tiempo_analisis)
-        self.frecuecia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
+        self.frecuencia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
 
-        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, self.frecuecia_balanceo, tiempo_balanceo )
+        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, self.frecuencia_balanceo, tiempo_balanceo )
 
         if optimizacion == "EfficientReturn":
             aux += ( "_" + str(  kwargs["target_return"] if not dynamic_target else "dynamictarget"  ) )
@@ -1056,7 +1056,7 @@ class Simulacion(Proceso):
         acumulado = 1
         self.df = []
 
-        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', self.frecuecia_balanceo)[0]
+        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', self.frecuencia_balanceo)[0]
         periodo_balanceo = int( periodo_balanceo )
 
         if self.broker in ["Tesis", "GBM"] and kwargs.get("filtro_tipo", "All") == "Greatest": 
@@ -1321,9 +1321,9 @@ class Bot(Proceso):
 
         self.min_qty = min_qty
         self.tiempo_testeo_balanceo = kwargs.get("tiempo_testeo", self.tiempo_analisis)
-        self.frecuecia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
+        self.frecuencia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
 
-        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', self.frecuecia_balanceo)[0]
+        periodo_balanceo, intervalo_balanceo = re.findall(r'(\d+)(\w+)', self.frecuencia_balanceo)[0]
         periodo_balanceo = int( periodo_balanceo )
 
         if intervalo_balanceo == "d":
