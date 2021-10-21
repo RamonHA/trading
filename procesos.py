@@ -436,7 +436,7 @@ class Proceso(Setter):
                 print(data)
                 
             if dynamic_target:
-                pos = data[ data > 0  ].sort_values( asceding = False ).head( int(1 // min_position) ) 
+                pos = data[ data > 0  ].sort_values( ascending = False ).head( int(1 // min_position) ) 
                 kwargs[ "target_return" ] = round( pos.median(), 3 )
 
         allocation, qty = {}, {}, {}
