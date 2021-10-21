@@ -1144,11 +1144,11 @@ class Simulacion(Proceso):
                                         inicio, 
                                         fin, 
                                         kwargs.get("frecuencia_testeo", "1d"),
-                                        verbose = kwargs.get("testeo_print", True),
+                                        verbose = kwargs.get("testeo_print", False),
                                         dropdown = dropdown,
                                         **kwargs
                             )
-            print(total_return)
+            
             acumulado *= ( total_return + 1 )
 
             valor_portafolio *= ( total_return + 1 )
@@ -1167,7 +1167,7 @@ class Simulacion(Proceso):
 
         self.df.to_csv( self.pwd_balanceo.format( "resumen.csv" ) )
 
-    def test(self, allocation, inicio, fin, frecuencia, verbose = True, dropdown = None,**kwargs):
+    def test(self, allocation, inicio, fin, frecuencia, verbose = False, dropdown = None,**kwargs):
         """  
             dropdown (float): Procentaje limite de caida para vender antes de tiempo
         """
