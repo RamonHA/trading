@@ -439,7 +439,7 @@ class Proceso(Setter):
                 pos = data[ data > 0  ].sort_values( ascending = False ).head( int(1 // min_position) ) 
                 kwargs[ "target_return" ] = round( pos.median(), 3 )
 
-        allocation, qty = {}, {}, {}
+        allocation, qty = {}, {}
 
         try:
             allocation, qty = self.optimizacion_portafolio(
