@@ -1238,8 +1238,7 @@ class Simulacion(Proceso):
     
     def recopilador_resultados(self, path = None):
         path = path if path is not None else PWD( "/{}/Resultados/{}/{}_{}".format( self.broker, self.fiat, self.frecuencia_analisis, self.tiempo_analisis ) )
-
-        dicc = pd.DataFrame.from_dict( bring_results(path) , orient="index").reset_index().rename(columns = {"index":"route"})
+        dicc = pd.DataFrame.from_dict( bring_results(path, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
 
         return dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
 
