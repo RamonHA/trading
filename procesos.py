@@ -457,6 +457,8 @@ class Proceso(Setter):
             print("No se pudo generar un portafolio.\nException: {}".format(e))
             return None, None
         
+        if allocation is None or qty is None or len(allocation) == 0 or len(qty) == 0: return None, None
+
         if self.broker in ["Binance", "Bitso"]:
             qty = { i:(v*10**(self.octetos.get(i, 1))) for i, v in qty.items() }
 
