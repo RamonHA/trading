@@ -1131,6 +1131,8 @@ class Simulacion(Proceso):
                 **kwargs
             )            
 
+            if allocation is None or qty is None or len(allocation) == 0 or len(qty) == 0: continue
+
             if if_save:
                 with open( self.pwd_balanceo.format( str(inicio) + "_" + str(fin) + "_allocation.json" ), "w" ) as fp:
                     json.dump( 
