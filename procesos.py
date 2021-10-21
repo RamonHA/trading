@@ -439,10 +439,10 @@ class Proceso(Setter):
                 pos = data[ data > 0  ].sort_values( ascending = False ).head( int(1 // min_position) ) 
                 kwargs[ "target_return" ] = round( pos.median(), 3 )
 
-        allocation, qty = {}, {}
+        allocation, qty, pct = {}, {}, {}
 
         try:
-            allocation, qty = self.optimizacion_portafolio(
+            allocation, qty, pct = self.optimizacion_portafolio(
                                                 df, 
                                                 valor_portafolio = valor_portafolio,
                                                 exp_return = data if exp_return else None,  
@@ -455,14 +455,14 @@ class Proceso(Setter):
 
         except Exception as e:
             print("No se pudo generar un portafolio.\nException: {}".format(e))
-            return None, None
+            return None, None, None
         
-        if allocation is None or qty is None or len(allocation) == 0 or len(qty) == 0: return None, None
+        if allocation is None or len(allocation) == 0: return None, None, None
 
         if self.broker in ["Binance", "Bitso"]:
             qty = { i:(v*10**(self.octetos.get(i, 1))) for i, v in qty.items() }
 
-        return allocation, qty
+        return allocation, qty, pct
         
     def optimizacion_portafolio(self,
                 df, 
@@ -795,14 +795,13 @@ class Proceso(Setter):
                     return None, None
         else:
             allocation = cleaned_weights
-            
-        total_money = 0
-        for i in allocation:
-            total_money += ( latest_prices[i]*allocation[i] )
 
         qty = { i:( v*latest_prices[i] ) for i,v in allocation.items() }
+        
+        total_money = sum(qty.values())
+        pct = { i:(v/total_money) for i,v in qty.items() }
 
-        return allocation, qty
+        return allocation, qty, pct
 
     # Funciones aux
     @property
@@ -1118,7 +1117,7 @@ class Simulacion(Proceso):
 
             if data is None: continue 
 
-            allocation, qty = self._balanceo(
+            allocation, qty, pct = self._balanceo(
                 data = data,
                 inicio = inicio_analisis,
                 fin = fin_analisis,
@@ -1131,32 +1130,32 @@ class Simulacion(Proceso):
                 **kwargs
             )            
 
-            if allocation is None or qty is None or len(allocation) == 0 or len(qty) == 0: continue
+            if allocation is None or len(allocation) == 0: continue
 
             if if_save:
                 with open( self.pwd_balanceo.format( str(inicio) + "_" + str(fin) + "_allocation.json" ), "w" ) as fp:
                     json.dump( 
-                        {"allocation":allocation, "qty":qty}, 
+                        {"allocation":allocation, "qty":qty, "pct":pct}, 
                         fp 
                     )
 
             # Testeo
-            total_return = self.test( allocation, 
+            total_return = self.test(   pct, 
                                         inicio, 
                                         fin, 
                                         kwargs.get("frecuencia_testeo", "1d"),
-                                        verbose = kwargs.get("testeo_print", False),
+                                        verbose = kwargs.get("testeo_print", True),
                                         dropdown = dropdown,
                                         **kwargs
                             )
-
+            print(total_return)
             acumulado *= ( total_return + 1 )
 
             valor_portafolio *= ( total_return + 1 )
             self.df.append([
                 inicio, fin, total_return, acumulado, valor_portafolio
             ])
-
+            print(valor_portafolio)
     
         self.df = pd.DataFrame(
                 data = self.df,
@@ -1168,7 +1167,7 @@ class Simulacion(Proceso):
 
         self.df.to_csv( self.pwd_balanceo.format( "resumen.csv" ) )
 
-    def test(self, allocation, inicio, fin, frecuencia, verbose = False, dropdown = None,**kwargs):
+    def test(self, allocation, inicio, fin, frecuencia, verbose = True, dropdown = None,**kwargs):
         """  
             dropdown (float): Procentaje limite de caida para vender antes de tiempo
         """
