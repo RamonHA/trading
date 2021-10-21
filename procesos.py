@@ -1003,7 +1003,7 @@ class Simulacion(Proceso):
                                     Default = 0.95
         """
 
-        assert not( exp_return != dynamic_target ), "Si dynamic_target entonces debe ser exp_return."
+        if dynamic_target and not exp_return: raise ValueError("Si dynamic_target entonces debe ser exp_return.")
 
         self.tiempo_testeo_balanceo = kwargs.get("tiempo_testeo", self.tiempo_analisis)
         self.frecuencia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
