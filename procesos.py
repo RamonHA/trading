@@ -1155,7 +1155,7 @@ class Simulacion(Proceso):
             self.df.append([
                 inicio, fin, total_return, acumulado, valor_portafolio
             ])
-            print(valor_portafolio)
+            
     
         self.df = pd.DataFrame(
                 data = self.df,
