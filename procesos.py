@@ -3,6 +3,7 @@ from multiprocessing import Value
 import numpy as np
 import pandas as pd
 import re
+import os
 import time
 import math
 from datetime import date, datetime, timedelta
@@ -993,6 +994,7 @@ class Simulacion(Proceso):
                 preanalisis = True,
                 dropdown = None,
                 dynamic_target = False,
+                sobreescribir = True,
                 **kwargs
         ):
         """  
@@ -1020,19 +1022,20 @@ class Simulacion(Proceso):
         self.pwd_balanceo += "/{}"
 
         if correr_analisis:
-            self._balanceo_(
-                tiempo_balanceo = tiempo_balanceo,
-                valor_portafolio = valor_portafolio,
-                min_qty = min_qty,
-                metodo = metodo,
-                optimizacion = optimizacion,
-                if_save = if_save,
-                exp_return = exp_return,
-                preanalisis = preanalisis,
-                dropdown = dropdown,
-                dynamic_target = dynamic_target,
-                **kwargs
-            )
+            if sobreescribir or not os.path.isfile( self.pwd_balanceo.format("resumen.csv") ):
+                self._balanceo_(
+                    tiempo_balanceo = tiempo_balanceo,
+                    valor_portafolio = valor_portafolio,
+                    min_qty = min_qty,
+                    metodo = metodo,
+                    optimizacion = optimizacion,
+                    if_save = if_save,
+                    exp_return = exp_return,
+                    preanalisis = preanalisis,
+                    dropdown = dropdown,
+                    dynamic_target = dynamic_target,
+                    **kwargs
+                )
     
     def _balanceo_(
             self, 
