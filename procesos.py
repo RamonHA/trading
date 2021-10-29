@@ -945,7 +945,7 @@ class Simulacion(Proceso):
         self.pwd_analisis += "/{}"
 
         if self.intervalo_analisis == "m":
-            self.inicio = self.fin - relativedelta(months = self.cant_simulaciones - 1)
+            self.inicio = self.fin - relativedelta(months = self.periodo_analisis*tiempo_testeo*self.cant_simulaciones - 1)
             self.inicio = self.inicio.replace(day = 1)
         elif self.intervalo_analisis == "w":
             self.inicio = self.fin - timedelta(days = 7*self.cant_simulaciones*self.periodo_analisis*tiempo_testeo)
