@@ -430,7 +430,6 @@ class Proceso(Setter):
             df.interpolate(method = "linear", inplace = True)
 
             if df.isnull().any().any():
-                df.to_csv("test.csv")
                 df.drop(
                     columns = list( df.isnull().any()[df.isnull().any()].index ),
                     inplace = True
