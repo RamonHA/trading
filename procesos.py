@@ -351,7 +351,8 @@ class Proceso(Setter):
             return {
                 "All":analisis,
                 "Positivos":{ i:v for i,v in analisis.items() if v > 0 },
-                "Greatest":{k:v for k, v in sorted(analisis.items(), key = lambda item:item[1], reverse = True)[ 0: kwargs.get("filtro_qty", 3)] if v > 0}
+                "Greatest":{k:v for k, v in sorted(analisis.items(), key = lambda item:item[1], reverse = True)[ 0: kwargs.get("filtro_qty", 3)] if v > 0},
+                "Lowest":{k:v for k, v in sorted(analisis.items(), key = lambda item:item[1], reverse = False)[ 0: kwargs.get("filtro_qty", 3)] if v > 0},
             }[filtro]
 
         elif tipos in [dict]:
@@ -365,7 +366,7 @@ class Proceso(Setter):
             elif filtro == "Greatest":
                 aux = pd.DataFrame()
                 for i in analisis:
-                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).iloc[ -kwargs["filtro_qty"][i]: ]
+                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).sort_values(by = 0, ascending=True).iloc[ -kwargs["filtro_qty"][i]: ]
                     aux = pd.concat([aux, auxx[ auxx[0] > 0 ]], axis = 0)
                 
                 aux = aux.to_dict(orient = "index")
@@ -379,6 +380,17 @@ class Proceso(Setter):
                 #                                 )[ 0: kwargs["cps"][i] ] if k > 0 
                 #             }   
                 return aux
+            
+            elif filtro == "Lowest":
+                aux = pd.DataFrame()
+                for i in analisis:
+                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).sort_values(by = 0, ascending=False).iloc[ -kwargs["filtro_qty"][i]: ]
+                    aux = pd.concat([aux, auxx[ auxx[0] > 0 ]], axis = 0)
+                
+                aux = aux.to_dict(orient = "index")
+
+                return aux
+
 
             auxx = {}
             for i in aux: auxx.update( aux[i] )
