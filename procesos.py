@@ -245,7 +245,6 @@ class Proceso(Setter):
             frecuecia_de_analisis = self.analisis[a].get("frecuencia", self.frecuencia_analisis)
 
             pool = mp.Pool(mp.cpu_count() // 2)
-
             r = pool.starmap( 
                     estrategia, 
                     [( 
