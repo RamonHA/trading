@@ -215,6 +215,7 @@ class Instrumento(TimeSeries):
         # self.df = pd.DataFrame()
         self.broker = broker
 
+        self.name = simbolo             # Lo mismo que la variable simbolo, pero solo se guarda para no tener el Ticker como tal, asuntos de Tesis, eventualmente se eliminara
         self.simbolo = simbolo
         self.fiat = fiat                # fiat no puede ser None
         
