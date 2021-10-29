@@ -476,30 +476,6 @@ class Proceso(Setter):
             qty = { i:(v*10**(self.octetos.get(i, 1))) for i, v in qty.items() }
 
         return allocation, qty, pct
-        
-    def optimizacion_portafolio(self,
-                df, 
-                valor_portafolio,
-                exp_return = None, 
-                metodo = "EfficientFrontier",
-                optimizacion = "MaxSharpe",
-                tiempo_testeo = None,
-                **kwargs
-        ):
-        if metodo in ["EfficientFrontier", "EfficientSemivariance", "EfficientCVaR", "EfficientCDaR"]:
-            func = self._pyportfolioopt
-        else:
-            func = self._riskfolio
-        
-        return func(
-                        df,  
-                        valor_portafolio,
-                        exp_return,  
-                        metodo,
-                        optimizacion,
-                        tiempo_testeo,
-                        **kwargs
-                    )
 
     # Funciones de balanceo
 
