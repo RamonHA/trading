@@ -312,7 +312,7 @@ class Proceso(Setter):
 
         if len(data) ==0: return None, None
 
-        data = self.filtro( data, kwargs.get("filtro_tipo", "All"), **kwargs)
+        data = self.filtro( data, kwargs.get("filtro", "All"), **kwargs)
 
         if len(data) == 0: return None, None
 
@@ -430,8 +430,9 @@ class Proceso(Setter):
             df.interpolate(method = "linear", inplace = True)
 
             if df.isnull().any().any():
+                df.to_csv("test.csv")
                 df.drop(
-                    columns = list( df.isnull().any().any()[df.isnull().any().any()].index ),
+                    columns = list( df.isnull().any()[df.isnull().any()].index ),
                     inplace = True
                 )
         
