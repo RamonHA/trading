@@ -245,6 +245,7 @@ class Proceso(Setter):
             frecuecia_de_analisis = self.analisis[a].get("frecuencia", self.frecuencia_analisis)
 
             pool = mp.Pool(mp.cpu_count() // 2)
+
             r = pool.starmap( 
                     estrategia, 
                     [( 
@@ -311,7 +312,7 @@ class Proceso(Setter):
 
         if len(data) ==0: return None, None
 
-        data = self.filtro( data, kwargs.get("filtro_tipo", "All"), **kwargs)
+        data = self.filtro( data, kwargs.get("filtro", "All"), **kwargs)
 
         if len(data) == 0: return None, None
 
@@ -351,7 +352,8 @@ class Proceso(Setter):
             return {
                 "All":analisis,
                 "Positivos":{ i:v for i,v in analisis.items() if v > 0 },
-                "Greatest":{k:v for k, v in sorted(analisis.items(), key = lambda item:item[1], reverse = True)[ 0: kwargs.get("filtro_qty", 3)] if v > 0}
+                "Greatest":{k:v for k, v in sorted(analisis.items(), key = lambda item:item[1], reverse = True)[ 0: kwargs.get("filtro_qty", 3)] if v > 0},
+                "Lowest":{k:v for k, v in sorted(analisis.items(), key = lambda item:item[1], reverse = False)[ 0: kwargs.get("filtro_qty", 3)] if v > 0},
             }[filtro]
 
         elif tipos in [dict]:
@@ -365,7 +367,7 @@ class Proceso(Setter):
             elif filtro == "Greatest":
                 aux = pd.DataFrame()
                 for i in analisis:
-                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).iloc[ -kwargs["filtro_qty"][i]: ]
+                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).sort_values(by = 0, ascending=True).iloc[ -kwargs["filtro_qty"][i]: ]
                     aux = pd.concat([aux, auxx[ auxx[0] > 0 ]], axis = 0)
                 
                 aux = aux.to_dict(orient = "index")
@@ -379,6 +381,17 @@ class Proceso(Setter):
                 #                                 )[ 0: kwargs["cps"][i] ] if k > 0 
                 #             }   
                 return aux
+            
+            elif filtro == "Lowest":
+                aux = pd.DataFrame()
+                for i in analisis:
+                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).sort_values(by = 0, ascending=False).iloc[ -kwargs["filtro_qty"][i]: ]
+                    aux = pd.concat([aux, auxx[ auxx[0] > 0 ]], axis = 0)
+                
+                aux = aux.to_dict(orient = "index")
+
+                return aux
+
 
             auxx = {}
             for i in aux: auxx.update( aux[i] )
@@ -418,7 +431,7 @@ class Proceso(Setter):
 
             if df.isnull().any().any():
                 df.drop(
-                    columns = list( df.isnull().any().any()[df.isnull().any().any()].index ),
+                    columns = list( df.isnull().any()[df.isnull().any()].index ),
                     inplace = True
                 )
         
@@ -463,30 +476,6 @@ class Proceso(Setter):
             qty = { i:(v*10**(self.octetos.get(i, 1))) for i, v in qty.items() }
 
         return allocation, qty, pct
-        
-    def optimizacion_portafolio(self,
-                df, 
-                valor_portafolio,
-                exp_return = None, 
-                metodo = "EfficientFrontier",
-                optimizacion = "MaxSharpe",
-                tiempo_testeo = None,
-                **kwargs
-        ):
-        if metodo in ["EfficientFrontier", "EfficientSemivariance", "EfficientCVaR", "EfficientCDaR"]:
-            func = self._pyportfolioopt
-        else:
-            func = self._riskfolio
-        
-        return func(
-                        df,  
-                        valor_portafolio,
-                        exp_return,  
-                        metodo,
-                        optimizacion,
-                        tiempo_testeo,
-                        **kwargs
-                    )
 
     # Funciones de balanceo
 
@@ -933,7 +922,7 @@ class Simulacion(Proceso):
         self.pwd_analisis += "/{}"
 
         if self.intervalo_analisis == "m":
-            self.inicio = self.fin - relativedelta(months = self.cant_simulaciones - 1)
+            self.inicio = self.fin - relativedelta(months = self.periodo_analisis*tiempo_testeo*self.cant_simulaciones - 1)
             self.inicio = self.inicio.replace(day = 1)
         elif self.intervalo_analisis == "w":
             self.inicio = self.fin - timedelta(days = 7*self.cant_simulaciones*self.periodo_analisis*tiempo_testeo)

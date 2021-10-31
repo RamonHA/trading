@@ -1,6 +1,7 @@
 # Clases
 
 # Librerias generales
+from math import e
 from typing import ValuesView
 import pandas as pd
 import numpy as np
@@ -215,6 +216,7 @@ class Instrumento(TimeSeries):
         # self.df = pd.DataFrame()
         self.broker = broker
 
+        self.name = simbolo             # Lo mismo que la variable simbolo, pero solo se guarda para no tener el Ticker como tal, asuntos de Tesis, eventualmente se eliminara
         self.simbolo = simbolo
         self.fiat = fiat                # fiat no puede ser None
         
@@ -275,6 +277,8 @@ class Instrumento(TimeSeries):
         elif self.broker == "Tesis":
             if value in Tesis and "ticker" in Tesis[value]:
                 self._simbolo = Tesis[value]["ticker"]
+            else:
+                self._simbolo = None
         
         # Solo entrara en el ultimo caso
         elif value is None:
