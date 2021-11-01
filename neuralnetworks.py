@@ -52,7 +52,7 @@ class NN():
 
     def scale(self, train, test, scaler = MinMaxScaler(feature_range=(-1, 1)) ):
         
-        assert callable(scaler), "scaler tiene que ser una funcion callable, se entego {}".format(type(scaler))
+        # assert callable(scaler), "scaler tiene que ser una funcion callable, se entego {}".format(type(scaler))
 
         scaler = scaler.fit(train)
         train_scaled = scaler.transform(train)
