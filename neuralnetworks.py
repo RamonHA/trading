@@ -71,6 +71,8 @@ class NN():
 
             X, y = train[:, 0:-1], train[:, -1]
         
+        X = X.reshape(X.shape[0], 1, X.shape[1])
+
         self.model = self.nn( X, y, **kwargs )
     
     def predict(self, test = None, X = None, inverse_transform = True, batch_size = 1):
