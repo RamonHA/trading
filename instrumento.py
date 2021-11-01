@@ -216,6 +216,7 @@ class Instrumento(TimeSeries):
         # self.df = pd.DataFrame()
         self.broker = broker
 
+        self.sector = None
         self.name = simbolo             # Lo mismo que la variable simbolo, pero solo se guarda para no tener el Ticker como tal, asuntos de Tesis, eventualmente se eliminara
         self.simbolo = simbolo
         self.fiat = fiat                # fiat no puede ser None
@@ -274,9 +275,11 @@ class Instrumento(TimeSeries):
             self._simbolo = value  
         elif self.broker == "GBM":
             self._simbolo = GBM[value]["ticker"] if value in GBM else value
+            self.sector = GBM[value]["sector"] if value in GBM else value
         elif self.broker == "Tesis":
             if value in Tesis and "ticker" in Tesis[value]:
                 self._simbolo = Tesis[value]["ticker"]
+                self.sector = Tesis[value]["sector"]
             else:
                 self._simbolo = None
         
