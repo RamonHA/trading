@@ -312,7 +312,7 @@ class Proceso(Setter):
 
         if len(data) ==0: return None, None
 
-        data = self.filtro( data, kwargs.get("filtro", "All"), **kwargs)
+        data = self.filtro( data, filtro = kwargs.get("filtro", "All"), filtro_qty = kwargs.get("filtro_qty", 3) )
 
         if len(data) == 0: return None, None
 
