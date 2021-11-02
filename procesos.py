@@ -997,7 +997,7 @@ class Simulacion(Proceso):
         self.tiempo_testeo_balanceo = kwargs.get("tiempo_testeo", self.tiempo_analisis)
         self.frecuencia_balanceo = kwargs.get("frecuencia", self.frecuencia_analisis)
 
-        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro_tipo", "All"), metodo, optimizacion, self.frecuencia_balanceo, tiempo_balanceo )
+        aux = "{}_{}/{}_{}_{}".format(kwargs.get("filtro", "All"), metodo, optimizacion, self.frecuencia_balanceo, tiempo_balanceo )
 
         if optimizacion == "EfficientReturn":
             aux += ( "_" + str(  kwargs["target_return"] if not dynamic_target else "dynamictarget"  ) )
