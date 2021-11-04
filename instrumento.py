@@ -945,9 +945,7 @@ class Instrumento(TimeSeries):
         df = copy(self.df)
         df["o"] = self.df["Open"].diff().apply(lambda x : -1 if x > 0 else 1)
         df["c"] = self.df["Close"].diff().apply(lambda x : 1 if x > 0 else -1)
-        df["eng"] = df["o"] + df["c"]
-
-        return df["eng"].apply( lambda x : {2:"bullish", -2:"bearish"}.get( int(x), 0 ) )
+        return df["o"] + df["c"]
 
     def force_index(self, length, close='Close', volume='Volume'):
         """ Regresa una SERIe del Force Index 
