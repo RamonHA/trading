@@ -242,7 +242,6 @@ class Proceso(Setter):
         
         for a in self.analisis:
             next_instrumentos = {}
-            frecuecia_de_analisis = self.analisis[a].get("frecuencia", self.frecuencia_analisis)
 
             pool = mp.Pool(mp.cpu_count() // 2)
 
@@ -253,7 +252,7 @@ class Proceso(Setter):
                         self.analisis[a]["tiempo"], 
                         self.analisis[a]["funcion"], 
                         fin, 
-                        frecuecia_de_analisis, 
+                        self.analisis[a].get("frecuencia", self.frecuencia_analisis), 
                         self.fiat, 
                         self.broker, 
                         desde_api, 
