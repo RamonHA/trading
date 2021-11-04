@@ -240,7 +240,7 @@ class Proceso(Setter):
         # Diccionario que sera Regresado de la funcion
         # Contendra el nombre del instrumento y su correspondiente valor
         
-        for a in self.analisis:
+        for a, v in self.analisis.items():
             next_instrumentos = {}
 
             pool = mp.Pool(mp.cpu_count() // 2)
@@ -249,10 +249,10 @@ class Proceso(Setter):
                     estrategia, 
                     [( 
                         i, 
-                        self.analisis[a]["tiempo"], 
-                        self.analisis[a]["funcion"], 
+                        v["tiempo"], 
+                        v["funcion"], 
                         fin, 
-                        self.analisis[a].get("frecuencia", self.frecuencia_analisis), 
+                        v.get("frecuencia", self.frecuencia_analisis), 
                         self.fiat, 
                         self.broker, 
                         desde_api, 
@@ -263,17 +263,17 @@ class Proceso(Setter):
 
             next_instrumentos = { inst:valor for inst, valor in zip(or_instrumentos, r) if valor }
 
-            if self.analisis[a]["tipo"] == "analisis":
+            if v["tipo"] == "analisis":
 
                 # False: Menor a Mayor 
                 # True: Mayor a Menor
-                n = len(or_instrumentos)
-                n = n if "qty" not in self.analisis[a] else math.ceil( n*self.analisis[a]["qty"] )
+                n = v.get("qty", 1.0)
+                n = math.ceil( len(or_instrumentos)*n  ) if isinstance(n, float) else n
 
                 next_instrumentos = { k:v for k,v in sorted( 
                                             next_instrumentos.items(), 
                                             key = lambda item: item[1] , 
-                                            reverse = True if self.analisis[a]["mejor"] == "mayor" else False 
+                                            reverse = True if v.get("mejor", "mayor") == "mayor" else False 
                                         )[ 0: n ] 
                                     }
 
