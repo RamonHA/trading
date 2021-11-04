@@ -1,6 +1,7 @@
 # Clases
 
 # Librerias generales
+from copy import copy
 from math import e
 from typing import ValuesView
 import pandas as pd
@@ -940,6 +941,14 @@ class Instrumento(TimeSeries):
         return ta.volume.EaseOfMovementIndicator(high=self.df[high], low=self.df[low], \
             volume=self.df[volume], window=length).sma_easy_of_movement()
     
+    def engulfing(self):
+        df = copy(self.df)
+        df["o"] = self.df["Open"].diff().apply(lambda x : -1 if x > 0 else 1)
+        df["c"] = self.df["Close"].diff().apply(lambda x : 1 if x > 0 else -1)
+        df["eng"] = df["o"] + df["c"]
+
+        return df["eng"].apply( lambda x : {2:"bullish", -2:"bearish"}.get( int(x), 0 ) )
+
     def force_index(self, length, close='Close', volume='Volume'):
         """ Regresa una SERIe del Force Index 
         
