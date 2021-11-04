@@ -1064,7 +1064,7 @@ class Instrumento(TimeSeries):
 
         return stoch_object.stoch(), stoch_object.stoch_signal()
     
-    def support_resistance(self, length, close = 'Close'):
+    def support_resistance(self, length, support = 'High', resistance = "Low"):
         """ Regrea dos series indicando los MAXIMOS y 
             MINIMOS de una seria un periodo LENGTH 
             
@@ -1075,7 +1075,7 @@ class Instrumento(TimeSeries):
                 - Si llega a la zona de soporte, y baja.
                 - Si llega a la zona de resistencia y la rompe. 
             """
-        return self.df[close].rolling(length).max(), self.df[close].rolling(length).min()
+        return self.df[support].rolling(length).max(), self.df[resistance].rolling(length).min()
 
     def tema(self, length, target = 'Close'):
         """ Regresa un SERIE de una Triple EMA 
