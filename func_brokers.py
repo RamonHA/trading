@@ -90,7 +90,7 @@ def data_instrumentos( broker ):
     
     return data
 
-def descarga_historica(broker, fiat, frecuencia):
+def descarga_historica(broker, fiat, frecuencia, inicio = date(1990, 1, 1)):
 
     carpeta = {
         "1min":"Minutos",
@@ -116,7 +116,7 @@ def descarga_historica(broker, fiat, frecuencia):
         try:
             inst = Instrumento(
                 simbolo = i,
-                inicio = date(1990, 1, 1),
+                inicio = inicio,
                 fin = date.today() - timedelta(days = 1),
                 frecuencia = frecuencia,
                 broker = broker,
