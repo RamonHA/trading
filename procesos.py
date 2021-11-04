@@ -263,7 +263,7 @@ class Proceso(Setter):
 
             next_instrumentos = { inst:valor for inst, valor in zip(or_instrumentos, r) if valor }
 
-            if v["tipo"] == "analisis":
+            if v.get("tipo", "prediccion") == "analisis":
 
                 # False: Menor a Mayor 
                 # True: Mayor a Menor
