@@ -1,2 +1,4 @@
-tokens.py
+trading/tokens.py
+trading/__pycache__/
 __pycache__/
+tests/
