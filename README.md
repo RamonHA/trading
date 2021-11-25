@@ -10,10 +10,17 @@ At the moment, this library can work with:
 
 Work in progress to integrate more.
 
-### Simulations
+## Configuration
+The system, for each broker is already initualize with certain assets.
+If in desired to change or expand such universe of assets follow:
+1. ... (Add instructions)
+
+If in desired to use for Bot configuration, see "Bot setting" section.
+
+## Simulations
 See examples folder.
 
-### Bot setting
+## Bot setting
 If want direct contact with one of the APIs follow this steps:
 
 1.  ..... (Add instructions)
