@@ -1,5 +1,4 @@
-# Trading
-## Environment for research, simulations, and bot setting.
+# Trading Environment for research, simulations, and bot setting.
 
 At the moment, this library can work with:
 - Stocks obtained from Yahoo Finance:
@@ -9,6 +8,17 @@ At the moment, this library can work with:
   - Bitso
 
 Work in progress to integrate more.
+
+## Installation
+Recommend use of Virtual Environment
+
+You can clone repository:
+git clone https://github.com/RamonHA/trading.git
+cd trading
+pip install .
+cat requirements.txt | 
+
+Requierements file may take time.
 
 ## Configuration
 The system, for each broker is already initualize with certain assets.
