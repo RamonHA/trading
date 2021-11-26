@@ -37,11 +37,11 @@ def set_keys():
 
     set_keys_f(args.name, args.apikey, args.secretkey)
 
-def set_path_f(pwd):
+def set_pwd_f(pwd):
     from .func_aux import folder_creation
     folder_creation(pwd)
     
-def set_path():
+def set_pwd():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--pwd", det = "pwd", help = "Folder destination where asset historic data, simulation and results are to be safe. If does not exist, it will create it.")
@@ -51,5 +51,5 @@ def set_path():
     if args.pwd is None:
         raise ValueError("No pwd added")
     
-    set_path_f(args.pwd)
+    set_pwd_f(args.pwd)
 

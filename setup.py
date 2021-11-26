@@ -11,7 +11,8 @@ setup(
     packages=find_packages(),
     entry_points = {  # Later on set descarga_historica
         "console_scripts":[
-            "set_keys = trading.config:set_keys"
+            "set_keys = trading.config:set_keys",
+            "set_pwd = trading.config:set_pwd"
         ]
     }
 )
