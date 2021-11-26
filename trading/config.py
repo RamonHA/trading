@@ -4,10 +4,9 @@ import pkg_resources
 def set_keys_f(name, api_key, secret_key):
     import json 
 
-    pwd = pkg_resources.resource_filename("<trading>", "tokens.json")
-    print(pwd)
+    pwd = pkg_resources.resource_filename("trading", "tokens.json")
 
-    with open("tokens.json", 'r') as fp:
+    with open(pwd, 'r') as fp:
         data = json.load(fp)
     
     data[name] = {
@@ -15,7 +14,7 @@ def set_keys_f(name, api_key, secret_key):
         "secret_key" : secret_key 
     }
 
-    with open("tokens.json", "w") as fp:
+    with open(pwd, "w") as fp:
         json.dump( data, fp )
 
     print("{}'s tokens updated correctly!")
