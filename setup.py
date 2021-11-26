@@ -9,9 +9,9 @@ setup(
     url="https://github.com/RamonHA/trading",
     install_requieres=[],
     packages=find_packages(),
-    # entry_points = {  # Later on set descarga_historica
-    #     "console_scripts":[
-    #         "historic_download = trading.descarga_historica"
-    #     ]
-    # }
+    entry_points = {  # Later on set descarga_historica
+        "console_scripts":[
+            "set_keys = trading.config:set_keys"
+        ]
+    }
 )
