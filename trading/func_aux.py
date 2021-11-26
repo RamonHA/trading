@@ -57,4 +57,3 @@ def bring_results(pwd, data = {}):
                 data = bring_results( pwd + "/{}".format(i), data )
 
     return data
-

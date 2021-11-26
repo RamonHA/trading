@@ -20,7 +20,7 @@ cat requirements.txt |
 
 Requierements file may take time.
 
-## Configuration
+### Configuration
 The system, for each broker is already initualize with certain assets.
 If in desired to change or expand such universe of assets follow:
 1. ... (Add instructions)
