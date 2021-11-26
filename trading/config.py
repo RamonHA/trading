@@ -4,10 +4,14 @@ import pkg_resources
 def set_keys_f(name, api_key, secret_key):
     import json 
 
-    pwd = pkg_resources.resource_filename("trading", "tokens.json")
+    try:
+        pwd = pkg_resources.resource_filename("trading", "tokens.json")
 
-    with open(pwd, 'r') as fp:
-        data = json.load(fp)
+        with open(pwd, 'r') as fp:
+            data = json.load(fp)
+    except:
+        print("Tokens.json creation")
+        data = {}
     
     data[name] = {
         "api_key" : api_key,

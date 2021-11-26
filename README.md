@@ -23,7 +23,8 @@ Requierements file may take time.
 ### Configuration
 The system, for each broker is already initualize with certain assets.
 If in desired to change or expand such universe of assets follow:
-1. ... (Add instructions)
+1. 
+2. 
 
 If in desired to use for Bot configuration, see "Bot setting" section.
 
