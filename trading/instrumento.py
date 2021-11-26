@@ -28,10 +28,10 @@ from alpha_vantage.cryptocurrencies import CryptoCurrencies
 from pytrends import dailydata
 from pytrends.request import TrendReq
 
-from .instrumentos import *
+import pkg_resources
+TOKENS = pkg_resources.resource_filename("trading", "tokens.json")
 
-# Py de llaves secretas para APIs
-from .tokens import *
+from .instrumentos import *
 
 from .func_aux import *
 
@@ -518,7 +518,7 @@ class Instrumento(TimeSeries):
         return self.df_bitso_api() if self.desde_api else self.df_bitso_archivo()
 
     def df_bitso_api_historica(self):
-        cr = CryptoCurrencies(BITSO_AV_KEY, output_format='pandas')
+        cr = CryptoCurrencies(TOKENS["alpha_vantage"]["api_key"], output_format='pandas')
         data, meta_data = cr.get_digital_currency_daily(self.simbolo, self.fiat)
 
         data.drop(columns = [i for i in data.columns if 'USD' in i], inplace = True)

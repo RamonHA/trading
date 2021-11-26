@@ -23,8 +23,8 @@ Requierements file may take time.
 ### Configuration
 The system, for each broker is already initualize with certain assets.
 If in desired to change or expand such universe of assets follow:
-1. 
-2. 
+1. Call:
+  1.1 set_keys --name <name of api (Binance, Bitso)> --apikey <APIKEY> --secretkey <SECRETKEY>
 
 If in desired to use for Bot configuration, see "Bot setting" section.
 

@@ -3,24 +3,22 @@ import os
 import pandas as pd
 import warnings
 
-from .tokens import *
-
 def PWD(pwd):
     return os.path.normpath( ROUTE.format(pwd) )
 
-def creacion_carpeta(pwd, verbose = True):
+def folder_creation(pwd, verbose = True):
     # Creacion de carpeta de la estrategia completa, para guardar los correspondientes CSV y JSON
     if not os.path.exists(pwd):
         try:
             os.makedirs(pwd)
         except:
-            raise Exception("Creacion de la carpeta {} fallo".format(pwd))
+            raise Exception("Folder creation failed {}.".format(pwd))
         else:
             if verbose:
-                print("Creacion de la carpeta {}".format(pwd))
+                print("Folder creation {}".format(pwd))
     else:
         if verbose:
-            print("Ya existe carpeta {}".format(pwd))
+            print("Folder already exists {}".format(pwd))
 
 def min_max(df, exception = []):
     

@@ -1,4 +1,5 @@
 trading/tokens.py
+trading/tokens.json
 trading/__pycache__/
 __pycache__/
 tests/
