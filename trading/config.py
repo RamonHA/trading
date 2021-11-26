@@ -1,7 +1,12 @@
 # Configuration functions
+import pkg_resources
 
 def set_keys_f(name, api_key, secret_key):
     import json 
+
+    pwd = pkg_resources.resource_filename("<trading>", "tokens.json")
+    print(pwd)
+
     with open("tokens.json", 'r') as fp:
         data = json.load(fp)
     
