@@ -11,13 +11,7 @@ import re   # Esta libreria permite dividir el str de frecuencia para
 from datetime import timedelta, datetime, date
 from dateutil import parser
 import time
-import json
-import os
-import warnings
 import yfinance as yf
-
-# MySQL bases de datos
-import sqlalchemy
 
 # Instrumento
 import ta
