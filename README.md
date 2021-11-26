@@ -13,10 +13,10 @@ Work in progress to integrate more.
 Recommend use of Virtual Environment
 
 You can clone repository:
-git clone https://github.com/RamonHA/trading.git
-cd trading
-pip install .
-cat requirements.txt | 
+- git clone https://github.com/RamonHA/trading.git
+- cd trading
+- pip install .
+- cat requirements.txt | 
 
 Requierements file may take time.
 
