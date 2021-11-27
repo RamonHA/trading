@@ -46,22 +46,9 @@ def set_keys():
 
     set_keys_f(args.name, args.apikey, args.secretkey)
 
+@config
 def set_pwd_f(pwd):
-    import json
-    from .func_aux import folder_creation
-    folder_creation(pwd)
-    
-    try:
-        pwd = pkg_resources.resource_filename("trading", "config.json")
-
-        with open(pwd, 'r') as fp:
-            data = json.load(fp)
-    except:
-        print("Config.json creation")
-        data = {}
-    
-    data["pwd"] = pwd
-
+    set_pwd_f.data["pwd"] = pwd
 
 def set_pwd():
     import argparse
