@@ -533,7 +533,7 @@ class Instrumento(TimeSeries):
 
     def df_bitso_api(self):
 
-        data = self._df_bitso_api_historica()
+        data = self.df_bitso_api_historica()
         return data.loc[self.inicio:self.fin]
 
     def df_bitso_archivo(self):

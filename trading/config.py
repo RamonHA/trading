@@ -49,12 +49,25 @@ def set_broker():
     args = parser.parse_args()
 
     if args.name is None:
-        raise ValueError("All keys must be filled,")
+        raise ValueError("Broker name must be filled")
 
     if args.commission is not None:
         set_fees(args.name, args.commission)
     else:
         set_keys(args.name, args.apikey, args.secretkey)
+
+def set_api():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--name', dest = 'name', help = 'API name (Binance, Bitso, Alpha_Vantage). If more than one word, separate it with "_".')
+    parser.add_argument('--apikey', dest = 'apikey', help = 'Api key')
+    parser.add_argument('--secretkey', dest = 'secretkey', help = 'API Secret key')
+    args = parser.parse_args()
+
+    if args.name is None:
+        raise ValueError("API name must be filled")
+
+    set_keys(args.name, args.apikey, args.secretkey)
 
 @config
 def set_pwd_f(pwd):
