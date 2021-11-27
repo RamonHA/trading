@@ -12,7 +12,8 @@ setup(
     entry_points = {  # Later on set descarga_historica
         "console_scripts":[
             "set_keys = trading.config:set_keys",
-            "set_pwd = trading.config:set_pwd"
+            "set_pwd = trading.config:set_pwd",
+            "get_config = trading.config:get_config"
         ]
     }
 )

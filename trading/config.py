@@ -17,12 +17,14 @@ def config(func):
         func(*args, **kwargs)
         with open(pwd, "w") as fp:
             json.dump( data, fp )
-        
-        print("Updated correctly!")
-    
+            
     wrapped.data = data
 
     return wrapped
+
+@config
+def get_config():
+    print( get_config.data )
 
 @config
 def set_keys_f(name, api_key, secret_key):
