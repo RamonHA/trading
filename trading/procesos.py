@@ -31,11 +31,11 @@ from binance.client import Client
 from binance.enums import *
 
 from .instrumento import Instrumento, PWD
-from .tokens import *
 from .instrumentos  import *
 from .func_aux import *
 from .func_brokers import cantidad_por_sector
 
+DATA = get_config()
 
 def estrategia( i, tiempo, funcion, fin, frecuencia, fiat, broker, desde_api = False, sentimiento = False ):
     """  
@@ -159,7 +159,6 @@ def optimizacion_portafolio(
 
     return allocation, discrete_weights
 
-
 class Setter():
     def __init__(self,
         broker,
@@ -169,7 +168,7 @@ class Setter():
         ):
         
         self.broker = broker
-        self.comision = COMISION[broker] if comision is None else comision
+        self.comision = DATA[broker.lower()] if comision is None else comision
 
         # Con property
         self.fiat = fiat
@@ -209,7 +208,6 @@ class Setter():
 
         else:
             self._fiat = value
-
 
 class Proceso(Setter):
     def __init__(self,
@@ -826,7 +824,6 @@ class Proceso(Setter):
             "MANA":8
         }
 
-
 class Simulacion(Proceso):
     def __init__(self,
         broker,
@@ -916,7 +913,7 @@ class Simulacion(Proceso):
         else:
             self.pwd_analisis = self.pwd.format( "{}_{}/{}/{}_{}/{}".format( frecuencia, tiempo_testeo, aux_analisis, aux_param, aux_mejor, carpeta ) )
 
-        creacion_carpeta(self.pwd_analisis)
+        folder_creation(self.pwd_analisis)
         
         self.pwd_analisis += "/{}"
 
@@ -1006,7 +1003,7 @@ class Simulacion(Proceso):
 
         self.pwd_balanceo = self.pwd_analisis.format( aux )
 
-        creacion_carpeta( self.pwd_balanceo )
+        folder_creation( self.pwd_balanceo )
 
         self.pwd_balanceo += "/{}"
 
@@ -1249,7 +1246,6 @@ class Simulacion(Proceso):
 
         return df
 
-
 class Bot(Proceso):
     def __init__(self, 
         broker, 
@@ -1273,7 +1269,7 @@ class Bot(Proceso):
         
         if self.broker == "Binance":
             try:
-                api = Client(BINANCE_API_KEY, BINANCE_API_SECRETE)
+                api = Client(DATA["binance"]["api_key"], DATA["binance"]["secret_key"])
             except:
                 raise Exception("Problemas Cliente Binance")
     
@@ -1718,5 +1714,4 @@ class Bot(Proceso):
         no_sell += ( list( set( pa ) ) - list( set( ppc ) ) )
         no_sell = { i:v for i,v in pa if i in no_sell }
 
-        
-
+    

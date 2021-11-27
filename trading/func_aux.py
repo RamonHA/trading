@@ -1,10 +1,23 @@
-
+import json
 import os
 import pandas as pd
-import warnings
+import pkg_resources
+
+def get_config():
+    pwd = pkg_resources.resource_filename("trading", "config.json")
+
+    with open(pwd, 'r') as fp:
+        data = json.load(fp)
+    
+    return data
 
 def PWD(pwd):
-    return os.path.normpath( ROUTE.format(pwd) )
+    pwdd = pkg_resources.resource_filename("trading", "config.json")
+
+    with open(pwdd, 'r') as fp:
+        data = json.load(fp)
+
+    return os.path.normpath( "{}/{}".format( data["pwd"], pwd) )
 
 def folder_creation(pwd, verbose = True):
     # Creacion de carpeta de la estrategia completa, para guardar los correspondientes CSV y JSON

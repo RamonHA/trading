@@ -13,10 +13,9 @@
 import numpy as np
 import pandas as pd
 
-from trading.instrumento import Instrumento
-from trading.procesos import Setter
-from trading.instrumentos import *
-from trading.tokens import BROKERS
+from .instrumento import Instrumento
+from .procesos import Setter
+from .instrumentos import *
 
 class Estrategia():
     def __init__(
