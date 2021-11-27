@@ -53,7 +53,7 @@ def set_pwd_f(pwd):
 def set_pwd():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pwd", det = "pwd", help = "Folder destination where asset historic data, simulation and results are to be safe. If does not exist, it will create it.")
+    parser.add_argument("--pwd", dest = "pwd", help = "Folder destination where asset historic data, simulation and results are to be safe. If does not exist, it will create it.")
 
     args = parser.parse_args()
 
