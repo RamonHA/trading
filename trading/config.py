@@ -1,11 +1,14 @@
 # Configuration functions
-from dateutil.parser import parse
+import pkg_resources
 from .func_aux import get_config
 
 def config(func):
     import json
     try:
-        data = get_config()
+        pwd = pkg_resources.resource_filename("trading", "config.json")
+
+        with open(pwd, 'r') as fp:
+            data = json.load(fp)
     except:
         print("Config.json creation")
         data = {}
