@@ -69,3 +69,6 @@ def set_pwd():
     
     set_pwd_f(args.pwd)
 
+@config
+def create_config():
+    pass
