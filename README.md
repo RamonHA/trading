@@ -23,9 +23,11 @@ Requierements file may take time.
 ### Configuration
 The system, for each broker is already initualize with certain assets.
 If in desired to change or expand such universe of assets follow:
-1. Set APIs keys: set_keys --name <name of api (Binance, Bitso)> --apikey <APIKEY> --secretkey <SECRETKEY>
+1. Set APIs keys: 
+  - set_keys --name <name of api (Binance, Bitso)> --apikey <APIKEY> --secretkey <SECRETKEY>
+
 2. Set working folder path. This folder will allow us to save historic data, simulation results, and transactions.
-  set_pwd --pwd <path/to/folder>
+  - set_pwd --pwd <path/to/folder>
 
 If in desired to use for Bot configuration, see "Bot setting" section.
 

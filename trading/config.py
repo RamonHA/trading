@@ -2,27 +2,34 @@
 from dateutil.parser import parse
 import pkg_resources
 
-def set_keys_f(name, api_key, secret_key):
-    import json 
-
+def config(func):
+    import json
     try:
-        pwd = pkg_resources.resource_filename("trading", "tokens.json")
+        pwd = pkg_resources.resource_filename("trading", "config.json")
 
         with open(pwd, 'r') as fp:
             data = json.load(fp)
     except:
-        print("Tokens.json creation")
+        print("Config.json creation")
         data = {}
+    
+    def wrapped(*args, **kwargs):
+        func(*args, **kwargs)
+        with open(pwd, "w") as fp:
+            json.dump( data, fp )
+        
+        print("Updated correctly!")
+    
+    wrapped.data = data
 
-    data[name.lower()] = {
+    return wrapped
+
+@config
+def set_keys_f(name, api_key, secret_key):
+    set_keys_f.data[name.lower()] = {
         "api_key" : api_key,
         "secret_key" : secret_key 
     }
-
-    with open(pwd, "w") as fp:
-        json.dump( data, fp )
-
-    print("{}'s tokens updated correctly!")
 
 def set_keys():
     import argparse
@@ -38,9 +45,22 @@ def set_keys():
     set_keys_f(args.name, args.apikey, args.secretkey)
 
 def set_pwd_f(pwd):
+    import json
     from .func_aux import folder_creation
     folder_creation(pwd)
     
+    try:
+        pwd = pkg_resources.resource_filename("trading", "config.json")
+
+        with open(pwd, 'r') as fp:
+            data = json.load(fp)
+    except:
+        print("Config.json creation")
+        data = {}
+    
+    data["pwd"] = pwd
+
+
 def set_pwd():
     import argparse
     parser = argparse.ArgumentParser()
