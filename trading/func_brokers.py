@@ -1,6 +1,5 @@
-
-import time
 import json
+import time
 import pandas as pd
 import numpy as np
 from datetime import date, timedelta
@@ -11,7 +10,8 @@ from binance.enums import *
 
 from .instrumento import Instrumento
 from .func_aux import *
-from .tokens import *
+
+DATA = get_config()
 
 def cantidad_por_sector(acciones, porcentaje = True):
 
@@ -31,7 +31,7 @@ def octetos(broker, fiat):
 
     if broker == "Binance":
         try:
-            api = Client(BINANCE_API_KEY, BINANCE_API_SECRETE)
+            api = Client(DATA["binance"]["api_key"], DATA["binance"]["secret_key"])
         except:
             raise Exception("Problemas Cliente Binance")
 
@@ -90,7 +90,7 @@ def data_instrumentos( broker ):
     
     return data
 
-def descarga_historica(broker, fiat, frecuencia, inicio = date(1990, 1, 1)):
+def historic_download(broker, fiat, frequency, start = date(1990, 1, 1)):
 
     carpeta = {
         "1min":"Minutos",
@@ -106,7 +106,7 @@ def descarga_historica(broker, fiat, frecuencia, inicio = date(1990, 1, 1)):
 
     broker = broker.capitalize()
 
-    tiempo_dormir = 14 if broker == "Bitso" else 0.5
+    sleep_time = 14 if broker == "Bitso" else 0.5
 
     data = data_instrumentos( broker )
 
@@ -116,13 +116,15 @@ def descarga_historica(broker, fiat, frecuencia, inicio = date(1990, 1, 1)):
         try:
             inst = Instrumento(
                 simbolo = i,
-                inicio = inicio,
+                inicio = start,
                 fin = date.today() - timedelta(days = 1),
-                frecuencia = frecuencia,
+                frecuencia = frequency,
                 broker = broker,
                 fiat = fiat,
             ).update()
         except:
             continue
+    
+        time.sleep( sleep_time )
     
     print("Done!")

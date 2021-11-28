@@ -1,6 +1,8 @@
 trading/tokens.py
 trading/tokens.json
 trading/__pycache__/
+trading/assets/__pycache__/
+trading/optimization/__pycache__/
 __pycache__/
 tests/
 build/
