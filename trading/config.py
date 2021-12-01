@@ -23,7 +23,6 @@ def config(func):
 
 @config
 def get_config():
-    from .func_aux import get_config
     print( get_config.data )
 
 @config
@@ -35,7 +34,7 @@ def set_keys(name, api_key, secret_key):
 
 @config
 def set_fees(name, commission):
-    set_fees.date[ name.lower() ] = {
+    set_fees.data[ name.lower() ] = {
         "commission":float(commission)
     }
 
