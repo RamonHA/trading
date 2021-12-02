@@ -93,7 +93,7 @@ def historic_download():
     parser.add_argument('-broker', dest = 'broker', help = 'Broker name')
     parser.add_argument('-fiat', dest = 'fiat', help = 'Fiat to download info (If not, defualt values from Instrumento are taken.)')
     parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
-    parser.add_argument('start', dest = 'start', help = "From which date to start downloading data.")
+    parser.add_argument('-start', dest = 'start', help = "From which date to start downloading data.")
     args = parser.parse_args()
 
     if not (args.broker and args.fiat and args.frequency):
