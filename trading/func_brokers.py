@@ -108,6 +108,15 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1)):
 
     sleep_time = 14 if broker == "Bitso" else 0.5
 
+    folder_creation( 
+            PWD( 
+                "/{}/Mercado/{}".format( 
+                    broker, 
+                    carpeta[ frequency ]
+                ) 
+            ) 
+        )
+
     data = data_instrumentos( broker )
 
     for i in data:

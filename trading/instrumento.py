@@ -662,15 +662,6 @@ class Instrumento(TimeSeries):
 
         simbolo = self.simbolo.replace(".", "") if self.broker in ["Tesis", "GBM"] else self.simbolo + self.fiat
 
-        folder_creation( 
-            PWD( 
-                "/{}/Mercado/{}".format( 
-                    self.broker, 
-                    aux[ self.intervalo ]
-                ) 
-            ) 
-        )
-
         self.df.to_csv( 
             PWD( 
                 "/{}/Mercado/{}/{}.csv".format( 
