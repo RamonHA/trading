@@ -94,10 +94,20 @@ def historic_download():
     parser.add_argument('-fiat', dest = 'fiat', help = 'Fiat to download info (If not, defualt values from Instrumento are taken.)')
     parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
     parser.add_argument('-start', dest = 'start', help = "From which date to start downloading data.")
+    parser.add_argument('-verbose', dest = 'verbose', help = "Print process")
     args = parser.parse_args()
 
     if not (args.broker and args.fiat and args.frequency):
         raise ValueError("All arguments must be filled.")
-    
+
+    start = args.start if args.start is not None else "1990-01-01"
+    verbose = args.verbose if args.verbose is not None else False
+
     from .func_brokers import historic_download
-    historic_download(args.broker, args.fiat, args.frequency, args.start)
+    historic_download(
+        args.broker, 
+        args.fiat, 
+        args.frequency, 
+        start, 
+        verbose
+    )

@@ -90,7 +90,10 @@ def data_instrumentos( broker ):
     
     return data
 
-def historic_download(broker, fiat, frequency, start = date(1990, 1, 1)):
+def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose = False):
+    
+    if verbose:
+        print("Historic Download for {} {} in {} from {} to today".format( broker, fiat, frequency, start ))
 
     carpeta = {
         "1min":"Minutos",
@@ -100,13 +103,9 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1)):
         "1m":"Mensual"
     }
 
-    # broker = sys.argv[1]
-    # fiat = sys.argv[2]
-    # frecuencia = sys.argv[3]
+    broker = broker.lower()
 
-    broker = broker.capitalize()
-
-    sleep_time = 14 if broker == "Bitso" else 0.5
+    sleep_time = 14 if broker == "bitso" else 0.5
 
     folder_creation( 
             PWD( 
@@ -123,7 +122,7 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1)):
         print(i)
 
         try:
-            inst = Instrumento(
+            Instrumento(
                 simbolo = i,
                 inicio = start,
                 fin = date.today() - timedelta(days = 1),
@@ -132,6 +131,7 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1)):
                 fiat = fiat,
             ).update()
         except:
+            print("No download for {}".format(i) )
             continue
     
         time.sleep( sleep_time )
