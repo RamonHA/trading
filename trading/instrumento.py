@@ -28,11 +28,10 @@ from alpha_vantage.cryptocurrencies import CryptoCurrencies
 from pytrends import dailydata
 from pytrends.request import TrendReq
 
-from .instrumentos import *
-
 from .func_aux import *
 
 DATA = get_config()
+ASSETS = get_assets()
 
 def remuestreo(df, intervalo, frecuencia):
 

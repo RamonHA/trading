@@ -26,6 +26,10 @@ def get_config():
     print( get_config.data )
 
 @config
+def create_config():
+    pass
+
+@config
 def set_keys(name, api_key, secret_key):
     set_keys.data[name.lower()] = {
         "api_key" : api_key,
@@ -83,10 +87,6 @@ def set_pwd():
     
     set_pwd_f(args.pwd)
 
-@config
-def create_config():
-    pass
-
 def historic_download():
     import argparse
     parser = argparse.ArgumentParser()
@@ -111,3 +111,59 @@ def historic_download():
         start, 
         verbose
     )
+
+def get_assets():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-broker', dest = 'broker' )
+    args = parser.parse_args()
+
+    from .func_aux import get_assets
+    assets = get_assets() if args.broker is None else get_assets()[args.broker]
+
+    print( assets )
+
+def add_assets():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-broker', dest = 'broker' )
+    parser.add_argument( '-json', dest = 'json', help='Path to Json file' )
+    parser.add_argument( '-overwrite', dest = 'overwrite', action = "store_true" , help = "Flag for overwrite all Broker Assets")
+    parser.add_argument('-overwrite-asset', dest = 'overwrite_asset', action = "store_true", help = 'Flag if wnat to overwrite only asset(s) data without disturbing the rest')
+    parser.add_argument( '-augment', dest = 'augment', action = 'store_true', help = "Flag for adding features/characteristics to Broker Assets. If this flag is not set, and asset is duplicated, then, asset information will be overwritten.")
+    args = parser.parse_args()
+
+    if args.broker is None or args.json is None:
+        raise ValueError("Broker name requiered")
+
+    if args.overwrite and args.overwrite_asset:
+        raise ValueError("Cannot overwerite all assets and specific assets.")
+
+    if (args.overwrite or  args.overwrite_asset) and args.augment:
+        raise ValueError("Can not overwrite files while augmenting the information.")
+
+    import json
+    try:
+        with open(args.json, "r") as fp:
+            data = json.load(fp)
+    except Exception as e:
+        raise ValueError("Could not load json file {}. Exception: {}".format(args.json, e) ) 
+
+    from .func_aux import get_assets, get_pwd
+    assets = get_assets()
+
+    if args.overwrite:
+        assets[ args.broker ] =  data
+
+    elif args.augment:
+        for i, v in data.items():
+            assets[ args.broker ][ i ].update( v )
+    
+    else: # = elif args.overwrite_asset:
+        assets[ args.broker ].update( data )
+
+
+    with open( get_pwd("assets.json"), "w" ) as fp:
+        json.dump( assets, fp )
+    
+    print("Done!")

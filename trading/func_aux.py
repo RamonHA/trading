@@ -3,20 +3,25 @@ import os
 import pandas as pd
 import pkg_resources
 
-def get_config():
-    pwd = pkg_resources.resource_filename("trading", "config.json")
+def get_pwd(file):
+    return pkg_resources.resource_filename("trading", file)
+
+def get(file):
+    pwd = get_pwd(file)
 
     with open(pwd, 'r') as fp:
         data = json.load(fp)
     
     return data
 
-def PWD(pwd):
-    pwdd = pkg_resources.resource_filename("trading", "config.json")
+def get_assets():
+    return get("assets.json")
 
-    with open(pwdd, 'r') as fp:
-        data = json.load(fp)
+def get_config():    
+    return get("config.json")
 
+def PWD(pwd):    
+    data = get("config.json")
     return os.path.normpath( "{}/{}".format( data["pwd"], pwd) )
 
 def folder_creation(pwd, verbose = True):
