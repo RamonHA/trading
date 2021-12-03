@@ -71,25 +71,6 @@ def octetos(broker, fiat):
         
         print("Done!")
 
-def data_instrumentos( broker ):
-    
-    if broker == "Bitso":
-        from .instrumentos import Bitso
-        data = Bitso
-    elif broker == "Binance":
-        from .instrumentos import Binance
-        data = Binance
-    elif broker == "GBM":
-        from .instrumentos import GBM
-        data = GBM
-    elif broker == "Tesis":
-        from .instrumentos import Tesis
-        data = Tesis
-    else:
-        raise ValueError("Broker {} es incorrecto.".format(broker) )
-    
-    return data
-
 def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose = False):
     
     if verbose:
@@ -116,7 +97,10 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose
             ) 
         )
 
-    data = data_instrumentos( broker )
+    try:
+        data = get_assets()[ broker ]
+    except Exception as e:
+        print("Error con broker {}. Exception: {}".format(broker, e) )
 
     for i in data:
         print(i)
@@ -137,3 +121,4 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose
         time.sleep( sleep_time )
     
     print("Done!")
+
