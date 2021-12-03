@@ -119,7 +119,7 @@ def get_assets():
     args = parser.parse_args()
 
     from .func_aux import get_assets
-    assets = get_assets() if args.broker is None else get_assets()[args.broker]
+    assets = get_assets() if args.broker is None else get_assets()[args.broker.lower()]
 
     print( assets )
 
