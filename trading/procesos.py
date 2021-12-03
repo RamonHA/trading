@@ -31,7 +31,6 @@ from binance.client import Client
 from binance.enums import *
 
 from .instrumento import Instrumento, PWD
-from .instrumentos  import *
 from .func_aux import *
 from .func_brokers import cantidad_por_sector
 

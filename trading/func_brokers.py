@@ -114,8 +114,8 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose
                 broker = broker,
                 fiat = fiat,
             ).update()
-        except:
-            print("No download for {}".format(i) )
+        except Exception as e:
+            print("No download for {}. Exception: {}".format(i, e) )
             continue
     
         time.sleep( sleep_time )
