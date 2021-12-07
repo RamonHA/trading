@@ -101,10 +101,10 @@ class TimeSeries():
         de caracteristicas estadisticas, etc.
     """
     def __init__(self):
-        self.target = "Close" if type(self) == Asset else "Data"
+        self.target = "close" if type(self) == Asset else "data"
     
     def __repr__(self):
-        return '{}: {}'.format(type(self).__name__,  self.symbol )
+        return '{}: {}'.format(type(self).__name__,  self.symbol_aux )
 
     # Propiedades de yahoo finanzas
     @property
@@ -128,7 +128,7 @@ class TimeSeries():
     @target.setter
     def target(self, value):
         if hasattr(self, "df"):
-            assert value in self.df.columns, "No hay {} en Dataframe".format( value )
+            assert value in self.df.columns, "No {} in Dataframe".format( value )
         else:
             self._target = value
 
@@ -162,45 +162,22 @@ class TimeSeries():
         return self.df[target].rolling(length).apply(lambda prices: np.dot(prices, weights)/weights.sum(), raw=True)
 
 class Asset(TimeSeries):
-    """ Esta clase permite definir un Asset Financiero: accion, criptomoneda """
+    """ """
+
     def __init__(self, 
             symbol = None, 
-            inicio = None, 
-            fin = datetime.today(), 
-            frecuencia = None,
+            start = None, 
+            end = datetime.today(), 
+            frequency = None,
             broker = None,
             fiat = None,
-            desde_api = True,
-            sentimiento = False,
+            from_api = True,
+            from_ext = False,
+            sentiment = False,
             social_media = None,
             **kwargs
             ):
         """  
-            frecuencia: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-offset-aliases
-                s: segundo
-                min: minuto
-                h: hora
-                d: dia
-                b: dia laboral
-                w: semana
-                m: mes
-                sm: semi-mes, (15 y final de mes)
-                qs: inicio de trimestre
-                q: final de trimestre (trimestre default)
-                a: fin de año (año default)
-                as: inicio de año
-
-                Todavia no se prepara para que la primera parte sea diferente de 1
-            
-            fiat (str): BTC, USDT, MXN
-
-            desde_api (boolean): Si se desea descargar desde la api correspondiente o desde el archivo
-
-            sentimiento (boolean): Si es True, y hay una MySQL, entonces se decargara la info de las tablas
-
-            social_media (list): Lista de las REDES SOCIALES a considerar
-                                Default = ["Twitter", "Reddit", "Google"], Donde se consideran a TODAS
-        
         """
 
         super().__init__()
@@ -209,20 +186,27 @@ class Asset(TimeSeries):
         # self.df = pd.DataFrame()
         self.broker = broker.lower()
 
-        self.sector = None
-        self.name = symbol             # Lo mismo que la variable symbol, pero solo se guarda para no tener el Ticker como tal, asuntos de Tesis, eventualmente se eliminara
-        self.symbol = symbol
-        self.fiat = fiat                # fiat no puede ser None
-        
-        self.sentimiento = sentimiento
-        self.desde_api = desde_api
+    @property
+    def asset(self):
+        if self.broker == "binance":
+            from .binance import Binance
+            self.asset = Binance
+        elif self.broker == "bitso":
+            from .bitso import Bitso
+            self.asset = Bitso
+        elif self.broker == "gbm":
+            from .gbm import GBM
+            self.asset = GBM
 
-        self.frecuencia = frecuencia # Lower y Upper cases en est ecaso si importan
-        self.periodo, self.intervalo = re.findall(r'(\d+)(\w+)', self.frecuencia)[0] if frecuencia is not None else (None, None)
-        self.periodo = int(self.periodo) if self.periodo is not None else None
+        return self.asset         
 
-        self.inicio = inicio
-        self.fin = fin
+    @asset.setter
+    def asset(self, value):
+        from .base_asset import BaseAsset
+        if issubclass( type(value), type(BaseAsset) ):
+            self._asset = value
+        else:
+            raise ValueError( "It is not BaseAsset. Type {}".format(type(value)) )
 
     @property
     def inicio(self):
@@ -1144,4 +1128,3 @@ class Asset(TimeSeries):
             lbp=lookback_p).wr()
 
   
-

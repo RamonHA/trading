@@ -77,11 +77,11 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose
         print("Historic Download for {} {} in {} from {} to today".format( broker, fiat, frequency, start ))
 
     carpeta = {
-        "1min":"Minutos",
-        "1h":"Hora",
-        "1d":"Diario",
-        "1w":"Semanal",
-        "1m":"Mensual"
+        '1min':'minutes',
+        '1h':'hour',
+        '1d':'daily',
+        '1w':'weekly',
+        '1m':'monthly'
     }
 
     broker = broker.lower()
@@ -90,7 +90,7 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose
 
     folder_creation( 
             PWD( 
-                "/{}/Mercado/{}".format( 
+                "/{}/data/{}".format( 
                     broker, 
                     carpeta[ frequency ]
                 ) 
