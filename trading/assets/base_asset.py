@@ -32,13 +32,13 @@ class BaseAsset():
     @start.setter
     def start(self, value):
         if value is None:
-            self._inicio = None
+            self._start = None
         elif type(value) == datetime:
-            self._inicio = value
+            self._start = value
         elif type(value) == date:
-            self._inicio = datetime.combine(value, datetime.min.time())
+            self._start = datetime.combine(value, datetime.min.time())
         elif type(value) == str:
-            self._inicio = parser.parse(value)
+            self._start = parser.parse(value)
         else:
             raise ValueError("Start must be date, datetime, or str with valid format. Type {}.".format(type(value)))
 
@@ -49,13 +49,13 @@ class BaseAsset():
     @end.setter
     def end(self, value):
         if value is None:
-            self._fin = None
+            self._end = None
         elif type(value) == datetime:
-            self._fin = value
+            self._end = value
         elif type(value) == date:
-            self._fin = datetime.combine(value, datetime.min.time())
+            self._end = datetime.combine(value, datetime.min.time())
         elif type(value) == str:
-            self._fin = parser.parse(value)
+            self._end = parser.parse(value)
         else:
             raise ValueError("End must be date, datetime, or str with valid format. Type {}.".format(type(value)))
 
@@ -64,7 +64,6 @@ class BaseAsset():
         if hasattr(self, "_df"):
             return self._df
         else:
-            print("por configurarla")
             self.df = self.update_df()
             return self._df
     
@@ -126,7 +125,6 @@ class BaseAsset():
             raise ValueError("Update of {} not recognize".format( value ))
 
     def update_df(self):
-        print("En pdate")
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
         if self.from_api:

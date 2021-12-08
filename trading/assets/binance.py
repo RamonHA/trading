@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import time
+import warnings
 
 # Binance
 from binance.client import Client
@@ -86,7 +87,6 @@ class Binance(BaseAsset):
         return df
 
     def df_ext_api(self):
-        print("y ahora en binance")
         pwd = PWD("/binance/dccd")
 
         aux = {
@@ -95,8 +95,7 @@ class Binance(BaseAsset):
             'd':'daily',
             'w':'weekly'
         }
-
-        b = binance.FromBinance( pwd, crypto=self.symbol, span= aux[self.interval],fiat=self.fiat)
+        b = binance.FromBinance( pwd, crypto=self.symbol.upper(), span= aux[self.interval],fiat=self.fiat.upper())
 
         tdiff = time_diff( self.start, self.end, self.interval )
 
@@ -105,9 +104,10 @@ class Binance(BaseAsset):
         else:
             try:
                 df = b.import_data(start = str(self.start), end = str(self.end)).get_data()
-            except:
+            except Exception as e:
+                warnings.warn("Binance data importation Exception: {}".format(e))
                 df = pd.DataFrame()    
-        
+
         if len(df) == 0: return None
 
         df.drop(columns = ['date', 'TS', 'time'], inplace=True)

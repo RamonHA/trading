@@ -10,26 +10,54 @@ At the moment, this library can work with:
 Work in progress to integrate more.
 
 ## Installation
-Recommend use of Virtual Environment
 
-You can clone repository:
-- git clone https://github.com/RamonHA/trading.git
-- cd trading
-- pip install .
-- cat requirements.txt | 
+1. Git clone project
+'''
+$ git clone https://github.com/RamonHA/trading.git
+'''
 
-Requierements file may take time.
+2. Inside folder repository create virtual env and activate
+'''
+$ cd trading
+$ python3 -m venv venv_name
+$ source venv_name/bin/activate
+'''
+
+3. Install repository and dependecies
+'''
+$ pip3 install .
+$ pip3 install -r requirements.txt
+'''
 
 ### Configuration
-The system, for each broker is already initualize with certain assets.
-If in desired to change or expand such universe of assets follow:
-1. Set APIs keys: 
-  - set_keys --name <name of api (Binance, Bitso)> --apikey <APIKEY> --secretkey <SECRETKEY>
+1. If no further configuration of the project is requiered, only run on terminal
+'''
+$ create_config
+'''
 
-2. Set working folder path. This folder will allow us to save historic data, simulation results, and transactions.
-  - set_pwd --pwd <path/to/folder>
+This will create config file. File that will save the requiered information about paths, tokens, etc.
 
-If in desired to use for Bot configuration, see "Bot setting" section.
+2. Path (of folder) where historic data, simulation results, and transactions are going to be safe
+'''
+$ set_pwd -pwd <path/to/folder> 
+'''
+
+3. The system, for each broker is already initualize with certain assets. If in desired to change or expand such universe of assets follow (see --help):
+'''
+$ add_assets
+'''
+
+For the case of Binance and Bitso data, and bot creation, followed:
+4. Set Brokers APIs keys: 
+'''
+$ set_keys -name <name of api (Binance, Bitso)> -apikey <APIKEY> -secretkey <SECRETKEY>
+'''
+
+5. Set keys for other APIS in use (same function as brokes apis can be used):
+'''
+$ set_api -name <name of API> -apikey <APIKEY> -secretkey <SECRETEKEY (if needed, not requiered)> 
+'''
+
 
 ## Simulations
 See examples folder.

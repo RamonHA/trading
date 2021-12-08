@@ -156,7 +156,7 @@ class Asset(TimeSeries):
             start = None, 
             end = datetime.today(), 
             frequency = None,
-            broker = None,
+            broker = "yahoo_asset",
             fiat = None,
             from_api = True,
             from_ext = False,
@@ -169,9 +169,9 @@ class Asset(TimeSeries):
 
         super().__init__()
 
-        self.broker = broker.lower()
+        self.broker = broker.lower() 
 
-        self.asset = get_assets(
+        self.asset = self.get_asset()(
             symbol = symbol, 
             start = start, 
             end = end, 
@@ -194,9 +194,9 @@ class Asset(TimeSeries):
         elif self.broker == "bitso":
             from .bitso import Bitso
             asset = Bitso
-        elif self.broker == "gbm":
-            from .gbm import GBM
-            asset = GBM
+        else:
+            from .yahoo_assets import YahooAsset
+            asset = YahooAsset
         
         return asset
 
@@ -207,18 +207,14 @@ class Asset(TimeSeries):
     @asset.setter
     def asset(self, value):
         from .base_asset import BaseAsset
-        if issubclass( type(value), type(BaseAsset) ):
+        if issubclass( type(value), BaseAsset ):
             self._asset = value
         else:
             raise ValueError( "It is not BaseAsset. Type {}".format(type(value)) )
 
     @property
     def df(self):
-        print("en asset")
         return self.asset.df
-
-    def df_gbm(self):
-        return self.df_gbm_api() if self.desde_api else self.df_gbm_archivo()
 
     def df_gbm_api(self):
         aux = { # 1m,2m,5m,15m,30m,60m,90m,1h, 1d (Default),5d,1wk,1mo,3mo

@@ -1,10 +1,14 @@
 trading/tokens.py
 trading/tokens.json
+trading/config.json
 trading/__pycache__/
 trading/assets/__pycache__/
 trading/optimization/__pycache__/
 __pycache__/
-tests/
+tests/__pycache__/
 build/
 src/
 trading.egg-info/
+.pytest_cache/
+update.sh
+useless_folder/
