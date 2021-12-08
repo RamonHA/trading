@@ -2,6 +2,7 @@ import json
 import os
 import pandas as pd
 import pkg_resources
+import math
 
 def get_pwd(file):
     return pkg_resources.resource_filename("trading", file)
@@ -73,3 +74,18 @@ def bring_results(pwd, data = {}):
                 data = bring_results( pwd + "/{}".format(i), data )
 
     return data
+
+def time_diff(start, end, frequency):
+    
+    # assertions of date and datetime
+    
+    if frequency == "d":
+        diff = ( end - start ).days
+    elif frequency == "h":
+        diff = ( end - start ).total_seconds() / 3600
+    elif frequency == "m":
+        diff = ( end - start ).days / 30
+    elif frequency == "min":
+        diff = ( end - start ).total_seconds() / 60
+
+    return math.ceil( diff )

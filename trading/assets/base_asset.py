@@ -6,8 +6,17 @@ from dateutil import parser
 from trading.func_aux import PWD
 
 class BaseAsset():
-    def __init__(self, symbol, start = None, end = datetime.today(), frequency = "1d", from_api = True):
-        self.symbol = symbol
+    def __init__(
+        self, 
+        symbol, 
+        start = None, 
+        end = datetime.today(), 
+        frequency = "1d", 
+        from_api = True,
+        sentiment = False,
+        social_media = None,
+    ):
+        self.symbol = symbol.lower()
         self.start = start
         self.end = end
         self.frequency = frequency
@@ -55,6 +64,7 @@ class BaseAsset():
         if hasattr(self, "_df"):
             return self._df
         else:
+            print("por configurarla")
             self.df = self.update_df()
             return self._df
     
@@ -95,14 +105,15 @@ class BaseAsset():
 
         return df.loc[ str(self.start):str(self.end) ]
 
-    
     def df_api(self):
         raise NotImplementedError
     
     def df_ext_api(self):
         raise NotImplementedError
 
-    def update(self, value, pwd = None):
+    def update(self, value = "df", pwd = None):
+        self.from_api = True
+
         if value == "df":
             self.save( 
                 self.df,
@@ -113,15 +124,19 @@ class BaseAsset():
         
         else:
             raise ValueError("Update of {} not recognize".format( value ))
-    
+
     def update_df(self):
+        print("En pdate")
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
         if self.from_api:
-            return self.df_ext_api if self.from_ext else self.df_api
+            return self.df_ext_api() if self.from_ext else self.df_api()
         else:
-            return self.df_db
+            return self.df_db()
     
+    def refresh(self):
+        self.df = self.update_df()
+
     def save(self, value, pwd = None):
         if isinstance( value, pd.DataFrame ):
             self.to_csv( value, pwd )

@@ -2,33 +2,20 @@
 
 # Librerias generales
 from copy import copy
-from math import e
-from typing import ValuesView
 import pandas as pd
 import numpy as np
-import re   # Esta libreria permite dividir el str de frecuencia para 
-            # dinamicamente obtener '10min' -> 'm'
 from datetime import timedelta, datetime, date
-from dateutil import parser
 import time
 import yfinance as yf
 
 # Asset
 import ta
 
-# Binance
-from binance.client import Client
-from binance.enums import *
-from dccd.histo_dl import binance
-
-# Bitso
-from alpha_vantage.cryptocurrencies import CryptoCurrencies
-
 # Google Trends
 from pytrends import dailydata
 from pytrends.request import TrendReq
 
-from .func_aux import *
+from trading.func_aux import *
 
 DATA = get_config()
 ASSETS = get_assets()
@@ -182,23 +169,40 @@ class Asset(TimeSeries):
 
         super().__init__()
 
-        # Inicializacion de variables
-        # self.df = pd.DataFrame()
         self.broker = broker.lower()
 
+        self.asset = get_assets(
+            symbol = symbol, 
+            start = start, 
+            end = end, 
+            frequency = frequency,
+            fiat = fiat,
+            from_api = from_api,
+            from_ext = from_ext,
+            sentiment = sentiment,
+            social_media = social_media,
+        )
+
     @property
-    def asset(self):
+    def symbol(self):
+        return self.asset.symbol
+
+    def get_asset(self):
         if self.broker == "binance":
             from .binance import Binance
-            self.asset = Binance
+            asset = Binance
         elif self.broker == "bitso":
             from .bitso import Bitso
-            self.asset = Bitso
+            asset = Bitso
         elif self.broker == "gbm":
             from .gbm import GBM
-            self.asset = GBM
+            asset = GBM
+        
+        return asset
 
-        return self.asset         
+    @property
+    def asset(self):        
+        return self._asset
 
     @asset.setter
     def asset(self, value):
@@ -209,323 +213,9 @@ class Asset(TimeSeries):
             raise ValueError( "It is not BaseAsset. Type {}".format(type(value)) )
 
     @property
-    def inicio(self):
-        return self._inicio
-    
-    @inicio.setter
-    def inicio(self, value):
-        if value is None:
-            self._inicio = None
-        elif type(value) == datetime:
-            self._inicio = value
-        elif type(value) == date:
-            self._inicio = datetime.combine(value, datetime.min.time())
-        elif type(value) == str:
-            self._inicio = parser.parse(value)
-        else:
-            raise ValueError("Inicio debe ser tipo date, datetime o str con formato valido, sin embargo se entrego {}.".format(type(value)))
-
-    @property
-    def fin(self):
-        return self._fin
-
-    @fin.setter
-    def fin(self, value):
-        if value is None:
-            self._fin = None
-        elif type(value) == datetime:
-            self._fin = value
-        elif type(value) == date:
-            self._fin = datetime.combine(value, datetime.min.time())
-        elif type(value) == str:
-            self._fin = parser.parse(value)
-        else:
-            raise ValueError("Inicio debe ser tipo date, datetime o str con formato valido, sin embargo se entrego {}.".format(type(value)))
-
-    @property
-    def symbol(self):
-        return self._symbol
-
-    @symbol.setter
-    def symbol(self, value):
-        if self.broker in ["bitso", "Binance"]:
-            self._symbol = value  
-        elif self.broker == "GBM":
-            self._symbol = GBM[value]["ticker"] if value in GBM else value
-            self.sector = GBM[value]["sector"] if value in GBM else value
-        
-        # Solo entrara en el ultimo caso
-        elif value is None:
-            self._symbol = value
-
-    @property
-    def fiat(self):
-        return self._fiat
-    
-    @fiat.setter
-    def fiat(self, value):
-        if value is None:
-            if self.broker in ["Tesis", "GBM", "Bitso"]:
-                self._fiat = "MXN"
-            elif self.broker in ["Binance"]:
-                self._fiat = "USDT"
-
-        else:
-            self._fiat = value
-
-    # Data download
-    @property
     def df(self):
-        if hasattr(self, "_df"):#and self._df is not None:
-            return self._df
-        elif all( [ self.symbol, self.inicio, self.broker, self.fiat ] ):
-            self.df = {
-                "Binance":self.df_binance,
-                "Bitso":self.df_bitso,
-                "GBM":self.df_gbm,
-                "Tesis":self.df_gbm
-            }[self.broker]()
-            
-            if self.periodo != 1:
-                self.df = remuestreo( self.df, self.periodo, self.intervalo )
-
-            return self._df
-
-    @df.setter
-    def df(self, value):
-        if isinstance(value, pd.DataFrame):
-            self._df = value
-        elif value is None:
-            self._df = value
-        else:
-            raise ValueError("No es tipo DataFrame")
-
-    #     if self.df is not None and len(self.df) > 0:
-    #         # La info esta "adelantada" unas 5 horas, 
-    #         # esto porque para Binannce y Bitso, el dia termina a las 7pm
-
-    #         # if self.intervalo == "h":
-    #         #     self.df.index += timedelta(hours = 5)   
-
-    #         if self.periodo != 1:
-    #             self.df = self._remuestreo( self.df, self.frecuencia )
-
-    #         if sentimiento:
-    #             self.df = pd.concat([ self.df, self._sentimiento(social_media = social_media) ], axis = 1).dropna()    
-
-    def df_binance(self):
-        return self.df_binance_api() if self.desde_api else self.df_binance_archivo()
-
-    def df_binance_api(self):
-        # Este path es usado solo para rellenar el parametro de la api de binance
-        pwd = PWD("/Binance/dccd")
-
-        aux = {
-            'm':'minutely',
-            'h':'hourly',
-            'd':'daily',
-            'w':'weekly'
-        }
-
-        b = binance.FromBinance( pwd, crypto=self.symbol, span= aux[self.intervalo],fiat=self.fiat)
-
-        # Informacion total o informacion de un periodo
-        # Este IF tambien pudiera ser un OR, pues se pudiera pedir la informacion de:
-        #   lo ultimo a cierto dia
-        #   de cierto dia hasta ahora (aunque esto se soluciona con el default de FIN)
-        if self.inicio == "last" and self.fin == "now":
-            df = self.df_binance_api_historica(b)
-        else:
-            df = self.df_binance_api_periodo(b)
-        
-        if df is None:
-            return None
-
-        # Formateo
-        df.drop(columns = ['date', 'TS', 'time'], inplace=True)
-        df.columns = [i.capitalize() for i in df.columns]
-        df.set_index('Date', inplace = True)
-        df.sort_index(inplace = True)
-
-        return df
-
-    def df_binance_api_historica(self, b):
-        """ b = binance object """
-
-        try:
-            df =  b.import_data(start = "last", end =  "now" ).get_data()
-        except:
-            print("Error en la descarga historica de {}".format( self.symbol + self.fiat ))
-            return None
-
-        if self.intervalo == "d":
-            end = str(df.iloc[-1]['date'])
-            end = datetime.strptime(end, "%Y-%m-%d")
-        elif self.intervalo == "h":
-            end = str(df.iloc[-1]['Date'])
-            end = datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
-
-        while end <= datetime.today():
-            
-            start = end
-
-            end += (timedelta(days = 500) if self.intervalo == "d" else timedelta(seconds = 500*3600*self.periodo )   )
- 
-            try:
-                aux = b.import_data(start = str(start), end =  str(end) ).get_data()
-            except:
-                aux = pd.DataFrame()
-
-            df = pd.concat([ df, aux ], axis = 0)
-
-            time.sleep(0.1)
-
-        df.drop_duplicates(inplace = True)
-        df.sort_index(inplace = True, ascending=True)
-
-        if len(df) == 0:
-            print("Error en la descarga historica de {}".format( self.symbol + self.fiat ))
-            return None
-
-        return df
-
-    def df_binance_api_periodo(self, b):
-
-        # fin = datetime.combine(fin, datetime.min.time())
-        # inicio = dateime.combine(inicio, datetime.min.time())
-
-        if self.intervalo == "d":
-            days = (self.fin - self.inicio).days
-        elif self.intervalo == "h":
-            days = ( self.fin - self.inicio ).total_seconds() / 3600
-
-        fin = self.fin
-
-        aux = {
-            "h":400,
-            "d":450
-        }
-
-        if days >= aux[self.intervalo]:
-            
-            df = pd.DataFrame()
-            days_aux = aux[self.intervalo]
-
-            while True:
-                
-                if self.intervalo == "d":
-                    aux_start = fin - timedelta(days = days_aux)
-                elif self.intervalo == "h":
-                    aux_start = fin - timedelta( seconds = days_aux*3600 )
-
-                try:
-                    df_aux = b.import_data(start = str(aux_start), end = str(fin)).get_data()
-                except:
-                    df_aux = pd.DataFrame()
-
-                df = pd.concat([df, df_aux], axis = 0)
-
-                if self.intervalo == "d":
-                    days_aux = (aux_start - self.inicio).days
-                elif self.intervalo == "h":
-                    days_aux = (aux_start - self.inicio).total_seconds() / 3600
-
-                if days_aux == 0:
-                    break
-
-                elif days_aux >= aux[self.intervalo]:
-                    days_aux = aux[self.intervalo]
-            
-                elif len(df_aux) == 0:
-                    # Ya se termino
-                    break
-
-                fin = aux_start
-
-                time.sleep(0.2)
-
-            df.drop_duplicates(inplace = True)
-            df.sort_index(inplace = True, ascending=True)
-
-        else:
-            try:
-                df = b.import_data(start = str(self.inicio), end = str(fin)).get_data()
-                
-            except:
-                df = pd.DataFrame()    
-
-        if len(df) == 0:
-            print("Error en la descarga de {} en el periodo {} al {}".format( self.symbol, str(self.inicio), str(fin) ))
-            return None
-
-        return df
-
-    def df_binance_archivo(self):
-        aux = {
-            'h':'Hora',
-            'd':'Diario',
-            'w':'Semanal',
-            'm':'Mensual'
-        }
-
-        try:
-            df = pd.read_csv(PWD("/Binance/Mercado/{}/{}.csv".format(aux[ self.intervalo ], self.symbol + self.fiat )))
-        except:
-            print(
-                "CSV de {} no existe en intervalo {} en el path {}.".format(
-                    self.symbol + self.fiat, 
-                    aux[self.intervalo],
-                    PWD("/Binance/Mercado/{}/{}.csv".format(aux[ self.intervalo ], self.symbol + self.fiat ))
-                )
-            )
-            return None
-
-        col = ["Open","High","Low","Close","Volume","Quotevolume"]
-
-        df.set_index('Date', inplace = True)
-
-        df.index = pd.to_datetime( df.index )
-
-        df = df.loc[ str(self.inicio):str(self.fin) ]
-
-        return df
-
-    def df_bitso(self):
-        return self.df_bitso_api() if self.desde_api else self.df_bitso_archivo()
-
-    def df_bitso_api_historica(self):
-        cr = CryptoCurrencies(DATA["alpha_vantage"]["api_key"], output_format='pandas')
-        data, meta_data = cr.get_digital_currency_daily(self.symbol, self.fiat)
-
-        data.drop(columns = [i for i in data.columns if 'USD' in i], inplace = True)
-
-        data.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-
-        data.sort_index(ascending=True, inplace=True)
-
-        if self.intervalo == "w":
-            data = remuestreo(data, self.intervalo)
-
-        return data
-
-    def df_bitso_api(self):
-
-        data = self.df_bitso_api_historica()
-        return data.loc[self.inicio:self.fin]
-
-    def df_bitso_archivo(self):
-        aux = {
-            'h':'Hora',
-            'd':'Diario',
-            'w':'Semanal',
-            'm':'Mensual'
-        }
-
-        df = pd.read_csv( PWD("/Bitso/Mercado/{}/{}.csv".format(aux[ self.intervalo ] , self.symbol + self.fiat) ) )
-        df['Date'] = pd.to_datetime(df['Date'])
-        df.set_index('Date', inplace = True)
-        
-        return df.loc[self.inicio:self.fin]
+        print("en asset")
+        return self.asset.df
 
     def df_gbm(self):
         return self.df_gbm_api() if self.desde_api else self.df_gbm_archivo()
@@ -623,31 +313,11 @@ class Asset(TimeSeries):
 
         return df.loc[self.inicio:self.fin]
 
-    def update(self, df = True):
-        self.desde_api = True
-        
-        if df: self.update_df()
+    def update(self, value = "df", pwd = None):
+        self.asset.update( value = value, pwd = pwd )
     
-    def update_df(self):
-        aux = {
-            'min':'Minutos',
-            'h':'Hora',
-            'd':'Diario',
-            'w':'Semanal',
-            'm':'Mensual'
-        }
-
-        symbol = self.symbol.replace(".", "") if self.broker in ["Tesis", "GBM"] else self.symbol + self.fiat
-
-        self.df.to_csv( 
-            PWD( 
-                "/{}/Mercado/{}/{}.csv".format( 
-                    self.broker, 
-                    aux[ self.intervalo ],  
-                    symbol
-                ) 
-            ) 
-        )
+    def refresh(self):
+        self.asset.refresh()
 
     # Sentiment
     
