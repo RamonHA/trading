@@ -1,5 +1,8 @@
 import pytest
+import pathlib
 from datetime import date
+
+print( pathlib.Path(__file__).parent.absolute() )
 
 import sys
 sys.path.append("/home/ramon/Documents/GithubCloneTests/trading")
