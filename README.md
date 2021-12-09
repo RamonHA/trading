@@ -13,9 +13,9 @@ Work in progress to integrate more.
 
 1. Git clone project
   
-'''
+```
 $ git clone https://github.com/RamonHA/trading.git
-'''
+```
 
 2. Inside folder repository create virtual env and activate
 
