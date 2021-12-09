@@ -12,7 +12,6 @@ Work in progress to integrate more.
 ## Installation
 
 1. Git clone project
-  
 ```
 $ git clone https://github.com/RamonHA/trading.git
 ```
