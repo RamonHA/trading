@@ -12,11 +12,13 @@ Work in progress to integrate more.
 ## Installation
 
 1. Git clone project
+  
 '''
 $ git clone https://github.com/RamonHA/trading.git
 '''
 
 2. Inside folder repository create virtual env and activate
+
 '''
 $ cd trading
 $ python3 -m venv venv_name
@@ -24,6 +26,7 @@ $ source venv_name/bin/activate
 '''
 
 3. Install repository and dependecies
+
 '''
 $ pip3 install .
 $ pip3 install -r requirements.txt
