@@ -1,0 +1,6 @@
+{
+    "historic_download_sources":{
+        "binance":"ext_api",
+        "bitso":"ext_api"
+    }
+}

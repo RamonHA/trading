@@ -4,7 +4,7 @@
 from copy import copy
 import pandas as pd
 import numpy as np
-from datetime import timedelta, datetime, date
+from datetime import datetime
 import time
 import yfinance as yf
 
@@ -14,11 +14,7 @@ import ta
 # Google Trends
 from pytrends import dailydata
 from pytrends.request import TrendReq
-
 from trading.func_aux import *
-
-DATA = get_config()
-ASSETS = get_assets()
 
 def remuestreo(df, intervalo, frecuencia):
 
@@ -58,12 +54,12 @@ def remuestreo(df, intervalo, frecuencia):
         "{}{}".format(intervalo, fr.get(frecuencia, frecuencia) ), 
         on = "Date" 
         ).agg( 
-            {"Open":"first", "Close":"last", "High":"max", "Low":"min", "Volume":"sum"} 
+            {"Open":"first", "close":"last", "High":"max", "Low":"min", "Volume":"sum"} 
         )
 
     # # Disminuir granularidad, Dia a Mes
     # if aux[self.intervalo] < aux[intervalo]:  
-    #     df = df.resample( 'W', on = "Date" ).agg( {"Open":"first", "Close":"last", "High":"max", "Low":"min", "Volume":"sum"} )
+    #     df = df.resample( 'W', on = "Date" ).agg( {"Open":"first", "close":"last", "High":"max", "Low":"min", "Volume":"sum"} )
 
     # # Aumentar granularidad, Mes a Dia
     # elif aux[self.intervalo] > aux[intervalo]:
@@ -80,7 +76,6 @@ def remuestreo(df, intervalo, frecuencia):
     #     df = df.interpolate(method = 'linear')
 
     return aux
-
 
 class TimeSeries():
     """ Clase Time Series 
@@ -158,8 +153,7 @@ class Asset(TimeSeries):
             frequency = None,
             broker = "yahoo_asset",
             fiat = None,
-            from_api = True,
-            from_ext = False,
+            from_ = "yahoo",
             sentiment = False,
             social_media = None,
             **kwargs
@@ -177,8 +171,7 @@ class Asset(TimeSeries):
             end = end, 
             frequency = frequency,
             fiat = fiat,
-            from_api = from_api,
-            from_ext = from_ext,
+            from_ = from_,
             sentiment = sentiment,
             social_media = social_media,
         )
@@ -195,8 +188,8 @@ class Asset(TimeSeries):
             from .bitso import Bitso
             asset = Bitso
         else:
-            from .yahoo_assets import YahooAsset
-            asset = YahooAsset
+            from .base_asset import BaseAsset
+            asset = BaseAsset
         
         return asset
 
@@ -338,7 +331,7 @@ class Asset(TimeSeries):
     #         no tiene P/E ratio, por ende, al ejectuar esta funcion
     #         y encontrar ganancias negativas, levantara un error.
     #     """
-    #     return (self.df.iloc[-1]['Close'] / self._earnings_per_share()) if self._earnings_per_share() > 0 else 0
+    #     return (self.df.iloc[-1]['close'] / self._earnings_per_share()) if self._earnings_per_share() > 0 else 0
 
     # def _earnings_per_share(self):
     #     """ Regresa el trailing EPS ratio 
@@ -382,7 +375,7 @@ class Asset(TimeSeries):
 
     # Technical analyzers
         
-    def adx(self, length, high = 'High', low = 'Low', close = 'Close'):
+    def adx(self, length, high = 'High', low = 'Low', close = 'close'):
         """ Regresa tres SERIES de Average Directional Movement Index 
                                 ADX, DI+, DI-
 
@@ -396,7 +389,7 @@ class Asset(TimeSeries):
         
         return adx_object.adx(), adx_object.adx_pos(), adx_object.adx_neg()
 
-    def aroon(self, length, target='Close'):
+    def aroon(self, length, target='close'):
         """ Regresa tres SERIES de Aroon Indicator 
             arron indicator, aroon_up, aroon_down
 
@@ -411,7 +404,7 @@ class Asset(TimeSeries):
         return aroon_object.aroon_indicator(), aroon_object.aroon_up(),\
             aroon_object.aroon_down()
 
-    def aroon_down(self, length, target = 'Close'):
+    def aroon_down(self, length, target = 'close'):
         """ Regresa una SERIE de Aroon Indicator 
 
             Indica cuando una tendencia es más capaz de cambiar de direccion
@@ -419,7 +412,7 @@ class Asset(TimeSeries):
         """
         return ta.trend.arron_down(close=self.df[target], window=length)
 
-    def aroon_up(self, length, target = 'Close'):
+    def aroon_up(self, length, target = 'close'):
         """ Regresa una SERIE de Aroon Indicator 
 
             Indica cuando una tendencia es más capaz de cambiar de direccion
@@ -427,13 +420,13 @@ class Asset(TimeSeries):
         """
         return ta.trend.arron_up(close=self.df[target], window=length)
 
-    def bollinger_bands(self, length=20, std=2, close='Close'):
+    def bollinger_bands(self, length=20, std=2, close='close'):
         """ Regrea tres SERIES de Bollinger Bands
             High, Medium y Low Band.
 
-            Cuando la banda media es cruzada por el Close
+            Cuando la banda media es cruzada por el close
             se considera una señal de compra.
-            Y cuando el Close supera a la banda alta,
+            Y cuando el close supera a la banda alta,
             se vende.
             * Desconozco que uso puede tener la banda baja.
 
@@ -446,7 +439,7 @@ class Asset(TimeSeries):
 
         return bb_obj.bollinger_hband(), bb_obj.bollinger_mavg(), bb_obj.bollinger_lband()
 
-    def cci(self, length, constant = 0.015, close = 'Close', high = 'High', low = 'Low'):
+    def cci(self, length, constant = 0.015, close = 'close', high = 'High', low = 'Low'):
         """ Regresa una SERIE de Commodity Channel Index 
             
             CCI mide la diferencia entre al cambio en el precio, y su cambio promedio.
@@ -458,7 +451,7 @@ class Asset(TimeSeries):
         return ta.trend.CCIIndicator(high=self.df[high], low=self.df[low], close=self.df[close], \
             window=length, constant = constant ).cci()
     
-    def dpo(self, length, target = 'Close'):
+    def dpo(self, length, target = 'close'):
         """ Regresa una SERIE de Detrended Price Oscillator
             
             Es un indicador que permite remover las tendencias del target
@@ -487,10 +480,10 @@ class Asset(TimeSeries):
     def engulfing(self):
         df = copy(self.df)
         df["o"] = self.df["Open"].diff().apply(lambda x : -1 if x > 0 else 1)
-        df["c"] = self.df["Close"].diff().apply(lambda x : 1 if x > 0 else -1)
+        df["c"] = self.df["close"].diff().apply(lambda x : 1 if x > 0 else -1)
         return df["o"] + df["c"]
 
-    def force_index(self, length, close='Close', volume='Volume'):
+    def force_index(self, length, close='close', volume='Volume'):
         """ Regresa una SERIe del Force Index 
         
             Ilustra que tan fuerte es la presion para comprar o vender.
@@ -500,7 +493,7 @@ class Asset(TimeSeries):
         return ta.volume.ForceIndexIndicator(close=self.df[close], volume=self.df[volume], \
             window=length).force_index()
 
-    def hull_ema(self, length, target='Close'):
+    def hull_ema(self, length, target='close'):
         """ Regresa una SERIE de Hull Exponential Moving Average 
         
             Obtenido de TradingView
@@ -511,7 +504,7 @@ class Asset(TimeSeries):
         self.df['hull_src'] = 2*self.ema(length//2) - self.ema(length)
         return self.ema(int( np.sqrt(length) ), target='hull_src' )
 
-    def hull_twma(self, length, target='Close'):
+    def hull_twma(self, length, target='close'):
         """ Regresa una SERIE de Hull Triple Weighted Moving Average 
         
             Obtenido de TradingView
@@ -522,7 +515,7 @@ class Asset(TimeSeries):
         self.df['hull_src'] = 3*self.wma(length//3) - self.wma(length//2) - self.wma(length)
         return self.wma(length , target='hull_src' )
 
-    def hull_wma(self, length, target='Close'):
+    def hull_wma(self, length, target='close'):
         """ Regresa una SERIE de Hull Weighted Moving Average 
         
             Obtenido de TradingView
@@ -533,7 +526,7 @@ class Asset(TimeSeries):
         self.df['hull_src'] = 2*self.wma(length//2) - self.wma(length)
         return self.wma(int( np.sqrt(length) ), target='hull_src' )
 
-    def kama(self, length=10, fast_ema=2, slow_ema=30, close='Close'):
+    def kama(self, length=10, fast_ema=2, slow_ema=30, close='close'):
         """ Regresa una SERIE de Kaufman's Adaptative Moving Average 
         
             Una media movil diseñada para reporta la volatilidad del mercado.
@@ -550,7 +543,7 @@ class Asset(TimeSeries):
         return ta.momentum.KAMAIndicator(close=self.df[close], \
             window=length, pow1=fast_ema, pow2=slow_ema).kama()
 
-    def macd(self, fast, slow, sign, target = 'Close'):
+    def macd(self, fast, slow, sign, target = 'close'):
         """ Regresa una SERIE de Moving Average Convergence-Divergence """
 
         macd_object = ta.trend.MACD(close=self.df[target], window_fast = fast, \
@@ -558,12 +551,12 @@ class Asset(TimeSeries):
 
         return macd_object.macd(), macd_object.macd_signal()
     
-    def macd_hist(self, fast, slow, sign, target = 'Close'):
+    def macd_hist(self, fast, slow, sign, target = 'close'):
         """ Regresa una SERIE de Moving Average Convergence-Divergence Histograma"""
         return ta.trend.MACD(close=self.df[target], n_fast = fast, \
             n_slow = slow, n_sign = sign).macd_diff()
 
-    def macd_signal(self, fast, slow, sign, target = 'Close'):
+    def macd_signal(self, fast, slow, sign, target = 'close'):
         """ Regresa una SERIE de Moving Average Convergence-Divergence Signal"""
         return ta.trend.MACD(closE=self.df[target], n_fast = fast, \
             n_slow = slow, n_sign = sign).macd_signal()
@@ -578,10 +571,10 @@ class Asset(TimeSeries):
         return ta.trend.MassIndex(high=self.df[high_target], low=self.df[low_target], \
             window_slow = high, window_fast = low).mass_index()
     
-    def momentum(self, periodos, target = "Close"):
+    def momentum(self, periodos, target = "close"):
         return self.df[target].pct_change(periods = periodos) + 1
 
-    def roc(self, length, target = 'Close'):
+    def roc(self, length, target = 'close'):
         """ Regresa una SERIE de Rate of Change
 
             Mide el cambio porcentual del target de un periodo al siguiente.
@@ -589,7 +582,7 @@ class Asset(TimeSeries):
         """
         return ta.momentum.ROCIndicator(close=self.df[target], window=length).roc()
     
-    def rsi(self, length, target = 'Close'):
+    def rsi(self, length, target = 'close'):
         """ Regresa una SERIE del Relative Strength Index 
             
             Compara la magnitud de ganancias y perdidas en un periodo de tiempo,
@@ -599,11 +592,11 @@ class Asset(TimeSeries):
         """
         return ta.momentum.RSIIndicator(close=self.df[target], window=length).rsi()
 
-    def sma(self, length, target = 'Close'):
+    def sma(self, length, target = 'close'):
         """ Regresa una SERIE de Moving Average """
         return self.df[target].rolling(length).mean()
 
-    def stoch(self, length, sma, close = 'Close', high = 'High', low = 'Low'):
+    def stoch(self, length, sma, close = 'close', high = 'High', low = 'Low'):
         """ Regresa dos SERIES del Stochastic Oscillator
             La primera es la señal stochastica, y la segunda
             es la misma pero con un smooth.
@@ -627,7 +620,7 @@ class Asset(TimeSeries):
             """
         return self.df[support].rolling(length).max(), self.df[resistance].rolling(length).min()
 
-    def tema(self, length, target = 'Close'):
+    def tema(self, length, target = 'close'):
         """ Regresa un SERIE de una Triple EMA 
 
             Se genera una EMA con una largo LENGTH sobre TARGET
@@ -644,7 +637,7 @@ class Asset(TimeSeries):
         self.df['tema3'] = self.ema(length=length, target='tema2')
         return 3*(self.df['tema1'] - self.df['tema2']) + self.df['tema3']
 
-    def trix(self, length, close = 'Close'):
+    def trix(self, length, close = 'close'):
         """ Regresa una SERIE de TRIX 
         
             Muestra el cambio porcentual de una trple media movil
@@ -652,7 +645,7 @@ class Asset(TimeSeries):
         """
         return ta.trend.TRIXIndicator(close = self.df[close], window=length).trix()
 
-    def tsi(self, high, low, target = 'Close'):
+    def tsi(self, high, low, target = 'close'):
         """ Regresa una SERIE de True Strength Index 
             
             Demuestra la direccion de tendencias, así como condiciones
@@ -660,7 +653,7 @@ class Asset(TimeSeries):
         """
         return ta.momentum.TSIIndicator(close=self.df[target], r=high, s=low).tsi()
     
-    def uo(self, short, medium, long, wshort, wmedium, wlong, high='High', low='Low', close='Close'):
+    def uo(self, short, medium, long, wshort, wmedium, wlong, high='High', low='Low', close='close'):
         """ Regresa una Serie de Ultimate Oscillator 
 
             Oscilador de momentum que busca capturar el momentum a traves de 
@@ -672,17 +665,17 @@ class Asset(TimeSeries):
         return ta.momentum.UltimateOscillator(high=self.df[high], low=self.df[low], \
             close=self.df[close], s=short, m=medium, len=long, ws=wshort, wm=wmedium, wl=wlong).uo()
 
-    def vwap(self, length, high = 'High', low = 'Low', close = 'Close', volume = 'Volume'):
+    def vwap(self, length, high = 'High', low = 'Low', close = 'close', volume = 'Volume'):
 
         return ta.volume.VolumeWeightedAveragePrice(high = self.df[high], low=self.df[low], \
             close=self.df[close], volume=self.df[volume], window = length).volume_weighted_average_price()
     
-    def vpt(self, close = 'Close', volume = 'Volume'):
+    def vpt(self, close = 'close', volume = 'Volume'):
 
         return ta.volume.VolumePriceTrendIndicator( close = self.df[close], \
             volume = self.df[volume] ).volume_price_trend()
 
-    def vortex_indicator(self, length, high='High', low='Low', close='Close'):
+    def vortex_indicator(self, length, high='High', low='Low', close='close'):
         """ Regresa dos SERIES de dos osciladores que captura
             tendencias a la alza y a la baja.
          """
@@ -691,7 +684,7 @@ class Asset(TimeSeries):
 
         return vi.vortex_indicator_pos(), vi.vortex_indicator_neg()
 
-    def william(self, lookback_p, high='High', low='Low', close='Close'):
+    def william(self, lookback_p, high='High', low='Low', close='close'):
         """ Regresa una Serie del Williams %R 
         
             Lecturas de entre 0, -20 se considera como sobrecomprado.

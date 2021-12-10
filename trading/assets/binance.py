@@ -19,8 +19,7 @@ class Binance(BaseAsset):
         end = datetime.today(), 
         frequency = "1d", 
         fiat = "usdt", 
-        from_api = True, 
-        from_ext = False,
+        from_ = "yahoo",
         sentiment = False,
         social_media = None,
     ):
@@ -30,13 +29,12 @@ class Binance(BaseAsset):
             start = start,
             end = end,
             frequency = frequency,
-            from_api = from_api,
+            from_ = from_,
             sentiment=sentiment,
             social_media=social_media
         )
 
         self.fiat = fiat.lower() if fiat is not None else "usdt"
-        self.from_ext = from_ext
         self.symbol_aux = self.symbol + self.fiat
         self.broker = "binance"
 

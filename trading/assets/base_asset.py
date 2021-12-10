@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime, date
 import re
 from dateutil import parser
+import yfinance as yf
 
 from trading.func_aux import PWD
 
@@ -12,15 +13,19 @@ class BaseAsset():
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
-        from_api = True,
+        fiat = None,
+        from_ = "yahoo",
         sentiment = False,
         social_media = None,
     ):
+        self.broker = "yahoo_asset"
+        self.fiat = fiat.lower() if fiat is not None else None
+
         self.symbol = symbol.lower()
         self.start = start
         self.end = end
         self.frequency = frequency
-        self.from_api = from_api
+        self.from_ = from_
 
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0] if frequency is not None else (None, None)
         self.period = int(self.period) if self.period is not None else None
@@ -60,6 +65,24 @@ class BaseAsset():
             raise ValueError("End must be date, datetime, or str with valid format. Type {}.".format(type(value)))
 
     @property
+    def symbol_aux(self):
+        if hasattr(self, "_symbol_aux"):
+            return self._symbol_aux
+        else:
+            self.symbol_aux = self.get_symbol_aux()
+            return self._symbol_aux
+    
+    @symbol_aux.setter
+    def symbol_aux(self, value):
+        self._symbol_aux = value
+
+    def get_symbol_aux(self):
+        if self.fiat == "mx":
+            return "{}.{}".format(self.symbol.upper(), self.fiat.upper()) if ".mx" not in self.symbol else self.symbol.upper()
+        else:
+            return self.symbol.upper()
+
+    @property
     def df(self):
         if hasattr(self, "_df"):
             return self._df
@@ -75,6 +98,26 @@ class BaseAsset():
             self._df = value
         else:
             raise ValueError("Not Pandas DataFrame. Type {}".format(type(value)))
+
+    def df_yahoo(self):
+        aux = { # 1m,2m,5m,15m,30m,60m,90m,1h, 1d (Default),5d,1wk,1mo,3mo
+            'min':'1m',
+            'h':'1h',
+            'd':'1d',
+            'w':'1wk',
+            'm':'1mo',
+            'q':'3mo'
+        }
+
+        if self.interval != "min":
+            df = yf.download(self.symbol_aux, start = self.start, end = self.end, interval= aux[self.interval] ,progress=False)
+    
+        else:
+            raise NotImplementedError
+        
+        df.columns = [ i.lower() for i in df.columns ]
+
+        return df
 
     def df_db(self):
         aux = {
@@ -127,10 +170,17 @@ class BaseAsset():
     def update_df(self):
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
-        if self.from_api:
-            return self.df_ext_api() if self.from_ext else self.df_api()
-        else:
-            return self.df_db()
+        return {
+            "yahoo":self.df_yahoo,
+            "api":self.df_api,
+            "ext_api":self.df_ext_api,
+            "db":self.df_db
+        }[ self.from_ ]()
+
+        # if self.from_api:
+        #     return self.df_ext_api() if self.from_ext else self.df_api()
+        # else:
+        #     return self.df_db()
     
     def refresh(self):
         self.df = self.update_df()

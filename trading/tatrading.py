@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 
 from .instrumento import Instrumento
-from .procesos import Setter
 from .instrumentos import *
 
 class Estrategia():

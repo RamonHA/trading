@@ -1,5 +1,4 @@
 import pytest
-import pathlib
 from datetime import date
 
 from trading.assets import Asset
@@ -11,7 +10,7 @@ def test_binance():
         end = date(2021,11,1), 
         frequency = "1d", 
         broker = "Binance",
-        from_ext=True
+        from_="ext_api"
     )
 
     df = inst.df

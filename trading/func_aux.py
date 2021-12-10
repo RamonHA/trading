@@ -21,6 +21,9 @@ def get_assets():
 def get_config():    
     return get("config.json")
 
+def get_settings():
+    return get("settings.json")
+
 def PWD(pwd):    
     data = get("config.json")
     return os.path.normpath( "{}/{}".format( data["pwd"], pwd) )

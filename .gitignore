@@ -4,6 +4,7 @@ trading/config.json
 trading/__pycache__/
 trading/assets/__pycache__/
 trading/optimization/__pycache__/
+trading/processes/__pycache__/
 __pycache__/
 tests/__pycache__/
 build/

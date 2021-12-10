@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from binance.client import Client
 from binance.enums import *
 
-from .instrumento import Instrumento
+from .assets import Asset
 from .func_aux import *
 
 DATA = get_config()
@@ -71,7 +71,7 @@ def octetos(broker, fiat):
         
         print("Done!")
 
-def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose = False):
+def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ = None, verbose = False):
     
     if verbose:
         print("Historic Download for {} {} in {} from {} to today".format( broker, fiat, frequency, start ))
@@ -106,13 +106,14 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), verbose
         print(i)
 
         try:
-            Instrumento(
-                simbolo = i,
-                inicio = start,
-                fin = date.today() - timedelta(days = 1),
-                frecuencia = frequency,
+            Asset(
+                symbol = i,
+                start = start,
+                end = date.today() - timedelta(days = 1),
+                frequency = frequency,
                 broker = broker,
                 fiat = fiat,
+                from_ = from_
             ).update()
         except Exception as e:
             print("No download for {}. Exception: {}".format(i, e) )
