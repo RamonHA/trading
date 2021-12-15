@@ -60,7 +60,7 @@ def strategy(
 class Setter():
     def __init__(
             self,
-            broker,
+            broker = "yahoo_asset",
             fiat = None,
             commission = None,
             assets = None

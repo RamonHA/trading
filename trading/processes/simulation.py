@@ -77,7 +77,7 @@ def strategy_dummy(
 class Simulation(BaseProcess):
     def __init__(
             self,
-            broker,
+            broker = "yahoo_asset",
             fiat = None,
             commission = None,
             assets = None,
