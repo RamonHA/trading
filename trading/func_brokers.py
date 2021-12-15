@@ -4,10 +4,6 @@ import pandas as pd
 import numpy as np
 from datetime import date, timedelta
 
-# Binance
-from binance.client import Client
-from binance.enums import *
-
 from .assets import Asset
 from .func_aux import *
 
@@ -30,6 +26,8 @@ def octetos(broker, fiat):
     """
 
     if broker == "Binance":
+        from binance.client import Client
+
         try:
             api = Client(DATA["binance"]["api_key"], DATA["binance"]["secret_key"])
         except:

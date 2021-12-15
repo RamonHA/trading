@@ -87,7 +87,7 @@ class BaseAsset():
         if hasattr(self, "_df"):
             return self._df
         else:
-            self.df = self.update_df()
+            self._df = self.update_df()
             return self._df
     
     @df.setter
@@ -119,7 +119,7 @@ class BaseAsset():
 
         return df
 
-    def df_db(self):
+    def df_db(self, verbose = False):
         aux = {
             'min':'minutes',
             'h':'hour',
@@ -133,17 +133,18 @@ class BaseAsset():
         try:
             df = pd.read_csv( pwd )
         except:
-            print(
-                "{} csv does not exist in {} interval in path {}.".format(
-                    self.symbol_aux, 
-                    aux[self.interval],
-                    pwd
+            if verbose:
+                print(
+                    "{} csv does not exist in {} interval in path {}.".format(
+                        self.symbol_aux, 
+                        aux[self.interval],
+                        pwd
+                    )
                 )
-            )
             return None
         
         df.set_index( "date", inplace = True )
-        df.index = pd.to_datetime( df.index )
+        # df.index = pd.to_datetime( df.index )
 
         return df.loc[ str(self.start):str(self.end) ]
 

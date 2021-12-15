@@ -1,10 +1,78 @@
+from copy import deepcopy
 import re
 from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 import json
+import warnings
 
+from trading.assets import Asset
 from .base_process import BaseProcess
 from trading.func_aux import PWD, folder_creation
+
+def relative_time(end, time, frequency):
+    period_analysis, interval_analysis = re.findall(r'(\d+)(\w+)', frequency)[0]
+    period_analysis = int(period_analysis)
+
+    if interval_analysis == "m":
+        start = end - relativedelta(months = time*period_analysis) 
+        start = start.replace(day = 1)
+    elif interval_analysis == "w":
+        start = end - timedelta(days = 7*time*period_analysis)
+    elif interval_analysis == "d":
+        start = end - timedelta(days = time*period_analysis ) 
+    elif interval_analysis == "h":
+        start = end - timedelta(seconds = 3600*time*period_analysis )
+
+    return start
+
+def ind_strategy(inst, end, time, frequency, function):
+    instt = deepcopy( inst )
+
+    start = relative_time(end, time, frequency)
+
+    instt.df = instt.df.loc[ start:end ]
+
+    if len(instt.df) == 0: return None
+
+    return [ end, function(instt) ]
+
+def strategy_dummy(
+        asset,
+        start_abs,
+        end_abs,
+        time,
+        end_analysis,
+        frequency,
+        fiat,
+        broker,
+        function,
+        from_ = "db",
+        parallel = 0,
+
+    ):
+
+    start = relative_time( end_analysis[0][-1], time, frequency )
+
+    inst = Asset( 
+        asset, 
+        start, 
+        end_abs, 
+        frequency = frequency, 
+        fiat = fiat, 
+        broker = broker, 
+        from_ = from_, 
+        sentiment = False
+    )
+
+    if inst.df is None or len(inst.df) <= 3: 
+        warnings.warn("Error in strategy. Df import issue")
+        return None
+
+    if parallel == 0:
+        r = [ ind_strategy( inst, end[-1], time, frequency, function ) for end in end_analysis ]
+
+    return r
+
 
 class Simulation(BaseProcess):
     def __init__(
@@ -136,5 +204,19 @@ class Simulation(BaseProcess):
                 with open( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ), "w" ) as fp:
                     json.dump( self.results, fp )
     
+    def strategy_dummy(self):
+        pass
+
+    def _analyze_dummy(self,
+            test_time,
+            save = True,
+            parallel = 0,
+            **kwargs
+        ):
+
+        dates = [ self.start_end_relative( simulation, test_time, verbose = True ) for simulation in range(self.simulations) ]
 
 
+        if parallel == 0:
+            r = {}
+            

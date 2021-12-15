@@ -1,6 +1,7 @@
 import pytest
 from datetime import date
 
+
 from trading.processes import Simulation
 
 def test_analysis():

@@ -25,18 +25,18 @@ def strategy(
         from_ = "db",
         sentiment = False
     ):
-    periodo_analisis, intervalo_analisis = re.findall(r'(\d+)(\w+)', frequency)[0]
-    periodo_analisis = int(periodo_analisis)
+    period_analysis, interval_analysis = re.findall(r'(\d+)(\w+)', frequency)[0]
+    period_analysis = int(period_analysis)
 
-    if intervalo_analisis == "m":
-        start = end - relativedelta(months = time*periodo_analisis) 
+    if interval_analysis == "m":
+        start = end - relativedelta(months = time*period_analysis) 
         start = start.replace(day = 1)
-    elif intervalo_analisis == "w":
-        start = end - timedelta(days = 7*time*periodo_analisis)
-    elif intervalo_analisis == "d":
-        start = end - timedelta(days = time*periodo_analisis ) 
-    elif intervalo_analisis == "h":
-        start = end - timedelta(seconds = 3600*time*periodo_analisis )
+    elif interval_analysis == "w":
+        start = end - timedelta(days = 7*time*period_analysis)
+    elif interval_analysis == "d":
+        start = end - timedelta(days = time*period_analysis ) 
+    elif interval_analysis == "h":
+        start = end - timedelta(seconds = 3600*time*period_analysis )
 
     # print(asset, start, end, frequency, fiat, broker)
     inst = Asset( 
@@ -117,7 +117,7 @@ class BaseProcess(Setter):
         self.analysis = {}
         self.end = end
 
-    def strategy(self, end, from_ = "db", **kwargs):
+    def strategy(self, end, from_ = "db", parallel = False, **kwargs):
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
 
@@ -125,21 +125,34 @@ class BaseProcess(Setter):
 
             next_assets = {}
 
-            with mp.Pool( mp.cpu_count() // 2 ) as pool:
-                r = pool.starmap(
-                    strategy,
-                    [(
-                        i, 
-                        v["time"],
-                        v["function"],
-                        end,
-                        v.get( "frequency", self.frequency_analysis ),
-                        self.fiat,
-                        self.broker,
-                        from_,
-                        kwargs.get("sentiment", False)
-                    ) for i in or_assets ]
-                )
+            if parallel:
+                with mp.Pool( mp.cpu_count() // 2 ) as pool:
+                    r = pool.starmap(
+                        strategy,
+                        [(
+                            i, 
+                            v["time"],
+                            v["function"],
+                            end,
+                            v.get( "frequency", self.frequency_analysis ),
+                            self.fiat,
+                            self.broker,
+                            from_,
+                            kwargs.get("sentiment", False)
+                        ) for i in or_assets ]
+                    )
+            else:
+                r = [   strategy(
+                            i, 
+                            v["time"],
+                            v["function"],
+                            end,
+                            v.get( "frequency", self.frequency_analysis ),
+                            self.fiat,
+                            self.broker,
+                            from_,
+                            kwargs.get("sentiment", False)
+                        ) for i in or_assets ]
 
             # print("Length and Results:\n{}\n{}".format(len(r), r))
 

@@ -1,4 +1,4 @@
-# Clases
+# -*- coding: utf-8 -*-
 
 # Librerias generales
 from copy import copy
