@@ -9,6 +9,7 @@ setup(
     url="https://github.com/RamonHA/trading",
     install_requieres=[],
     packages=find_packages(),
+    data_files= [ ( "trading", ["trading/assets.json", "trading/settings.json"] ) ] ,
     entry_points = {  # Later on set descarga_historica
         "console_scripts":[
             "set_broker = trading.config:set_broker",
