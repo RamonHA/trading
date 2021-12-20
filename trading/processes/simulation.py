@@ -195,6 +195,9 @@ class Simulation(BaseProcess):
             save = True,
             **kwargs
         ):
+
+        # self.assets_inst = [ Asset() for i in self.assets ]
+
         for simulation in range( self.simulations ):
             start, end, end_analysis = self.start_end_relative( simulation, test_time, verbose = True )
 
