@@ -171,6 +171,9 @@ class BaseProcess(Setter):
     def filter(self, data, filter = "all", **kwargs):
         
         types = [type(i) for i in data.values()]
+
+        if len(types) == 0: raise ValueError("Types None")
+
         if types.count(types[0]) != len(types):
             raise ValueError("List of data compossed by different data types. Types: {}".format(types))
 
