@@ -7,6 +7,7 @@ import multiprocess as mp
 import math
 import re
 import json
+import numpy as np
 
 from trading.assets import Asset
 
@@ -154,30 +155,20 @@ class BaseProcess(Setter):
                             kwargs.get("sentiment", False)
                         ) for i in or_assets ]
 
-            # print("Length and Results:\n{}\n{}".format(len(r), r))
-
-            next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
-
-            if v.get("type", "prediction") == "analysis":
-
-                # False: Menor a Mayor 
-                # True: Mayor a Menor
-                n = v.get("qty", 1.0)
-                n = math.ceil( len(or_assets)*n  ) if isinstance(n, float) else n
-
-                next_assets = { 
-                    k:v for k,v in sorted( 
-                                        next_assets.items(), 
-                                        key = lambda item: item[1] , 
-                                        reverse = True if v.get("best", "highest") == "highest" else False 
-                                        )[ 0: n ] 
-                }
+            if v.get("filter", "all") != "all":
+                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
+            else:
+                next_assets = self.filter(
+                    { inst:value for inst, value in zip( or_assets, r ) if value },
+                    v.get("filter", "highest"),
+                    **kwargs
+                )
 
             or_assets = copy(next_assets)
 
         return next_assets # Al fin: or_instrumentos = next_instrumentos
 
-    def filter(self, data, filter = "positive", **kwargs):
+    def filter(self, data, filter = "all", **kwargs):
         
         types = [type(i) for i in data.values()]
         if types.count(types[0]) != len(types):
@@ -185,7 +176,7 @@ class BaseProcess(Setter):
 
         types = list( set(types) )[ 0 ]
 
-        if types in [float, int]:
+        if types in [float, int, np.float64]:
             return {
                 "all":data,
                 "positive":{ i:v for i,v in data.items() if v > 0 },
@@ -211,4 +202,5 @@ class BaseProcess(Setter):
         if len(data) == 0: return None
 
         return data
+
 

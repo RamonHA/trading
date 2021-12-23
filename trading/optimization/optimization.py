@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import date
 
 from trading.assets import Asset
+from trading.func_aux import get
 
 class Optimization():
     def __init__(
@@ -10,6 +11,7 @@ class Optimization():
             start,
             end = date.today(),
             frequency = "1d",
+            exp_returns = None,
             risk = "efficientfrontier",
             objective = "maxsharpe",
             broker = "yahoo_asset",
@@ -18,6 +20,12 @@ class Optimization():
             interpolate = True
         ):
         self.assets = assets
+        
+        if exp_returns is None or isinstance(exp_returns, str):
+            self.exp_returns = exp_returns
+        else:
+            self.exp_returns = self.set_exp_returns(exp_returns)
+
         self.start = start
         self.end = end
         self.frequency = frequency.lower()
@@ -30,6 +38,14 @@ class Optimization():
         self.risk = risk.lower()
         self.objective = objective.lower()
         self.optimizer = self.get_optimizer()
+
+    def set_exp_returns(self, exp_returns):
+        if isinstance(exp_returns, pd.Series):
+            return exp_returns
+        elif isinstance(exp_returns, dict):
+            return pd.DataFrame.from_dict( exp_returns, orient="index" )
+        elif isinstance(exp_returns, pd.DataFrame):
+            return exp_returns[ exp_returns.columns[0] ]
 
     def get_optimizer(self):
         if self.risk in ["efficientfrontier"]:
@@ -83,15 +99,69 @@ class Optimization():
 
         return df
 
-    def octetos(self, df):
-        raise NotImplementedError
-        for i in df.columns: df[i] /= pow(10, self.octetos.get(i, 1))
-        return df
+    @property
+    def octetos(self):
+        if hasattr(self, "_octetos"):
+            return self._octetos
+        elif self.broker == "binance":
+            self._octetos =  self.octetos_binance()
+        elif self.broker == "bitso":
+            self._octetos =  self.octetos_bitso()
+        else:
+            raise ValueError("No octetos for {}.".format(self.broker))
+
+        return self._octetos
+
+    def octetos_binance(self):
+        """  
+            Return: octetos (dict)
+
+            to_buy (list)
+        """
+        return get( "/binance/octetos_{}.json".format(self.fiat) )
+
+    def octetos_bitso(self):
+        return {
+            "BTC":8,
+            "ETH":8,
+            "XRP":6,
+            "LTC":8,
+            "BCH":8,
+            "TUSD":2,
+            "BAT":8,
+            "DAI":2,
+            "MANA":8
+        }
     
-    def optimize(self, value = 0):
+    def optimize(self, value = 0, time = 1, limits = (0,1), **kwargs):
 
-        self.optimizer(
-            self.df,
-            value,
+        if self.broker in ["binance", "bitso"]:
+            for i in self.df.columns: self.df[i] /= pow(10, self.octetos.get(i, 1))
 
+
+        opt = self.optimizer(
+            value = value,
+            df = self.df,
+            exp_returns=self.exp_returns,
+            riks = self.risk,
+            objective = self.objective,
+            time = time,
+            limits = limits,
+            **kwargs
         )
+
+        try:
+            allocation, qty, pct = opt.optimize( **kwargs )
+        except Exception as e:
+            print("Could generate portfolio. \nException: {}".format(e))
+
+        if allocation is None or len(allocation) == 0: return None, None, None
+
+        if self.broker in ["binance", "bitso"]:
+            qty = { i:(v*10**(self.octetos.get(i, 1))) for i, v in qty.items() }
+
+        return allocation, qty, pct
+
+
+
+        
