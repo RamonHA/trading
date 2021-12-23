@@ -314,32 +314,31 @@ class Simulation(BaseProcess):
 
             pct = list( data.keys() )
 
-            if self.realistic > 0:
-                opt = Optimization(
-                    assets=pct,
-                    start = start_analysis,
-                    end = end_analysis,
-                    frequency=frequency,
-                    exp_returns=None if not exp_return else data,
-                    risk = risk,
-                    objective=objective,
-                    broker = self.broker,
-                    fiat = self.fiat,
-                    from_ = kwargs.get("from_", "db"),
-                    interpolate=kwargs.get("interpolate", True)
-                )   
+            opt = Optimization(
+                assets= pct if self.realistic > 0 else allocation ,
+                start = start_analysis,
+                end = end_analysis,
+                frequency=frequency,
+                exp_returns=None if not exp_return else data,
+                risk = risk,
+                objective=objective,
+                broker = self.broker,
+                fiat = self.fiat,
+                from_ = kwargs.get("from_", "db"),
+                interpolate=kwargs.get("interpolate", True)
+            )   
 
-                allocation, qty, pct = opt.optimize( value, time = time, limits = limits )
+            allocation, qty, pct = opt.optimize( value, time = time, limits = limits )
 
-                with open( self.pwd_balance.format( "{}_{}.json".format( start, end ) ), "w" ) as fp:
-                    json.dump(
-                        {
-                            "allocation":allocation,
-                            "qty":qty,
-                            "pct":pct
-                        },
-                        fp
-                    )
+            with open( self.pwd_balance.format( "{}_{}.json".format( start, end ) ), "w" ) as fp:
+                json.dump(
+                    {
+                        "allocation":allocation,
+                        "qty":qty,
+                        "pct":pct
+                    },
+                    fp
+                )
             
             tr_aux = self.test(
                 assets=pct ,
@@ -388,7 +387,7 @@ class Simulation(BaseProcess):
 
             # Here should be immplemented realistic
 
-            r = ( inst.df["Close"].iloc[-1] / inst.df["Close"].iloc[0] ) - 1
+            r = ( inst.df["close"].iloc[-1] / inst.df["close"].iloc[0] ) - 1
 
             tr += ( v*r )
         
