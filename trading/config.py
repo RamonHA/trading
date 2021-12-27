@@ -102,13 +102,17 @@ def historic_download():
 
     start = args.start if args.start is not None else "1990-01-01"
 
+    print("Flags: {} {} {} {} {}".format(
+        args.broker, args.fiat, args.frequency, start, args.verbose
+    ))
+
     from .func_brokers import historic_download
     historic_download(
-        args.broker, 
-        args.fiat, 
-        args.frequency, 
-        start, 
-        args.verbose
+        broker = args.broker, 
+        fiat = args.fiat, 
+        frequency = args.frequency, 
+        start = start, 
+        verbose = args.verbose
     )
 
 def get_assets():

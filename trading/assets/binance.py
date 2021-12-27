@@ -18,6 +18,7 @@ class Binance(BaseAsset):
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
+        broker = "binance",
         fiat = "usdt", 
         from_ = "yahoo",
         sentiment = False,
@@ -36,7 +37,7 @@ class Binance(BaseAsset):
 
         self.fiat = fiat.lower() if fiat is not None else "usdt"
         self.symbol_aux = self.symbol + self.fiat
-        self.broker = "binance"
+        self.broker = broker
 
     def df_api(self):
         raise NotImplementedError

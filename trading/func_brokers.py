@@ -69,7 +69,7 @@ def octetos(broker, fiat):
         
         print("Done!")
 
-def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ = None, verbose = False):
+def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ = "yahoo", verbose = False):
     
     if verbose:
         print("Historic Download for {} {} in {} from {} to today".format( broker, fiat, frequency, start ))
@@ -84,7 +84,7 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ =
 
     broker = broker.lower()
 
-    sleep_time = 14 if broker == "bitso" else 0.5
+    sleep_time = 14 if broker == "bitso" else 0.7
 
     folder_creation( 
             PWD( 

@@ -170,6 +170,7 @@ class Asset(TimeSeries):
             start = start, 
             end = end, 
             frequency = frequency,
+            broker = broker,
             fiat = fiat,
             from_ = from_,
             sentiment = sentiment,

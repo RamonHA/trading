@@ -13,12 +13,13 @@ class BaseAsset():
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
+        broker = "yahoo_asset",
         fiat = None,
         from_ = "yahoo",
         sentiment = False,
         social_media = None,
     ):
-        self.broker = "yahoo_asset"
+        self.broker = broker
         self.fiat = fiat.lower() if fiat is not None else None
 
         self.symbol = symbol.lower()
@@ -157,6 +158,16 @@ class BaseAsset():
     def update(self, value = "df", pwd = None):
         self.from_api = True
 
+        aux = {
+            'min':'minutes',
+            'h':'hour',
+            'd':'daily',
+            'w':'weekly',
+            'm':'monthly'
+        }
+
+        pwd = pwd if pwd is not None else PWD("/{}/data/{}/{}.csv".format(self.broker, aux[ self.interval ], self.symbol_aux ))
+
         if value == "df":
             self.save( 
                 self.df,
@@ -187,10 +198,11 @@ class BaseAsset():
         self.df = self.update_df()
 
     def save(self, value, pwd = None):
+
         if isinstance( value, pd.DataFrame ):
-            self.to_csv( value, pwd )
+            value.to_csv( pwd )
         elif isinstance( value, dict ):
-            self.to_json( value, pwd )
+            value.to_json( pwd )
         else:
             raise ValueError("Save to {} not recognize".format(value))
     
