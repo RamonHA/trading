@@ -182,7 +182,7 @@ def octetos():
     if args.broker is None and args.broker is None:
         raise ValueError("No broker input")
 
-    from func_brokers import octetos
+    from .func_brokers import octetos
 
     oct = octetos( args.broker, args.fiat )
 
