@@ -84,7 +84,7 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ =
 
     broker = broker.lower()
 
-    sleep_time = 14 if broker == "bitso" else 0.7
+    sleep_time = 14 if broker == "bitso" else 0.5
 
     folder_creation( 
             PWD( 

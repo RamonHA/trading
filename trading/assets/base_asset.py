@@ -116,7 +116,9 @@ class BaseAsset():
         else:
             raise NotImplementedError
         
+        df.reset_index(inplace = True)
         df.columns = [ i.lower() for i in df.columns ]
+        df.set_index("date", inplace = True)
 
         return df
 

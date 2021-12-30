@@ -86,6 +86,7 @@ class Simulation(BaseProcess):
             end = date.today(),
             simulations = 0,
             realistic = 0,
+            **kwargs
         ):
         """  
             realistic (int): How realisitic to drive the simulation
@@ -102,7 +103,8 @@ class Simulation(BaseProcess):
             fiat = fiat, 
             commission = commission,
             assets=assets,
-            end = end
+            end = end,
+            **kwargs
         )
 
         self.simulations = simulations
@@ -179,11 +181,11 @@ class Simulation(BaseProcess):
     
     def start_end_relative(self, test_time, analysis_time, interval, period, simulation = 1, verbose = True):
         if interval == "m":
-            start = self.start + relativedelta(months = simulation*period*test_time)
+            start = self.start + relativedelta(months = (simulation-1)*period*test_time)
             start = start.replace(day = 1)
 
-            end = self.start + relativedelta(months = (simulation+1)*period*test_time)
-            end -= timedelta(days = 1)
+            end = self.start + relativedelta(months = (simulation)*period*test_time)
+            # end -= timedelta(days = 1)
 
             end_analysis = start - timedelta(days = 1)
             start_analysis = end_analysis - relativedelta( months = analysis_time*period )
@@ -215,10 +217,16 @@ class Simulation(BaseProcess):
             **kwargs
         ):
 
+        if self.verbose > 0:
+            self.print_func("Analyze")
+
         # self.assets_inst = [ Asset() for i in self.assets ]
 
         for simulation in range( self.simulations ):
             start, end, end_analysis, _ = self.start_end_relative( time, 0, self.interval_analysis, self.period_analysis, simulation=simulation, verbose = True )
+
+            if self.verbose > 1:
+                self.print_for( "{} {}".format( start, end) )
 
             self.results = self.strategy( end_analysis, **kwargs )
 
@@ -244,19 +252,29 @@ class Simulation(BaseProcess):
             
     def optimize(
             self,
-            time, 
             balance_time, 
+            time = 0,
             frequency = None,
             value = 0,
             exp_return = False,
-            risk = "efficientreturn",
+            risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
             run = True,
             **kwargs
         ):
+        """  
+            balance_time (int): Time considered to optimize a portfolio
+            time (int): Default = 0
+                        Time considered to optimize to portfolio to (similat to test_time)
+            
+        """
         
+        time = self.test_time if time == 0 else time
         frequency = self.frequency_analysis if frequency is None else frequency
+
+        if value > 0 and self.realistic == 0:
+            self.realistic = 1
 
         self.pwd_balance = self.pwd_analysis.format( 
             "{}_{}_{}_{}_{}".format( risk, objective, time, frequency, balance_time )         
@@ -286,13 +304,16 @@ class Simulation(BaseProcess):
             balance_time, 
             value = 0,
             exp_return = False,
-            risk = "efficientreturn",
+            risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
             **kwargs
         ):
 
-        if ( value == 0 and self.realistic == 0 ):
+        if self.verbose > 0:
+            self.print_func( "Optimize" )
+
+        if ( value != 0 and self.realistic == 0 ):
             warnings.warn("Value of portfolio is set to 0 to run simultion")
             value = 0
         
@@ -306,16 +327,21 @@ class Simulation(BaseProcess):
         for simulation in range( self.simulations ):
             start, end, end_analysis, start_analysis = self.start_end_relative( test_time = time, analysis_time=balance_time, interval = interval, period = period, simulation = simulation, verbose = True )
 
+            if self.verbose > 1:
+                self.print_for( "Opt for {} {}".format(start, end) )
+
+
             data = self.preanalisis(
                 pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ),
                 filter = kwargs.get("filter", "all"),
                 **kwargs
             )
 
-            pct = list( data.keys() )
+            if data is None:
+                raise ValueError("No data to work with. Pwd".format( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ) ))
 
             opt = Optimization(
-                assets= pct if self.realistic > 0 else allocation ,
+                assets= list( data.keys() ),
                 start = start_analysis,
                 end = end_analysis,
                 frequency=frequency,
@@ -341,14 +367,14 @@ class Simulation(BaseProcess):
                 )
             
             tr_aux = self.test(
-                assets=pct ,
+                assets= pct if self.realistic > 0 else allocation,
                 start = start,
                 end = end
             )
 
             tr *= ( 1+tr_aux )
             value *= (1+tr_aux)
-            
+        
             self.df.append(
                 [start, end, tr_aux, tr, value]
             )

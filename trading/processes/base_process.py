@@ -24,8 +24,10 @@ def strategy(
         fiat,
         broker,
         from_ = "db",
-        sentiment = False
+        sentiment = False,
+        verbose = False
     ):
+
     period_analysis, interval_analysis = re.findall(r'(\d+)(\w+)', frequency)[0]
     period_analysis = int(period_analysis)
 
@@ -39,7 +41,9 @@ def strategy(
     elif interval_analysis == "h":
         start = end - timedelta(seconds = 3600*time*period_analysis )
 
-    # print(asset, start, end, frequency, fiat, broker)
+    if verbose:
+        print("Func Strategy", asset, start, end, frequency, fiat, broker)
+    
     inst = Asset( 
         asset, 
         start, 
@@ -56,7 +60,12 @@ def strategy(
         # print("Error in strategy. Df import issue")
         return None
 
-    return function(inst)
+    r = function(inst)
+
+    if verbose:
+        print( "{}: {}".format( asset, r ) )
+
+    return r
 
 class Setter():
     def __init__(
@@ -64,12 +73,21 @@ class Setter():
             broker = "yahoo_asset",
             fiat = None,
             commission = None,
-            assets = None
+            assets = None,
+            **kwargs
         ):
         self.broker = broker
         self.commission = COMMISSIONS.get( commission, 0.0 )
         self.fiat = fiat if fiat is not None else self.set_fiat()
         self.assets = assets if assets is not None else self.get_assets()
+
+        self.verbose = kwargs.get("verbose", 0)
+
+    def print_func(self, value):
+        print( "\n\n", "#"*20, value, "#"*20 )
+    
+    def print_for(self, value):
+        print("--- ", value)
 
     @property
     def assets(self):
@@ -107,22 +125,29 @@ class BaseProcess(Setter):
             fiat = None,
             commission = None,
             assets = None,
-            end = date.today()
+            end = date.today(),
+            **kwargs
         ):
         super().__init__(
             broker = broker, 
             fiat = fiat, 
             commission = commission,
-            assets=assets
+            assets=assets,
+            **kwargs
         )
         self.analysis = {}
         self.end = end
 
     def strategy(self, end, from_ = "db", parallel = False, **kwargs):
+
+        if self.verbose > 0:
+            self.print_func( "Strategy" )
+
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
 
-            # print("Analysis: {}".format(a))
+            if self.verbose > 1:
+                self.print_for("Analysis: {}".format( a ) )
 
             next_assets = {}
 
@@ -139,7 +164,8 @@ class BaseProcess(Setter):
                             self.fiat,
                             self.broker,
                             from_,
-                            kwargs.get("sentiment", False)
+                            kwargs.get("sentiment", False),
+                            True if self.verbose > 2 else False
                         ) for i in or_assets ]
                     )
             else:
@@ -152,10 +178,13 @@ class BaseProcess(Setter):
                             self.fiat,
                             self.broker,
                             from_,
-                            kwargs.get("sentiment", False)
+                            kwargs.get("sentiment", False),
+                            True if self.verbose > 2 else False
                         ) for i in or_assets ]
 
-            if v.get("filter", "all") != "all":
+                print(r)
+
+            if v.get("filter", "all") == "all":
                 next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
             else:
                 next_assets = self.filter(
@@ -169,10 +198,14 @@ class BaseProcess(Setter):
         return next_assets # Al fin: or_instrumentos = next_instrumentos
 
     def filter(self, data, filter = "all", **kwargs):
-        
+
         types = [type(i) for i in data.values()]
 
-        if len(types) == 0: raise ValueError("Types None")
+        if len(types) == 0: 
+            if self.verbose > 2:
+                print(data)
+
+            raise ValueError("Types None")
 
         if types.count(types[0]) != len(types):
             raise ValueError("List of data compossed by different data types. Types: {}".format(types))
@@ -205,5 +238,3 @@ class BaseProcess(Setter):
         if len(data) == 0: return None
 
         return data
-
-
