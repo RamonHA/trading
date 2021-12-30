@@ -35,7 +35,7 @@ def octetos(broker, fiat):
 
         octetos = {}
 
-        from .instrumentos import Binance
+        Binance = get_assets()["binance"]
 
         for i in Binance:    
             # Ahora hay que redondear el numero a los decimales especificados
@@ -60,14 +60,7 @@ def octetos(broker, fiat):
 
             octetos[i] = int(decimals)
 
-            # Solucion temporal en lo que se arregla el problema 
-            # de tantos requests
-            # octetos[i] = 8
-
-        with open( PWD( "/{}/octetos_{}.json".format(broker, fiat) ) , "w") as fp:
-            json.dump(octetos, fp)
-        
-        print("Done!")
+    return octetos
 
 def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ = "yahoo", verbose = False):
     

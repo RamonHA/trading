@@ -1,4 +1,5 @@
 # Configuration functions
+from dateutil.parser import parse
 import pkg_resources
 
 def config(func):
@@ -169,4 +170,35 @@ def add_assets():
     with open( get_pwd("assets.json"), "w" ) as fp:
         json.dump( assets, fp )
     
+    print("Done!")
+
+def octetos():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("broker")
+    parser.add_argument("-fiat", dest = "fiat")
+    args = parser.parse_args()
+
+    if args.broker is None and args.broker is None:
+        raise ValueError("No broker input")
+
+    from func_brokers import octetos
+
+    oct = octetos( args.broker, args.fiat )
+
+    import json
+    try:
+        pwd = pkg_resources.resource_filename("trading", "{}/octetos.json".format(args.broker))
+
+        with open(pwd, 'r') as fp:
+            data = json.load(fp)
+    except:
+        print("octetos.json creation")
+        data = {}
+
+    data[ args.fiat ] = oct    
+
+    with open( "{}/octetos.json".format(args.broker) , "w") as fp:
+        json.dump(octetos, fp)
+        
     print("Done!")
