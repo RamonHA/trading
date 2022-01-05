@@ -16,6 +16,13 @@ from pytrends import dailydata
 from pytrends.request import TrendReq
 from trading.func_aux import *
 
+# Timeseries + statsmodels
+from statsmodels.tsa.stattools import kpss, adfuller
+from statsmodels.stats.stattools import durbin_watson
+from statsmodels.tsa.api import VAR
+from statsmodels.tsa.stattools import grangercausalitytests
+import statsmodels.api as sm
+
 def remuestreo(df, intervalo, frecuencia):
 
     if not isinstance(df, pd.DataFrame):
@@ -82,11 +89,30 @@ class TimeSeries():
         Esta clase permite definir aquellas variables que sean TimeSeries, y las dota
         de caracteristicas estadisticas, etc.
     """
-    def __init__(self):
+    def __init__(self, df = None):
         self.target = "close" if type(self) == Asset else "data"
-    
+        
+        if df is not None:
+            self.df = df
+
     def __repr__(self):
         return '{}: {}'.format(type(self).__name__,  self.symbol_aux )
+
+    @property
+    def df(self):
+        return self._df
+    
+    @df.setter
+    def df(self, value):
+        # Here there will be a preprocessing
+        self._df = value
+
+    def ensure_df(self, df):
+        assert ( 
+            df, hasattr(self, "_df") or hasattr(self, "_asset") 
+        ), "Requiered a df"
+        
+        if df is not None: self.df = df
 
     # Propiedades de yahoo finanzas
     @property
@@ -101,6 +127,198 @@ class TimeSeries():
     def yf(self, value):
         self._yf = value
     
+    # Statistics
+    def _ur_adf(self, df, regression = "c"):
+        return [
+            adfuller(  
+                df[i], regression = regression
+            ) for i in df.columns 
+        ]
+
+    def _ur_kpss(self, df, regression = "c"):
+        return [
+            kpss(
+                df[i], regression = regression
+            ) for i in df.columns
+        ]
+
+    def _unit_roots(self, 
+            df,
+            method = "adf",
+            **kwargs
+        ):
+
+        r = {
+            "adf":self._ur_adf,
+            "kpss":self._ur_kpss
+        }[method]( df, kwargs.get("regression", "c") )
+
+        tt = []
+        for rr in r:
+            t = []
+            for i in list(rr):
+                if isinstance(i, dict):
+                    for j in list(i.values()):
+                        t.append(j)
+                else:
+                    t.append(i)
+            tt.append(t)
+
+        return pd.DataFrame(
+                    tt, 
+                    columns = [ "t_stat", "p_value", "lags", "len", "1%", "5%", "10%", "resstore" ],
+                    index = df.columns
+                    )
+
+    def log_diff(self, df):
+        return np.log( df ).diff()
+    
+    def diff(self, df):
+        return df.diff()
+
+    def unit_roots(
+            self, 
+            df = None, 
+            method = "adf",
+            p_value = 0.05,
+            reject = True,
+            diff = 2, 
+            log = False,
+            ensure_no_ut = False
+        ):
+        """  
+
+
+            reject (bool): Whether we want to reject or accept null hypothesis.
+                Requiered if method is not adf or kpss.
+                Defualt=True
+            ensure_no_ut (bool): Ensure no unit roots in data.
+                Process will iterate making a data difference or log difference
+                expecting to reach no unit roots.
+                Default=Falses
+        """
+        
+        self.ensure_df(df)
+
+        for i in diff:
+
+            r = self._unit_roots(
+                self.df,
+                method = method
+            )
+
+            # Do something with r results
+
+            if not ensure_no_ut: break
+
+            if method == "kpss" or not reject:
+                if r[ "p_value" ] <= p_value:
+                    break
+            
+            else:
+                # We assume rejecting null hypothesis
+                if r["p_value"] >= p_value:
+                    break
+
+            self.df = self.log_diff(self.df) if log else self.diff(self.df)
+
+    def durbin_watson(
+            self, 
+            df = None, 
+            mode = "var", 
+            target = None, 
+            lim_sup = 2.5,
+            lim_inf = 1.5,
+            **kwargs
+        ):
+        """  
+            mode (str): 
+                linear with Ordinary Least Square Regression
+                var (Lag 3)
+            target (str): Exogenous Variable
+                If VAR, target can be None for autoregression
+                if != None, a regression is made based on the target set.
+        """
+
+        self.ensure_df(df)
+        mode = mode.lower()
+
+        if target is not None:
+            X = self.df.drop(columns = [target])
+            y = pd.DataFrame(self.df[target])
+
+        if mode == 'var':
+            mod = VAR(X, exog = y) if target is not None else VAR(self.df)
+        
+        elif mode == 'linear':
+            mod = sm.OLS(X, y)
+
+        res = mod.fit( kwargs.get("lag", 3) )
+
+        dbt = durbin_watson(res.resid)
+        dbt = pd.DataFrame(dbt)
+
+        if target is not None:
+            dbt.index = X.columns
+            col_name = target
+        else:
+            dbt.index = self.df.columns
+            col_name = 'durbin_watson'
+        
+        dbt.columns = [col_name]
+
+        dbt['autocorrelation'] = dbt[(dbt[col_name]>= lim_inf) & (dbt[col_name]<=lim_sup)]
+        dbt['autocorrelation'] = ~dbt['autocorrelation'].isnull()
+
+        return dbt
+
+    def _causality(self, df, target, tester, lag, verbose = 0):
+        df.dropna(inplace = True)
+
+        assert ( df is not None or len(df) > 0 ), "Causality df is empty or none"
+
+        gc = grangercausalitytests(df[[target, tester]], maxlag=lag, verbose= False if verbose == 0 else True )
+        keys = list( gc.keys() )
+
+        r_df, *_ = gc[keys[0]]
+        col_keys = list(r_df.keys())
+
+        gc_df = pd.DataFrame(index = keys, columns=col_keys)
+
+        for i in keys:
+            r_df, *_ = gc[i]
+            for j in col_keys:  
+                test_statistic, p_value, *_ = r_df[j]
+                gc_df.loc[i, j] = p_value
+
+        return gc_df
+
+    def causality(
+            self,
+            df = None,
+            method = "granger",
+            targets = [],
+            p_value = 0.05,
+            lag = 1,
+            verbose = 0
+        ):
+
+        self.ensure_df(df)
+        method = method.lower()
+
+        if len(targets) == 0:
+            targets = self.df.columns
+        
+        testetors = list( set(self.df.columns) - set(targets) )
+
+        r = pd.DataFrame( index = testetors, columns = targets )
+
+        for target in targets:
+            for tester in testetors:
+                r_aux = self._causality( self.df, target, tester, lag, verbose = verbose  )
+
+                r.loc[ tester, target ] = 1 if r_aux.values.any() <= p_value else 0
+
     # Trend TA
 
     @property
@@ -109,10 +327,10 @@ class TimeSeries():
     
     @target.setter
     def target(self, value):
-        if hasattr(self, "df"):
-            assert value in self.df.columns, "No {} in Dataframe".format( value )
-        else:
-            self._target = value
+        assert hasattr(self, "_df")
+        assert value in self.df.columns, "No {} in Dataframe".format( value )
+        
+        self._target = value
 
     def dema(self, length, target = None):
         """ Regresa un SERIE de una Doble EMA 
@@ -142,6 +360,8 @@ class TimeSeries():
         self.target = self.target if target is None else target
         weights = np.arange(1, length+1)
         return self.df[target].rolling(length).apply(lambda prices: np.dot(prices, weights)/weights.sum(), raw=True)
+
+
 
 class Asset(TimeSeries):
     """ """
@@ -209,6 +429,11 @@ class Asset(TimeSeries):
     @property
     def df(self):
         return self.asset.df
+    
+    @df.setter
+    def df(self, value):
+        # Asset already contains all the filters for df
+        self.asset.df = value
 
     def update(self, value = "df", pwd = None):
         self.asset.update( value = value, pwd = pwd )
