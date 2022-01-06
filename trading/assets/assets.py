@@ -90,7 +90,7 @@ class TimeSeries():
         de caracteristicas estadisticas, etc.
     """
     def __init__(self, df = None):
-        self.target = "close" if type(self) == Asset else "data"
+        # self.target = "close" if type(self) == Asset else "data"
         
         if df is not None:
             self.df = df
@@ -105,6 +105,7 @@ class TimeSeries():
     @df.setter
     def df(self, value):
         # Here there will be a preprocessing
+        assert (value is not None and isinstance( value, pd.DataFrame )), "Values is either None or is not pandas DataFrame"
         self._df = value
 
     def ensure_df(self, df):
@@ -113,6 +114,10 @@ class TimeSeries():
         ), "Requiered a df"
         
         if df is not None: self.df = df
+
+        # All statistic procedures requiered no inf or nan values
+        # here assertions will come out
+        self.df = self.df.replace([np.inf, -np.inf], np.nan).dropna()
 
     # Propiedades de yahoo finanzas
     @property
@@ -200,7 +205,7 @@ class TimeSeries():
         
         self.ensure_df(df)
 
-        for i in diff:
+        for i in range(diff):
 
             r = self._unit_roots(
                 self.df,
@@ -221,6 +226,8 @@ class TimeSeries():
                     break
 
             self.df = self.log_diff(self.df) if log else self.diff(self.df)
+
+        return r
 
     def durbin_watson(
             self, 
@@ -273,9 +280,6 @@ class TimeSeries():
         return dbt
 
     def _causality(self, df, target, tester, lag, verbose = 0):
-        df.dropna(inplace = True)
-
-        assert ( df is not None or len(df) > 0 ), "Causality df is empty or none"
 
         gc = grangercausalitytests(df[[target, tester]], maxlag=lag, verbose= False if verbose == 0 else True )
         keys = list( gc.keys() )
@@ -308,8 +312,9 @@ class TimeSeries():
 
         if len(targets) == 0:
             targets = self.df.columns
-        
-        testetors = list( set(self.df.columns) - set(targets) )
+            testetors = targets
+        else:
+            testetors = list( set(self.df.columns) - set(targets) )
 
         r = pd.DataFrame( index = testetors, columns = targets )
 
@@ -318,6 +323,21 @@ class TimeSeries():
                 r_aux = self._causality( self.df, target, tester, lag, verbose = verbose  )
 
                 r.loc[ tester, target ] = 1 if r_aux.values.any() <= p_value else 0
+
+        return r
+
+    def corr(self, df = None, targets = [], method = "pearson"):
+        self.ensure_df(df)
+        
+        if len(targets) == 0:
+            targets = self.df.columns
+            testetors = targets
+        else:
+            testetors = list( set(self.df.columns) - set(targets) )
+        
+        corr = self.df.corr()
+
+        return corr.loc[ testetors, targets ]
 
     # Trend TA
 

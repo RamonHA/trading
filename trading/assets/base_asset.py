@@ -88,14 +88,12 @@ class BaseAsset():
         if hasattr(self, "_df"):
             return self._df
         else:
-            self._df = self.update_df()
+            self.df = self.get()
             return self._df
     
     @df.setter
     def df(self, value):
         if isinstance(value, pd.DataFrame):
-            self._df = value
-        elif value is None:
             self._df = value
         else:
             raise ValueError("Not Pandas DataFrame. Type {}".format(type(value)))
@@ -157,9 +155,8 @@ class BaseAsset():
     def df_ext_api(self):
         raise NotImplementedError
 
-    def update(self, value = "df", pwd = None):
-        self.from_api = True
-
+    def update(self, value = "df", pwd = None, from_ = "yahoo"):
+        self.from_ = from_
         aux = {
             'min':'minutes',
             'h':'hour',
@@ -181,7 +178,7 @@ class BaseAsset():
         else:
             raise ValueError("Update of {} not recognize".format( value ))
 
-    def update_df(self):
+    def get(self):
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
         return {
