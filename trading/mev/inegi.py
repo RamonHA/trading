@@ -8,8 +8,20 @@ from .base_mev import BaseMEV
 from trading.func_aux import get_assets, get_config
 
 class Inegi(BaseMEV):
-    def __init__(self, data, from_= "db", token = None):
+    def __init__(
+            self, 
+            data, 
+            frequency = None,
+            start = None,
+            end = None,
+            from_= "db", 
+            token = None
+        ):
         super().__init__(
+            data = data,
+            frequency = frequency,
+            start = start,
+            end = end,
             from_ = from_
         )
         self.source = "inegi"
@@ -48,6 +60,16 @@ class Inegi(BaseMEV):
 
         series = pd.DataFrame(series)
 
-        series["OBS_VALUE"] = pd.to_numeric( series["OBS_VALUE"], errors = "coerce" )
+        def format(s):
+            s = s.split("/")
+            a = s[0]
+            m = s[1]
+            return "{}-{}-{}".format(a, m, 1)
 
-        return series
+        series.rename( columns = {"TIME_PERIOD":"date", "OBS_VALUE":self.data_orig}, inplace = True )
+        series[self.data] = pd.to_numeric( series[self.data], errors = "coerce" )
+        series["date"] = series["date"].apply(lambda x: format(x))
+        series.set_index("date", inplace = True)
+        series.index = pd.to_datetime( series.index )
+
+        return series[[ self.data ]]

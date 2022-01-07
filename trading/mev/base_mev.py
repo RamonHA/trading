@@ -4,10 +4,20 @@ from trading.assets import TimeSeries
 from trading.func_aux import PWD
 
 class BaseMEV(TimeSeries):
-    def __init__(self, from_ = "db"):
+    def __init__(
+            self, 
+            data, 
+            frequency = None,
+            start = None,
+            end = None,
+            from_ = "db"
+        ):
         super().__init__()
-
+        self.data_orig = data
         self.from_ = from_
+        self.frequency = frequency
+        self.start = start
+        self.end = end
 
     @property
     def df(self):

@@ -50,6 +50,9 @@ class MEV(TimeSeries):
 
         self.mev = mev(
             data = self.data,
+            frequency = self.frequency,
+            start = self.start,
+            end = self.end,
             from_ = self.from_,
             token = self.token
         )
