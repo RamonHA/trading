@@ -339,6 +339,23 @@ class TimeSeries():
 
         return corr.loc[ testetors, targets ]
 
+    # Some other aux
+    def ensure_date_col(self, df):
+        if "date" in df.columns:
+            return df
+
+        df.reset_index(inplace = True)
+        
+        if "date" in df.columns:
+            return df
+        else:
+            raise ValueError("No date column in DataFame")
+
+    def get_frequency(self, df):
+        df = self.ensure_date_col(df)
+
+        t = df["date"].diff().mean()
+
     # Trend TA
 
     @property

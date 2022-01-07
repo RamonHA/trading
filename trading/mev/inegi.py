@@ -67,9 +67,8 @@ class Inegi(BaseMEV):
             return "{}-{}-{}".format(a, m, 1)
 
         series.rename( columns = {"TIME_PERIOD":"date", "OBS_VALUE":self.data_orig}, inplace = True )
-        series[self.data] = pd.to_numeric( series[self.data], errors = "coerce" )
+        series[self.data_orig] = pd.to_numeric( series[self.data_orig], errors = "coerce" )
         series["date"] = series["date"].apply(lambda x: format(x))
-        series.set_index("date", inplace = True)
-        series.index = pd.to_datetime( series.index )
+        series["date"] = pd.to_datetime( series["date"] )
 
-        return series[[ self.data ]]
+        return series[[ "date", self.data_orig ]]

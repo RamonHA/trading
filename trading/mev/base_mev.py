@@ -32,10 +32,17 @@ class BaseMEV(TimeSeries):
         self._df = value
     
     def get(self):
-        return {
+        df = {
             "api":self.df_api,
             "db":self.df_db
         }[ self.from_ ]()
+
+        if self.frequency is not None:
+            pass
+
+        df.set_index("date", inplace = True)
+
+        return df
 
     def df_db(self):
         raise NotImplementedError

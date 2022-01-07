@@ -60,6 +60,6 @@ class SIE(BaseMEV):
         series["dato"] = pd.to_numeric( series["dato"], errors = "coerce" )
         series.rename(columns = {"fecha":"date", "dato":self.data_orig}, inplace = True)
         series["date"] = pd.to_datetime(series["date"])
-        series.set_index("date", inplace = True)
+        # series.set_index("date", inplace = True)
 
         return series
