@@ -90,13 +90,12 @@ class TimeSeries():
         de caracteristicas estadisticas, etc.
     """
     def __init__(self, df = None):
-        # self.target = "close" if type(self) == Asset else "data"
         
         if df is not None:
             self.df = df
 
-    def __repr__(self):
-        return '{}: {}'.format(type(self).__name__,  self.symbol_aux )
+    # def __repr__(self):
+    #     return '{}: {}'.format(type(self).__name__,  self.symbol_aux )
 
     @property
     def df(self):
@@ -353,23 +352,59 @@ class TimeSeries():
 
     def get_frequency(self, df):
         df = self.ensure_date_col(df)
+        df.sort_values(by = "date" , ascending=True, inplace = True)
 
-        t = df["date"].diff().mean()
+        t = 360 / df["date"].diff().mean().days
+
+        times = [1, 2, 3, 4, 6, 12]
+
+        dist = lambda x: abs( x - t )
+
+        closes = min( times, key = dist )
+
+        return {
+            1:"1a",
+            2:"1b",
+            3:"1t",
+            4:"1q",
+            6:"1sem",
+            12:"1m"
+        }[closes]
+
+    def quarterly_to_monthly(self, df):
+        def months(date):
+            a = date.year
+            m = date.month * 3
+            d = date.day
+            return "{}-{}-{}".format( a, m, d )
+
+        df["date"] = df["date"].apply( lambda x: months( x ) )
+        df.set_index("date", inplace = True)
+
+        df = df.reindex( 
+            pd.date_range(
+                start = df.index[0],
+                end = df.index[-1],
+                freq = "1MS" # Month start
+            ),
+            fill_value = "NaN"
+        )
+
+        df[ df.columns[0] ] = pd.to_numeric( df.columns[0], errors="coerce" )
+        return df.interpolate(method = "linear")
+
+    def transform(self, df, frequency):
+        freq = self.get_frequency( df )
+
+        if freq == "1q":
+            if frequency == "1m":
+                df = self.quarterly_to_monthly(df)
+        
+        return df
 
     # Trend TA
 
-    @property
-    def target(self):
-        return self._target
-    
-    @target.setter
-    def target(self, value):
-        assert hasattr(self, "_df")
-        assert value in self.df.columns, "No {} in Dataframe".format( value )
-        
-        self._target = value
-
-    def dema(self, length, target = None):
+    def dema(self, length, target = "close"):
         """ Regresa un SERIE de una Doble EMA 
 
             Se genera una EMA con una largo LENGTH sobre TARGET
@@ -380,21 +415,20 @@ class TimeSeries():
             Go long: Target > DEMA
             Go short: Target < DEMA
         """
-        self.target = self.target if target is None else target
-
         self.df['dema1'] = self.ema(length=length, target=target)
         self.df['dema2'] = self.ema(length=length, target='dema1')
         return 2*self.df['dema1'] - self.df['dema2']
 
-    def ema(self, length, target = None):
+    def ema(self, length, target = "close"):
         """ Regresa una SERIe de Exponential Moving Average """
-        self.target = self.target if target is None else target
-
         return self.df[target].ewm(span = length).mean()
    
-    def wma(self, length, target = None):
+    def sma(self, length, target = 'close'):
+        """ Regresa una SERIE de Moving Average """
+        return self.df[target].rolling(length).mean()
+
+    def wma(self, length, target = "close"):
         """ Regresa una SERIE de Weighted Moving Average """
-        self.target = self.target if target is None else target
         weights = np.arange(1, length+1)
         return self.df[target].rolling(length).apply(lambda prices: np.dot(prices, weights)/weights.sum(), raw=True)
 
@@ -855,10 +889,6 @@ class Asset(TimeSeries):
         """
         return ta.momentum.RSIIndicator(close=self.df[target], window=length).rsi()
 
-    def sma(self, length, target = 'close'):
-        """ Regresa una SERIE de Moving Average """
-        return self.df[target].rolling(length).mean()
-
     def stoch(self, length, sma, close = 'close', high = 'High', low = 'Low'):
         """ Regresa dos SERIES del Stochastic Oscillator
             La primera es la señal stochastica, y la segunda
@@ -956,4 +986,4 @@ class Asset(TimeSeries):
         return ta.momentum.WilliamsRIndicator(high=self.df[high], low=self.df[low], close=self.df[close], \
             lbp=lookback_p).wr()
 
-  
+    

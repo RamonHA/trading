@@ -5,8 +5,9 @@ from datetime import date
 from trading.processes import Simulation
 
 def test_analysis():
-    
+
     def func(inst):
+        # Funcion para prediccion de ret0rno
         return inst.rsi(14).iloc[-1]
 
     sim = Simulation(
@@ -51,7 +52,7 @@ def test_analysis():
 #         frequency="1d",
 #         test_time=1,
 #         analysis={
-#             "RSI":{
+#               "RSI":{
 #                 "type":"analysis",
 #                 "function":func,
 #                 "time":60,

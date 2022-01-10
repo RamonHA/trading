@@ -27,6 +27,7 @@ class BaseAsset():
         self.end = end
         self.frequency = frequency
         self.from_ = from_
+        self.symbol_aux
 
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0] if frequency is not None else (None, None)
         self.period = int(self.period) if self.period is not None else None

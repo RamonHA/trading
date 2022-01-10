@@ -38,9 +38,10 @@ class BaseMEV(TimeSeries):
         }[ self.from_ ]()
 
         if self.frequency is not None:
-            pass
+            df = self.transform(df, self.frequency)
 
-        df.set_index("date", inplace = True)
+        else:
+            df.set_index("date", inplace = True)
 
         return df
 

@@ -20,7 +20,16 @@ $ git clone https://github.com/RamonHA/trading.git
 ```
 $ cd trading
 $ python3 -m venv venv_name
+```
+
+On Linux:
+```
 $ source venv_name/bin/activate
+```
+
+Windows:
+```
+venv_name\Scripts\activate.bat
 ```
 
 3. Install repository and dependecies
