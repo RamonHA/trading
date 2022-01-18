@@ -396,6 +396,9 @@ class TimeSeries():
     def transform(self, df, frequency):
         freq = self.get_frequency( df )
 
+        if freq == frequency:
+            return df
+
         if freq == "1q":
             if frequency == "1m":
                 df = self.quarterly_to_monthly(df)

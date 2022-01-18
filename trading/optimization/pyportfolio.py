@@ -22,27 +22,27 @@ class PyPort(BaseOptimizer):
             time = 1,
             limits = (0, 1),
             target_return = 0,
-            risk_aux = "sample"
+            risk_aux = "simple"
         ):
-        super.__init__(
+        super().__init__(
             df = df,
             value = value,
-            exp_returns = exp_returns,
             risk = risk,
             objective = objective,
             time = time,
             limits = limits,
             target_return = target_return
         )
-
+        
         self.exp_returns = exp_returns if not isinstance(exp_returns, str) else self.get_exp_returns(exp_returns)
+
         self.risk_aux = risk_aux
 
     def get_exp_returns(self, value):
         return {
             "mean":expected_returns.mean_historical_return,
             "ema":expected_returns.ema_historical_return
-        }[value]
+        }[value](self.df, frequency = self.time)[0]
 
     def get_risk(self, value):
         return {
@@ -51,46 +51,47 @@ class PyPort(BaseOptimizer):
         }[ value ](self.df, frequency = self.time)
 
     def raw_weigths(self, ef):
-        if self.risk == "maxsharpe":
+        
+        if self.objective == "maxsharpe":
             raw_weights = ef.max_sharpe()
-        elif self.risk == "minvol":
+        elif self.objective == "minvol":
             raw_weights = ef.min_volatility()
-        elif self.risk == "minsemivariance":
+        elif self.objective == "minsemivariance":
             raw_weights = ef.min_semivariance()
-        elif self.risk == "mincvar":
+        elif self.objective == "mincvar":
             raw_weights = ef.min_cvar()
-        elif self.risk == "mincdar":
+        elif self.objective == "mincdar":
             raw_weights = ef.min_cdar()
-        elif self.risk == "efficientreturn":
+        elif self.objective == "efficientreturn":
             raw_weights = ef.efficient_return( target_return = self.target_return )
 
         return raw_weights
 
     def optimize(self, **kwargs):
+        
         ef = {
             "efficientfrontier":self.efficient_frontier,
             "efficientsemivariance":self.efficient_semivariance,
             "efficientcvar":self.efficient_cvar,
             "efficientcdar":self.efficient_cdar
-        }[ self.risk ]( self.df, self.exp_returns, optimizacion = self.objective, tiempo_testeo = self.time, **kwargs)
+        }[ self.risk ]()
 
         if ef is None:
-            return None, None
+            return None, None, None
 
         return self.discretization( ef )
 
     def efficient_frontier(self):    
-        s = self.get_risk( self.risk_aux )
-
-        ef = EfficientFrontier(self.exp_returns, s, weight_bounds = self.limits )
         
+        s = self.get_risk( self.risk_aux )
+        ef = EfficientFrontier(self.exp_returns, s, weight_bounds = self.limits )
         try:
-            raw_weigths = self.raw_weigths( self.objective, ef )
-
+            raw_weigths = self.raw_weigths( ef )
+            
         except Exception as e:
             warnings.warn("Error with Raw Weights in EfficientFrontier. Exception: {}".format(e))
             return None
-                
+
         return ef
     
     def efficient_semivariance(self):
@@ -151,7 +152,7 @@ class PyPort(BaseOptimizer):
         """  
             Objeto de frontera eficiente
         """
-
+        # print("Discretizacion")
         latest_prices = get_latest_prices(self.df)
         cleaned_weights = ef.clean_weights()
 

@@ -246,7 +246,6 @@ class Simulation(BaseProcess):
 
         dates = [ self.start_end_relative( simulation, test_time, verbose = True ) for simulation in range(self.simulations) ]
 
-
         if parallel == 0:
             r = {}
             
@@ -256,7 +255,7 @@ class Simulation(BaseProcess):
             time = 0,
             frequency = None,
             value = 0,
-            exp_return = False,
+            exp_return = "mean",
             risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
@@ -303,7 +302,7 @@ class Simulation(BaseProcess):
             frequency, 
             balance_time, 
             value = 0,
-            exp_return = False,
+            exp_return = "mean",
             risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
@@ -314,8 +313,8 @@ class Simulation(BaseProcess):
             self.print_func( "Optimize" )
 
         if ( value != 0 and self.realistic == 0 ):
-            warnings.warn("Value of portfolio is set to 0 to run simultion")
-            value = 0
+            warnings.warn("Value of portfolio is set to 0 to run simultion. Priority of value over realistic")
+            self.realistic = 1
         
         period, interval = re.findall(r'(\d+)(\w+)', frequency)[0]
         period = int(period)
@@ -333,7 +332,7 @@ class Simulation(BaseProcess):
 
             data = self.preanalisis(
                 pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ),
-                filter = kwargs.get("filter", "all"),
+                # filter = kwargs.get("filter", "all"),
                 **kwargs
             )
 
@@ -345,7 +344,7 @@ class Simulation(BaseProcess):
                 start = start_analysis,
                 end = end_analysis,
                 frequency=frequency,
-                exp_returns=None if not exp_return else data,
+                exp_returns = exp_return if isinstance(exp_return, str) else data,
                 risk = risk,
                 objective=objective,
                 broker = self.broker,
@@ -366,11 +365,14 @@ class Simulation(BaseProcess):
                     fp
                 )
             
+            if allocation is None: continue
+
             tr_aux = self.test(
                 assets= pct if self.realistic > 0 else allocation,
                 start = start,
                 end = end
             )
+        
 
             tr *= ( 1+tr_aux )
             value *= (1+tr_aux)

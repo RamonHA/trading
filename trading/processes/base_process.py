@@ -8,6 +8,7 @@ import math
 import re
 import json
 import numpy as np
+import pandas as pd
 
 from trading.assets import Asset
 
@@ -182,14 +183,13 @@ class BaseProcess(Setter):
                             True if self.verbose > 2 else False
                         ) for i in or_assets ]
 
-                print(r)
-
             if v.get("filter", "all") == "all":
                 next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
             else:
                 next_assets = self.filter(
                     { inst:value for inst, value in zip( or_assets, r ) if value },
                     v.get("filter", "highest"),
+                    filter_qty = v.get("filter_qty", 3),
                     **kwargs
                 )
 
@@ -232,6 +232,11 @@ class BaseProcess(Setter):
                 data = json.load(fp)
         
         if len(data) == 0: return None
+
+        if isinstance(data, pd.DataFrame):
+            col = data.columns
+            assert len(col) == 1, "Exp returns data is a pandas DataFrame with more than one column"
+            data = data[ col[0] ]
 
         data = self.filter(data, filter = filter, **kwargs)
 

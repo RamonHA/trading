@@ -116,6 +116,12 @@ def historic_download():
         verbose = args.verbose
     )
 
+def get_brokers():
+    from .func_aux import get_assets
+    assets = list(get_assets().keys())
+
+    print( assets )
+
 def get_assets():
     import argparse
     parser = argparse.ArgumentParser()

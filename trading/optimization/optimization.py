@@ -138,22 +138,23 @@ class Optimization():
         if self.broker in ["binance", "bitso"]:
             for i in self.df.columns: self.df[i] /= pow(10, self.octetos.get(i, 1))
 
-
         opt = self.optimizer(
             value = value,
             df = self.df,
             exp_returns=self.exp_returns,
-            riks = self.risk,
+            risk = self.risk,
             objective = self.objective,
             time = time,
             limits = limits,
             **kwargs
         )
 
+        allocation = None
+
         try:
             allocation, qty, pct = opt.optimize( **kwargs )
         except Exception as e:
-            print("Could generate portfolio. \nException: {}".format(e))
+            print("Couldnt generate portfolio. \nException: {}".format(e))
 
         if allocation is None or len(allocation) == 0: return None, None, None
 
