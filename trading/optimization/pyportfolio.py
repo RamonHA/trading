@@ -100,7 +100,7 @@ class PyPort(BaseOptimizer):
         ef = EfficientSemivariance( self.exp_returns, h, weight_bounds = self.limits)
 
         try:
-           raw_weigths = self.raw_weigths( self.objective, ef )
+           raw_weigths = self.raw_weigths( ef )
         except Exception as e:
             warnings.warn("Error con RawWeights en Efficient Semivariance. Exception: {}".format(e))
             return None
@@ -122,7 +122,7 @@ class PyPort(BaseOptimizer):
                     )
         
         try:
-            raw_weigths = self.raw_weigths( self.objective, ef )
+            raw_weigths = self.raw_weigths( ef )
         except Exception as e:
             warnings.warn("Error with RawWeights in Efficient CVaR. Exception: {}".format(e))
             return None
@@ -141,7 +141,7 @@ class PyPort(BaseOptimizer):
         )
         
         try:
-           raw_weigths = self.raw_weigths( self.objective, ef )
+           raw_weigths = self.raw_weigths( ef )
         except Exception as e:
             warnings.warn("Error with RawWeights in Efficient CDaR. Exception: {}".format(e))
             return None

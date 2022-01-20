@@ -350,7 +350,8 @@ class Simulation(BaseProcess):
                 broker = self.broker,
                 fiat = self.fiat,
                 from_ = kwargs.get("from_", "db"),
-                interpolate=kwargs.get("interpolate", True)
+                interpolate=kwargs.get("interpolate", True),
+                verbose = self.verbose
             )   
 
             allocation, qty, pct = opt.optimize( value, time = time, limits = limits )

@@ -17,8 +17,10 @@ class Optimization():
             broker = "yahoo_asset",
             fiat = "mx",
             from_ = "db",
-            interpolate = True
+            interpolate = True,
+            verbose = 0 ,
         ):
+        self.verbose = verbose
         self.assets = assets
         
         if exp_returns is None or isinstance(exp_returns, str):
@@ -48,7 +50,7 @@ class Optimization():
             return exp_returns[ exp_returns.columns[0] ]
 
     def get_optimizer(self):
-        if self.risk in ["efficientfrontier"]:
+        if self.risk in ["efficientfrontier", "efficientsemivariance", "efficientcvar", "efficientcdar"]:
             from .pyportfolio import PyPort
             return PyPort
         else:

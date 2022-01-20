@@ -1,3 +1,4 @@
+from pickle import OBJ
 import pytest
 from datetime import date
 from sklearn.ensemble import RandomForestRegressor
@@ -72,8 +73,13 @@ from trading.processes import Simulation
 
 #     assert len(sim.df) > 0, "Len of df is 0"
 
-
-def test_optimize_exp_return():
+@pytest.mark.parametrize( "risk, objective", [
+    ("efficientfrontier", "minvol"),
+    ("efficientsemivariance", "minsemivariance"),
+    ("efficientcvar", "mincvar"),
+    ("efficientcdar", "mincdar")
+])
+def test_optimize_exp_return(risk, objective):
     def rf(inst):
         inst.df.dropna(inplace = True)
         inst.df["target"] = inst.df["close"].pct_change().shift(-1)
@@ -102,7 +108,7 @@ def test_optimize_exp_return():
         fiat = "mx",
         commission=0,
         simulations=12,
-        verbose = 3
+        verbose = 1
     )
 
     sim.analyze(
@@ -123,13 +129,15 @@ def test_optimize_exp_return():
             }
         },
         save = True,
-        run = True
+        run = False
     )
 
     sim.optimize(
         balance_time=12,
         value = 10000,
-        exp_return=True
+        exp_return=True,
+        risk = risk,
+        objective=objective
     )
 
     assert len(sim.df) > 0, "Len of df is 0"
