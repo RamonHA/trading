@@ -45,8 +45,39 @@ class BaseMEV(TimeSeries):
 
         return df
 
-    def df_db(self):
-        raise NotImplementedError
+    def df_db(self, verbose = True):
+        aux = {
+            'min':'minutes',
+            'h':'hour',
+            'd':'daily',
+            'w':'weekly',
+            'm':'monthly'
+        }
+
+        pwd = PWD(
+            "/{}/{}/{}.csv".format(
+                self.source, 
+                aux[ self.interval ], 
+                self.data_orig 
+            )
+        )
+
+        try:
+            df = pd.read_csv( pwd )
+        except:
+            if verbose:
+                print(
+                    "{} csv does not exist in {} interval in path {}.".format(
+                        self.symbol_aux, 
+                        aux[self.interval],
+                        pwd
+                    )
+                )
+            return None
+        
+        df.set_index( "date", inplace = True )
+
+        return df
     
     def df_api(self):
         raise NotImplementedError

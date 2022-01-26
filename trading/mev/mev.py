@@ -42,6 +42,10 @@ class MEV(TimeSeries):
             from .sie import SIE
             return SIE
 
+        elif source == "investing":
+            from .investing import Investing
+            return Investing
+
         else:
             raise ValueError("No {} source".format(source) )
 
