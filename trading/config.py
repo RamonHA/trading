@@ -116,6 +116,24 @@ def historic_download():
         verbose = args.verbose
     )
 
+def mev_download():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-mode', dest = 'mode', help = 'Broker name')
+    parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
+    parser.add_argument('-verbose', dest = 'verbose', help = "Print process", action = "store_true")
+    args = parser.parse_args()
+
+    from .func_brokers import mev_download
+
+    if args.mode is None: args.mode = "all"
+    if args.frequency is None: args.frequency == "1m"
+
+    mev_download(
+        mode = args.mode,
+        frequency = args.frequency
+    )
+
 def get_brokers():
     from .func_aux import get_assets
     assets = list(get_assets().keys())
