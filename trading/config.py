@@ -127,11 +127,12 @@ def mev_download():
     from .func_brokers import mev_download
 
     if args.mode is None: args.mode = "all"
-    if args.frequency is None: args.frequency == "1m"
+    if args.frequency is None: args.frequency = "1m"
 
     mev_download(
         mode = args.mode,
-        frequency = args.frequency
+        frequency = args.frequency,
+        verbose = args.verbose
     )
 
 def get_brokers():

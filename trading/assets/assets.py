@@ -23,67 +23,6 @@ from statsmodels.tsa.api import VAR
 from statsmodels.tsa.stattools import grangercausalitytests
 import statsmodels.api as sm
 
-def remuestreo(df, intervalo, frecuencia):
-
-    if not isinstance(df, pd.DataFrame):
-        print( "Df no es tipo DataFrame, es {}".format( type(df) ) )
-        return None
-
-    aux = df.copy()
-
-    aux.reset_index(inplace = True)
-
-    # Nos aseguramos que haya la columna DF
-    if 'Date' not in aux.columns :
-        aux.reset_index(inplace = True)
-        if 'Date' not in aux.columns:
-            raise Exception("No hay columna date en df")
-        
-    aux.set_index("Date", inplace = True)
-
-    # Nos aseguramos que el indice se datetime
-    if aux.index.dtype != np.dtype('<M8[ns]'):
-        aux.index = pd.to_datetime( aux.index )
-
-    # Tabla de frecuencias
-    fr = {
-        's': "S",
-        'min': "min",
-        'h': "H",
-        'd': "D",
-        'w': "W",
-        'm': "M",
-        'sm': "MS",
-    }
-
-    aux.reset_index(inplace = True)
-    aux = aux.resample( 
-        "{}{}".format(intervalo, fr.get(frecuencia, frecuencia) ), 
-        on = "Date" 
-        ).agg( 
-            {"Open":"first", "close":"last", "High":"max", "Low":"min", "Volume":"sum"} 
-        )
-
-    # # Disminuir granularidad, Dia a Mes
-    # if aux[self.intervalo] < aux[intervalo]:  
-    #     df = df.resample( 'W', on = "Date" ).agg( {"Open":"first", "close":"last", "High":"max", "Low":"min", "Volume":"sum"} )
-
-    # # Aumentar granularidad, Mes a Dia
-    # elif aux[self.intervalo] > aux[intervalo]:
-    #     # Primero creamos nuevo index "alargado"
-    #     df = df.reindex(pd.date_range(df.head(1).index.item(), df.tail(1).index.item(), freq = intervalo.upper() ), fill_value="NaN")
-
-    #     # Selecciona columnas que no sean tipo float
-    #     aux = df.select_dtypes(exclude=['float']).columns
-        
-    #     # Transforma columnas no float a float
-    #     df[aux] = df[aux].apply(pd.to_numeric, downcast='float', errors='coerce')
-
-    #     # Rellenamos NaN con interpolacion (Buscar metodos de Imputation)
-    #     df = df.interpolate(method = 'linear')
-
-    return aux
-
 class TimeSeries():
     """ Clase Time Series 
         Esta clase permite definir aquellas variables que sean TimeSeries, y las dota
@@ -216,12 +155,12 @@ class TimeSeries():
             if not ensure_no_ut: break
 
             if method == "kpss" or not reject:
-                if r[ "p_value" ] <= p_value:
+                if (r[ "p_value" ] <= p_value).all():
                     break
             
             else:
                 # We assume rejecting null hypothesis
-                if r["p_value"] >= p_value:
+                if (r["p_value"] >= p_value).all():
                     break
 
             self.df = self.log_diff(self.df) if log else self.diff(self.df)
@@ -351,12 +290,13 @@ class TimeSeries():
             raise ValueError("No date column in DataFame")
 
     def get_frequency(self, df):
-        df = self.ensure_date_col(df)
+        
         df.sort_values(by = "date" , ascending=True, inplace = True)
+        df["date"] = pd.to_datetime(df["date"])
 
         t = 360 / df["date"].diff().mean().days
 
-        times = [1, 2, 3, 4, 6, 12]
+        times = [1, 2, 3, 4, 6, 12, 52, 360]
 
         dist = lambda x: abs( x - t )
 
@@ -368,17 +308,13 @@ class TimeSeries():
             3:"1t",
             4:"1q",
             6:"1sem",
-            12:"1m"
+            12:"1m",
+            52:"1w",
+            360:"1d"
         }[closes]
 
     def quarterly_to_monthly(self, df):
-        def months(date):
-            a = date.year
-            m = date.month * 3
-            d = date.day
-            return "{}-{}-{}".format( a, m, d )
 
-        df["date"] = df["date"].apply( lambda x: months( x ) )
         df.set_index("date", inplace = True)
 
         df = df.reindex( 
@@ -393,17 +329,28 @@ class TimeSeries():
         df[ df.columns[0] ] = pd.to_numeric( df.columns[0], errors="coerce" )
         return df.interpolate(method = "linear")
 
+    def _to_monthly(self, df):
+        return df.resample( "1MS", on = "date" ).agg( {self.data:"last"} )
+
     def transform(self, df, frequency):
+        
+        df = self.ensure_date_col(df)
+
         freq = self.get_frequency( df )
 
-        if freq == frequency:
-            return df
+        if freq == frequency: return df
 
-        if freq == "1q":
-            if frequency == "1m":
-                df = self.quarterly_to_monthly(df)
-        
-        return df
+        return {
+            "1q":{
+                "1m":self.quarterly_to_monthly
+            },
+            "1w":{
+                "1m":self._to_monthly
+            },
+            "1d":{
+                "1m":self._to_monthly
+            }
+        }[freq][frequency](df)
 
     # Trend TA
 

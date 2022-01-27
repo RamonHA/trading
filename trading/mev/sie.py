@@ -59,7 +59,14 @@ class SIE(BaseMEV):
         series["dato"] = series["dato"].str.replace( ",", "" )
         series["dato"] = pd.to_numeric( series["dato"], errors = "coerce" )
         series.rename(columns = {"fecha":"date", "dato":self.data_orig}, inplace = True)
-        series["date"] = pd.to_datetime(series["date"])
-        # series.set_index("date", inplace = True)
+        
+        def format(s):
+            s = s.split("/")
+            a = s[2]
+            m = s[1]
+            d = s[0]
+            return "{}-{}-{}".format(a, m, d)
+
+        series["date"] = pd.to_datetime( series["date"].apply(lambda x: format(x)) )
 
         return series

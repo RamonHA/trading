@@ -57,9 +57,6 @@ class Investing(BaseMEV):
         data = data["data"]
         df = pd.DataFrame.from_dict(data)
         df.columns = ["date", "open", "high", "low", "close", "volume", "adj"]
-        df["date"] = df["date"].apply(lambda x: datetime.fromtimestamp(x/1000).date())
+        df["date"] = df["date"].apply(lambda x: datetime.fromtimestamp(x/1000).date().replace(day = 1) )
 
-        df.set_index("date", inplace = True)
-        df.rename(columns = {"close":self.data_orig}, inplace = True)
-
-        return df[[self.data_orig]]
+        return df

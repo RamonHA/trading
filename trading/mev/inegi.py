@@ -63,12 +63,11 @@ class Inegi(BaseMEV):
         def format(s):
             s = s.split("/")
             a = s[0]
-            m = s[1]
+            m = int(s[1])*3 
             return "{}-{}-{}".format(a, m, 1)
 
         series.rename( columns = {"TIME_PERIOD":"date", "OBS_VALUE":self.data_orig}, inplace = True )
         series[self.data_orig] = pd.to_numeric( series[self.data_orig], errors = "coerce" )
-        series["date"] = series["date"].apply(lambda x: format(x))
-        series["date"] = pd.to_datetime( series["date"] )
+        series["date"] = pd.to_datetime( series["date"].apply(lambda x: format(x)) )
 
         return series[[ "date", self.data_orig ]]

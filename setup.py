@@ -8,7 +8,7 @@ setup(
     author="Ramon Hinojosa Alejandro",
     url="https://github.com/RamonHA/trading",
     packages=find_packages(),
-    package_data= { "": ["setup.json", "assets.json"], } ,
+    package_data= { "": ["settings.json", "assets.json"], } ,
     include_package_data = True,
     entry_points = {  # Later on set descarga_historica
         "console_scripts":[

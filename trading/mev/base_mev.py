@@ -1,5 +1,6 @@
 import pandas as pd
-
+import re
+import yfinance as yf
 from trading.assets import TimeSeries
 from trading.func_aux import PWD
 
@@ -10,14 +11,20 @@ class BaseMEV(TimeSeries):
             frequency = None,
             start = None,
             end = None,
-            from_ = "db"
+            from_ = "db",
+            **kwargs
         ):
         super().__init__()
+
+        self.source = "yahoo"
         self.data_orig = data
+        self.data = data
         self.from_ = from_
         self.frequency = frequency
         self.start = start
         self.end = end
+        if frequency is not None:
+            self.period, self.interval = re.findall(r'(\d+)(\w+)', self.frequency)[0]
 
     @property
     def df(self):
@@ -37,6 +44,8 @@ class BaseMEV(TimeSeries):
             "db":self.df_db
         }[ self.from_ ]()
 
+        if self.from_ == "db": return df
+
         if self.frequency is not None:
             df = self.transform(df, self.frequency)
 
@@ -55,7 +64,7 @@ class BaseMEV(TimeSeries):
         }
 
         pwd = PWD(
-            "/{}/{}/{}.csv".format(
+            "MEV/{}/{}/{}.csv".format(
                 self.source, 
                 aux[ self.interval ], 
                 self.data_orig 
@@ -68,19 +77,45 @@ class BaseMEV(TimeSeries):
             if verbose:
                 print(
                     "{} csv does not exist in {} interval in path {}.".format(
-                        self.symbol_aux, 
+                        self.data_orig, 
                         aux[self.interval],
                         pwd
                     )
                 )
             return None
         
+        if "date" not in df.columns:
+            col = list(df.columns)
+            col[0] = "date"
+            df.columns = col
+
         df.set_index( "date", inplace = True )
 
         return df
     
     def df_api(self):
-        raise NotImplementedError
+        """  
+            Yahoo function
+        """
+        aux = { # 1m,2m,5m,15m,30m,60m,90m,1h, 1d (Default),5d,1wk,1mo,3mo
+            'min':'1m',
+            'h':'1h',
+            'd':'1d',
+            'w':'1wk',
+            'm':'1mo',
+            'q':'3mo'
+        }
+
+        if self.interval != "min":
+            df = yf.download(self.data,  interval = aux[ self.interval ], period = "max", progress=False)
+        else:
+            raise NotImplementedError
+        
+        df.reset_index(inplace = True)
+        df.columns = [ i.lower() for i in df.columns ]
+        df.set_index("date", inplace = True)
+
+        return df
 
     def update(self, value = "df", pwd = None, from_ = "api"):
         self.from_ = from_
@@ -92,7 +127,7 @@ class BaseMEV(TimeSeries):
             'm':'monthly'
         }
 
-        pwd = pwd if pwd is not None else PWD("/MEV/{}/{}/{}.csv".format(self.source, aux[ self.interval ], self.data ))
+        pwd = pwd if pwd is not None else PWD("MEV/{}/{}/{}.csv".format(self.source, aux[ self.interval ], self.data_orig ))
 
         if value == "df":
             self.save( 

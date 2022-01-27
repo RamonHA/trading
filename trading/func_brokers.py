@@ -114,15 +114,18 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ =
     
     print("Done!")
 
-def mev_download(mode = "all", frequency = "1m"):
+def mev_download(mode = "all", frequency = "1m", verbose = False):
     from trading.mev import MEV
+    
+    if verbose:
+        print("MEV Download: {} - {}".format( mode, frequency ) )
 
     aux = {
-            'min':'minutes',
-            'h':'hour',
-            'd':'daily',
-            'w':'weekly',
-            'm':'monthly'
+            '1min':'minutes',
+            '1h':'hour',
+            '1d':'daily',
+            '1w':'weekly',
+            '1m':'monthly'
         }
 
     mev = {
@@ -157,7 +160,7 @@ def mev_download(mode = "all", frequency = "1m"):
             ("petroleo", "yahoo"),
             ("er", "yahoo"),
             ("inflacion", "sie"),
-            ("pib", "sie"),
+            ("pib", "inegi"),
             ("cetes", "sie"),
             ("inpc", "sie"),
             ("reservas internacionales", "sie"),
@@ -183,8 +186,21 @@ def mev_download(mode = "all", frequency = "1m"):
     }
 
     mode = modes.get( mode, mode ) if isinstance(mode, str) else mode
+    
+    for s in ["sie", "yahoo", "inegi", "investing"]:
+        folder_creation( 
+                PWD(
+                    "MEV/{}/{}".format(
+                        s, 
+                        aux[ frequency ]
+                    )
+                )
+            )
 
     for d, s in mode:
+        if verbose:
+            print( " - Download of : {} - {}".format( d, s ) )
+            
         mevv = MEV(
             data = mev[ d ][ s ],
             source = s,
@@ -193,7 +209,7 @@ def mev_download(mode = "all", frequency = "1m"):
 
         mevv.df.to_csv( 
             PWD(
-                "/{}/{}/{}.csv".format(
+                "MEV/{}/{}/{}.csv".format(
                     s, 
                     aux[ frequency ], 
                     d 
