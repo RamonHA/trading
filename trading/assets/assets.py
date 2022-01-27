@@ -107,11 +107,18 @@ class TimeSeries():
                     t.append(i)
             tt.append(t)
 
-        return pd.DataFrame(
+        return {
+            "adf":pd.DataFrame(
                     tt, 
                     columns = [ "t_stat", "p_value", "lags", "len", "1%", "5%", "10%", "resstore" ],
                     index = df.columns
+                    ),
+            "kpss":pd.DataFrame(
+                    tt, 
+                    columns = [ "t_stat", "p_value", "lags", "1%", "5%", "10%", "resstore" ],
+                    index = df.columns
                     )
+        }[method]
 
     def log_diff(self, df):
         return np.log( df ).diff()
@@ -164,6 +171,7 @@ class TimeSeries():
                     break
 
             self.df = self.log_diff(self.df) if log else self.diff(self.df)
+            self.df.dropna(inplace = True)
 
         return r
 
@@ -326,7 +334,7 @@ class TimeSeries():
             fill_value = "NaN"
         )
 
-        df[ df.columns[0] ] = pd.to_numeric( df.columns[0], errors="coerce" )
+        df[ df.columns[0] ] = pd.to_numeric( df[df.columns[0]], errors="coerce" )
         return df.interpolate(method = "linear")
 
     def _to_monthly(self, df):
@@ -461,6 +469,17 @@ class Asset(TimeSeries):
     
     def refresh(self):
         self.asset.refresh()
+
+    @property
+    def descr(self):
+        """ Returns Json description of asset 
+            Information logged on assets.json
+        """
+        return self.asset.descr
+
+    @descr.setter
+    def descr(self, value):
+        self.asset.descr = value
 
     # Sentiment
     

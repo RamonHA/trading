@@ -4,7 +4,7 @@ import re
 from dateutil import parser
 import yfinance as yf
 
-from trading.func_aux import PWD
+from trading.func_aux import PWD, get_assets
 
 class BaseAsset():
     def __init__(
@@ -27,10 +27,24 @@ class BaseAsset():
         self.end = end
         self.frequency = frequency
         self.from_ = from_
-        self.symbol_aux
 
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0] if frequency is not None else (None, None)
         self.period = int(self.period) if self.period is not None else None
+
+    @property
+    def descr(self):
+        if hasattr(self, "_descr"):
+            return self._descr
+        else:
+            self.descr = self.get_descr()
+            return self._descr
+    
+    @descr.setter
+    def descr(self, value):
+        self._descr = value
+
+    def get_descr(self):
+        return get_assets()[ self.broker ][ self.symbol.upper() ]
 
     @property
     def start(self):

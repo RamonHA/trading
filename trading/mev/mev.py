@@ -90,7 +90,11 @@ def mevs_to_csv(mode, frequency = "1m"):
     mev_df.dropna( inplace = True )
     mev_df.to_csv( PWD( "MEV/{}_{}.csv".format( mode, frequency ) ) )
 
-def mevs(mode = "all", frequency = "1m"):
+def mevs(mode = "all", frequency = "1m", force = False):
+
+    if force:
+        mevs_to_csv( mode, frequency )
+        
     try:
         df = pd.read_csv( PWD( "MEV/{}_{}.csv".format( mode, frequency ) ) )
     except:
