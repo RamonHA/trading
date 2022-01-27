@@ -4,8 +4,6 @@ import pandas as pd
 from trading.func_aux import min_max
 
 from pymoo.core.problem import Problem
-from pymoo.core.algorithm import Algorithm
-from pymoo.optimize import minimize
 
 class TATunning(Problem):
 

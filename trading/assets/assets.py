@@ -107,18 +107,14 @@ class TimeSeries():
                     t.append(i)
             tt.append(t)
 
-        return {
-            "adf":pd.DataFrame(
-                    tt, 
-                    columns = [ "t_stat", "p_value", "lags", "len", "1%", "5%", "10%", "resstore" ],
-                    index = df.columns
-                    ),
-            "kpss":pd.DataFrame(
-                    tt, 
-                    columns = [ "t_stat", "p_value", "lags", "1%", "5%", "10%", "resstore" ],
-                    index = df.columns
-                    )
-        }[method]
+        return pd.DataFrame(
+            tt, 
+            columns = {
+                "adf": [ "t_stat", "p_value", "lags", "len", "1%", "5%", "10%", "resstore" ] ,
+                "kpss": [ "t_stat", "p_value", "lags", "1%", "5%", "10%", "resstore" ]
+            }[method],
+            index = df.columns
+        )
 
     def log_diff(self, df):
         return np.log( df ).diff()
