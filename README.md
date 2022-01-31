@@ -38,6 +38,8 @@ $ pip3 install .
 $ pip3 install -r requirements.txt
 ```
 
+For Pymoo, working version is 0.4.2.2
+
 ### Configuration
 1. If no further configuration of the project is requiered, only run on terminal
 ```

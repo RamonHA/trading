@@ -637,7 +637,7 @@ class Asset(TimeSeries):
 
     # Technical analyzers
         
-    def adx(self, length, high = 'High', low = 'Low', close = 'close'):
+    def adx(self, length, high = 'high', low = 'low', close = 'close'):
         """ Regresa tres SERIES de Average Directional Movement Index 
                                 ADX, DI+, DI-
 
@@ -684,7 +684,7 @@ class Asset(TimeSeries):
 
     def bollinger_bands(self, length=20, std=2, close='close'):
         """ Regrea tres SERIES de Bollinger Bands
-            High, Medium y Low Band.
+            high, Medium y low Band.
 
             Cuando la banda media es cruzada por el close
             se considera una señal de compra.
@@ -701,7 +701,7 @@ class Asset(TimeSeries):
 
         return bb_obj.bollinger_hband(), bb_obj.bollinger_mavg(), bb_obj.bollinger_lband()
 
-    def cci(self, length, constant = 0.015, close = 'close', high = 'High', low = 'Low'):
+    def cci(self, length, constant = 0.015, close = 'close', high = 'high', low = 'low'):
         """ Regresa una SERIE de Commodity Channel Index 
             
             CCI mide la diferencia entre al cambio en el precio, y su cambio promedio.
@@ -721,7 +721,7 @@ class Asset(TimeSeries):
         """
         return ta.trend.DPOIndicator(close=self.df[target], window=length).dpo()
 
-    def easy_of_movement(self, length, high='High', low='Low', volume='Volume'):
+    def easy_of_movement(self, length, high='high', low='low', volume='volume'):
         """ Regresa una SERIE de Easy of Movement 
         
             Hace la relacion entre el cambio de precio contra su volumen.
@@ -730,7 +730,7 @@ class Asset(TimeSeries):
         return ta.volume.EaseOfMovementIndicator(high=self.df[high], low=self.df[low], \
             volume=self.df[volume], window=length).easy_of_movement()
 
-    def easy_of_movement_signal(self, length, high='High', low='Low', volume='Volume'):
+    def easy_of_movement_signal(self, length, high='high', low='low', volume='volume'):
         """ Regresa una SERIE la señal de Easy of Movement
         
             Hace la relacion entre el cambio de precio contra su volumen.
@@ -741,11 +741,11 @@ class Asset(TimeSeries):
     
     def engulfing(self):
         df = copy(self.df)
-        df["o"] = self.df["Open"].diff().apply(lambda x : -1 if x > 0 else 1)
+        df["o"] = self.df["open"].diff().apply(lambda x : -1 if x > 0 else 1)
         df["c"] = self.df["close"].diff().apply(lambda x : 1 if x > 0 else -1)
         return df["o"] + df["c"]
 
-    def force_index(self, length, close='close', volume='Volume'):
+    def force_index(self, length, close='close', volume='volume'):
         """ Regresa una SERIe del Force Index 
         
             Ilustra que tan fuerte es la presion para comprar o vender.
@@ -823,10 +823,10 @@ class Asset(TimeSeries):
         return ta.trend.MACD(closE=self.df[target], n_fast = fast, \
             n_slow = slow, n_sign = sign).macd_signal()
 
-    def mass_index(self, low, high=9, low_target = 'Low', high_target = 'High'):
+    def mass_index(self, low, high=9, low_target = 'low', high_target = 'high'):
         """ Regresa una SERIE del Mass Index
 
-            Usa el rango High-Low para identificar reversiones en la tendencia
+            Usa el rango high-low para identificar reversiones en la tendencia
             basandos en la expancion de dicho rango.
             Indentifica protuberancias en los rangos, para identificar reversiones
         """
@@ -854,7 +854,7 @@ class Asset(TimeSeries):
         """
         return ta.momentum.RSIIndicator(close=self.df[target], window=length).rsi()
 
-    def stoch(self, length, sma, close = 'close', high = 'High', low = 'Low'):
+    def stoch(self, length, sma, close = 'close', high = 'high', low = 'low'):
         """ Regresa dos SERIES del Stochastic Oscillator
             La primera es la señal stochastica, y la segunda
             es la misma pero con un smooth.
@@ -865,7 +865,7 @@ class Asset(TimeSeries):
 
         return stoch_object.stoch(), stoch_object.stoch_signal()
     
-    def support_resistance(self, length, support = 'High', resistance = "Low"):
+    def support_resistance(self, length, support = 'high', resistance = "low"):
         """ Regrea dos series indicando los MAXIMOS y 
             MINIMOS de una seria un periodo LENGTH 
             
@@ -911,7 +911,7 @@ class Asset(TimeSeries):
         """
         return ta.momentum.TSIIndicator(close=self.df[target], r=high, s=low).tsi()
     
-    def uo(self, short, medium, long, wshort, wmedium, wlong, high='High', low='Low', close='close'):
+    def uo(self, short, medium, long, wshort, wmedium, wlong, high='high', low='low', close='close'):
         """ Regresa una Serie de Ultimate Oscillator 
 
             Oscilador de momentum que busca capturar el momentum a traves de 
@@ -923,17 +923,17 @@ class Asset(TimeSeries):
         return ta.momentum.UltimateOscillator(high=self.df[high], low=self.df[low], \
             close=self.df[close], s=short, m=medium, len=long, ws=wshort, wm=wmedium, wl=wlong).uo()
 
-    def vwap(self, length, high = 'High', low = 'Low', close = 'close', volume = 'Volume'):
+    def vwap(self, length, high = 'high', low = 'low', close = 'close', volume = 'volume'):
 
         return ta.volume.VolumeWeightedAveragePrice(high = self.df[high], low=self.df[low], \
             close=self.df[close], volume=self.df[volume], window = length).volume_weighted_average_price()
     
-    def vpt(self, close = 'close', volume = 'Volume'):
+    def vpt(self, close = 'close', volume = 'volume'):
 
         return ta.volume.VolumePriceTrendIndicator( close = self.df[close], \
             volume = self.df[volume] ).volume_price_trend()
 
-    def vortex_indicator(self, length, high='High', low='Low', close='close'):
+    def vortex_indicator(self, length, high='high', low='low', close='close'):
         """ Regresa dos SERIES de dos osciladores que captura
             tendencias a la alza y a la baja.
          """
@@ -942,7 +942,7 @@ class Asset(TimeSeries):
 
         return vi.vortex_indicator_pos(), vi.vortex_indicator_neg()
 
-    def william(self, lookback_p, high='High', low='Low', close='close'):
+    def william(self, lookback_p, high='high', low='low', close='close'):
         """ Regresa una Serie del Williams %R 
         
             Lecturas de entre 0, -20 se considera como sobrecomprado.
