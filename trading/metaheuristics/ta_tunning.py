@@ -132,6 +132,9 @@ class TATunning(Problem):
 
     def train_predict(self,df ):
         aux = df.tail(1)
+
+        if len( aux.drop(columns = ["target"]).replace([ np.inf, -np.inf ], np.nan).dropna() ): return None, None
+
         train, _ = self.train_test(df)
         return train, aux
 
