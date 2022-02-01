@@ -86,6 +86,7 @@ class Simulation(BaseProcess):
             end = date.today(),
             simulations = 0,
             realistic = 0,
+            subdivision = None,
             **kwargs
         ):
         """  
@@ -104,6 +105,7 @@ class Simulation(BaseProcess):
             commission = commission,
             assets=assets,
             end = end,
+            subdivision = subdivision,
             **kwargs
         )
 
@@ -309,8 +311,7 @@ class Simulation(BaseProcess):
             **kwargs
         ):
 
-        if self.verbose > 0:
-            self.print_func( "Optimize" )
+        if self.verbose > 0: self.print_func( "Optimize" )
 
         if ( value != 0 and self.realistic == 0 ):
             warnings.warn("Value of portfolio is set to 0 to run simultion. Priority of value over realistic")
@@ -338,6 +339,8 @@ class Simulation(BaseProcess):
 
             if data is None:
                 raise ValueError("No data to work with. Pwd".format( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ) ))
+
+            
 
             opt = Optimization(
                 assets= list( data.keys() ),

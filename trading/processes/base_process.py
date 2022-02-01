@@ -127,6 +127,7 @@ class BaseProcess(Setter):
             commission = None,
             assets = None,
             end = date.today(),
+            subdivision = None,
             **kwargs
         ):
         super().__init__(
@@ -138,6 +139,7 @@ class BaseProcess(Setter):
         )
         self.analysis = {}
         self.end = end
+        self.subdivision = subdivision
 
     def strategy(self, end, from_ = "db", parallel = False, **kwargs):
 
@@ -186,8 +188,14 @@ class BaseProcess(Setter):
             if v.get("filter", "all") == "all":
                 next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
             else:
+
+                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
+
+                if self.subdivision is not None:
+                    next_assets = self.asset_division(next_assets)
+
                 next_assets = self.filter(
-                    { inst:value for inst, value in zip( or_assets, r ) if value },
+                    next_assets,
                     v.get("filter", "highest"),
                     filter_qty = v.get("filter_qty", 3),
                     **kwargs
@@ -197,22 +205,37 @@ class BaseProcess(Setter):
 
         return next_assets # Al fin: or_instrumentos = next_instrumentos
 
+    def asset_division(self, data):
+        
+        aux = {}
+        
+        for i, v in data.items():
+            
+            sd = self.assets[ i ][ self.subdivision ]
+
+            if sd not in aux.keys(): aux[ sd ] = {}
+            
+            aux[ sd ][ i ] = v
+                  
+        return aux
+
     def filter(self, data, filter = "all", **kwargs):
 
-        types = [type(i) for i in data.values()]
+        # types = [type(i) for i in data.values()]
 
-        if len(types) == 0: 
-            if self.verbose > 2:
-                print(data)
+        # if len(types) == 0: 
+        #     if self.verbose > 2:
+        #         print(data)
 
-            raise ValueError("Types None")
+        #     raise ValueError("Types None")
 
-        if types.count(types[0]) != len(types):
-            raise ValueError("List of data compossed by different data types. Types: {}".format(types))
+        # if types.count(types[0]) != len(types):
+        #     raise ValueError("List of data compossed by different data types. Types: {}".format(types))
 
-        types = list( set(types) )[ 0 ]
+        # types = list( set(types) )[ 0 ]
 
-        if types in [float, int, np.float64]:
+        # if types in [float, int, np.float64]:
+        if self.subdivision is None:
             return {
                 "all":data,
                 "positive":{ i:v for i,v in data.items() if v > 0 },
@@ -220,11 +243,24 @@ class BaseProcess(Setter):
                 "lowest":{k:v for k, v in sorted(data.items(), key = lambda item:item[1], reverse = False)[ 0: kwargs.get("filter_qty", 3)] if v > 0},
             }[filter]
 
-        elif types in [dict]:
-            raise NotImplementedError
+        # elif types in [dict]:
         else:
-            raise NotImplementedError
-        
+            if filter == "positive":
+                aux = { i:{ j:k for j,k in v.items() if k > 0 } for i, v in data.items() }
+            elif filter in ["highest", "lowest"]:
+                aux = { i:{ j:k for j, k in sorted(
+                            v.items(),
+                            key = lambda item:item[1], 
+                            reverse = True if filter == "highest" else False
+                    )[ 0: kwargs.get("filter_qty", 3)] if k > 0 
+                } for i, v in data.items() }
+
+            auxx = {}
+            for i in aux: auxx.update( aux[i] )
+            
+            return auxx
+
+
     def preanalisis(self, data = None, pwd = None, filter = "positive", **kwargs ):
         
         if data is None:
