@@ -1,15 +1,14 @@
 
 import warnings
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 from copy import copy
 import multiprocess as mp
-import math
 import re
 import json
-import numpy as np
 import pandas as pd
 
+from trading.func_aux import PWD, folder_creation
 from trading.assets import Asset
 
 COMMISSIONS = {
@@ -260,7 +259,6 @@ class BaseProcess(Setter):
             
             return auxx
 
-
     def preanalisis(self, data = None, pwd = None, filter = "positive", **kwargs ):
         
         if data is None:
@@ -279,3 +277,80 @@ class BaseProcess(Setter):
         if len(data) == 0: return None
 
         return data
+
+    def set_pwd_analysis(self, frequency, test_time, analysis, folder):
+        aux_analysis = "_".join( list( analysis.keys() ) )
+
+        aux = []
+        for k, v in analysis.items():
+            if v["type"] == "prediction" and "time" in v:
+                aux.append( [v["time"]] )
+
+            if "parameters" in v:
+                if isinstance(v["parameters"], list):
+                    aux.append( v["parameters"] )
+                if isinstance(v["parameters"], dict):
+                    aux.append(  list(v["parameters"].values()) )
+
+            if "frequency" in v:
+                aux.append([ v["frequency"] ])
+
+        aux_param = "_".join( [ str(item) for s in aux for item in s ] )
+
+        aux = [ v["best"] for k, v in analysis.items() if "best" in v]
+        aux_best = "_".join( aux )
+
+        if folder is None:
+            self.pwd_analysis = self.pwd.format( "{}_{}/{}/{}_{}".format( frequency, test_time, aux_analysis, aux_param, aux_best ) )
+        else:
+            self.pwd_analysis = self.pwd.format( "{}_{}/{}/{}_{}/{}".format( frequency, test_time, aux_analysis, aux_param, aux_best, folder ) )
+
+        folder_creation(self.pwd_analysis)
+        
+        self.pwd_analysis += "/{}"
+
+    def start_end(self, end, time, interval, period, simulations = 1):
+        if interval == "m":
+            start = end - relativedelta(months = period*time*simulations - 1)
+            start = start.replace(day = 1)
+        elif interval == "w":
+            start = end - timedelta(days = 7*simulations*period*time)
+        elif interval == "d":
+            start = end - timedelta(days = simulations*period*time)
+        elif interval == "h":
+            end = datetime.combine( end, datetime.min.time() )
+            start = end - timedelta(seconds = 3600*simulations*period*time)            
+
+        return start, end
+
+    def start_end_relative(self, test_time, analysis_time, interval, period, simulation = 1, verbose = True):
+        if interval == "m":
+            start = self.start + relativedelta(months = (simulation-1)*period*test_time)
+            start = start.replace(day = 1)
+
+            end = self.start + relativedelta(months = (simulation)*period*test_time)
+            # end -= timedelta(days = 1)
+
+            end_analysis = start - timedelta(days = 1)
+            start_analysis = end_analysis - relativedelta( months = analysis_time*period )
+        
+        elif interval == "w":
+            start = self.start + timedelta(days = 7*simulation*test_time*period)
+            end = start + timedelta(days = 7*test_time*period)
+            end_analysis = start
+            start_analysis = end_analysis - timedelta(days = 7*analysis_time*period)
+
+        elif interval == "d":
+            start = self.start + timedelta( days = simulation*test_time*period )
+            end = start + timedelta(days = test_time*period )
+            end_analysis = start
+            start_analysis = end_analysis - timedelta(days = period*analysis_time)
+
+        elif interval == "h":
+            start = self.start + timedelta( seconds = simulation*test_time*self.period_analysis*3600 )
+            end = start + timedelta( seconds = test_time*self.period_analysis*3600 ) 
+            end_analysis = start
+            start_analysis = end_analysis - timedelta(seconds=3600*analysis_time*period)
+
+        return start, end, end_analysis, start_analysis
+

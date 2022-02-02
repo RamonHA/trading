@@ -9,7 +9,7 @@ from trading.func_aux import PWD, get_assets
 class BaseAsset():
     def __init__(
         self, 
-        symbol, 
+        symbol = None, 
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
@@ -22,7 +22,7 @@ class BaseAsset():
         self.broker = broker
         self.fiat = fiat.lower() if fiat is not None else None
 
-        self.symbol = symbol.lower()
+        self.symbol = symbol.lower() if symbol is not None else None
         self.start = start
         self.end = end
         self.frequency = frequency
@@ -248,4 +248,24 @@ class BaseAsset():
             )
 
     def to_json(self, value, pwd = None):
+        raise NotImplementedError
+    
+    # Bot Functions
+
+    def buy(self, positions):
+        """ Positions to Buy 
+        
+            positions (dict): { asset:position }
+        """
+        raise NotImplementedError
+    
+    def sell(self, positions):
+        """ Positions to Sell 
+
+            positions (dict): { asset:position }
+        """
+        raise NotImplementedError
+
+    def value(self):
+        """ Value of Portfolio """
         raise NotImplementedError
