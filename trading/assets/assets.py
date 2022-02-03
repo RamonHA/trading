@@ -33,8 +33,8 @@ class TimeSeries():
         if df is not None:
             self.df = df
 
-    # def __repr__(self):
-    #     return '{}: {}'.format(type(self).__name__,  self.symbol_aux )
+    def __repr__(self):
+        return '{}: {}'.format(type(self).__name__,  self.symbol )
 
     @property
     def df(self):
@@ -524,55 +524,42 @@ class Asset(TimeSeries):
 
         return df
 
-    def google_trends(self, actualizar = False):
-        df = self.google_trends_api if self.desde_api else self.google_trends_archivo
-        
-        if actualizar: df.to_csv( PWD( "{}/Sentimientos/GoogleTrends/{}/{}.csv".format( self.broker, self.frecuencia, self.simblo ) ) )
+    def google_trends(self, keywords = [], from_ = "api", **kwargs):
+        if len(keywords) == 0:
+            keywords = self.asset.descr[ "google_trends" ]
 
-        return df
-    
+        from trading.google_trends import GoogleTrend
+
+        g = GoogleTrend( 
+            keywords=keywords,
+            start = self.start,
+            end = self.end,
+            frequency = self.frequency,
+            from_ = from_,
+            **kwargs
+        )
+
+        return g.df
+
     def google_trends_api(self):
         assert Bitso[ self.symbol ].get("google_trends", False), "No hay ´keywords´ en Assets.py de Bitso para la busqueda en Google Trends"
+   
+        df = pd.DataFrame()
+        for i in Bitso[ self.symbol ][ "google_trends" ]:
+            pytrends = TrendReq(hl = 'en-US', tz = 360)
+            pytrends.build_payload(
+                i,
+                cat = 0, # 0 -> All categories, 7 -> Finance 
+                timeframe = "all"
+            )
 
-        if self.frecuencia != "1m":
-            df = pd.DataFrame()
-            for i in Bitso[ self.symbol ][ "google_trends" ]:
-                data = dailydata.get_daily_data(i, 
-                                            self.inicio.year, 
-                                            self.inicio.month, 
-                                            self.fin.year, 
-                                            self.fin.month, 
-                                            geo = "",
-                                            verbose = False,
-                                            wait_time = 20
-                                )
-                
-                df = pd.concat([df, data[i]], axis = 1)
+            data = pytrends.interest_over_time()
 
-                time.sleep(2)
-        else:
-            
-            df = pd.DataFrame()
-            for i in Bitso[ self.symbol ][ "google_trends" ]:
-                pytrends = TrendReq(hl = 'en-US', tz = 360)
-                pytrends.build_payload(
-                    i,
-                    cat = 0, # 0 -> All categories, 7 -> Finance 
-                    timeframe = "all"
-                )
+            if "isPartial" in data.columns: data.drop(columns = ["isPartial"], inplace = True)
 
-                data = pytrends.interest_over_time()
+            df = pd.concat([df, data[i]], axis = 1)
 
-                if "isPartial" in data.columns: data.drop(columns = ["isPartial"], inplace = True)
-
-                df = pd.concat([df, data[i]], axis = 1)
-
-                time.sleep(1)
-
-        return df
-
-    def google_trends_archivo(self):
-        df = pd.read_csv( PWD( "{}/Sentimientos/GoogleTrends/{}/{}.csv".format( self.broker, self.frecuencia, self.simblo ) ) )
+            time.sleep(1)
 
         return df
 

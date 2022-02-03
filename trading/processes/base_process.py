@@ -127,6 +127,7 @@ class BaseProcess(Setter):
             assets = None,
             end = date.today(),
             subdivision = None,
+            parallel = False,
             **kwargs
         ):
         super().__init__(
@@ -139,21 +140,22 @@ class BaseProcess(Setter):
         self.analysis = {}
         self.end = end
         self.subdivision = subdivision
+        self.parallel = parallel
 
-    def strategy(self, end, from_ = "db", parallel = False, **kwargs):
+    def strategy(self, end, from_ = "db", **kwargs):
 
-        if self.verbose > 0:
+        if self.verbose > 2:
             self.print_func( "Strategy" )
 
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
 
-            if self.verbose > 1:
+            if self.verbose > 2:
                 self.print_for("Analysis: {}".format( a ) )
 
             next_assets = {}
 
-            if parallel:
+            if self.parallel:
                 with mp.Pool( mp.cpu_count() // 2 ) as pool:
                     r = pool.starmap(
                         strategy,

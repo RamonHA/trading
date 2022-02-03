@@ -86,6 +86,7 @@ class Simulation(BaseProcess):
             end = date.today(),
             simulations = 0,
             realistic = 0,
+            parallel = False,
             subdivision = None,
             **kwargs
         ):
@@ -106,6 +107,7 @@ class Simulation(BaseProcess):
             assets=assets,
             end = end,
             subdivision = subdivision,
+            parallel = parallel,
             **kwargs
         )
 
@@ -277,7 +279,8 @@ class Simulation(BaseProcess):
                 fiat = self.fiat,
                 from_ = kwargs.get("from_", "db"),
                 interpolate=kwargs.get("interpolate", True),
-                verbose = self.verbose
+                verbose = self.verbose,
+                **kwargs
             )   
 
             allocation, qty, pct = opt.optimize( value, time = time, limits = limits )

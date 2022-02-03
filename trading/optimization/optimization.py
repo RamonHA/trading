@@ -19,6 +19,7 @@ class Optimization():
             from_ = "db",
             interpolate = True,
             verbose = 0 ,
+            **kwargs
         ):
         self.verbose = verbose
         self.assets = assets
@@ -40,6 +41,8 @@ class Optimization():
         self.risk = risk.lower()
         self.objective = objective.lower()
         self.optimizer = self.get_optimizer()
+
+        self.target_return = kwargs.get("target_return", 0)
 
     def set_exp_returns(self, exp_returns):
         if isinstance(exp_returns, pd.Series):
@@ -148,6 +151,7 @@ class Optimization():
             objective = self.objective,
             time = time,
             limits = limits,
+            target_return=self.target_return,
             **kwargs
         )
 
