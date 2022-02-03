@@ -192,9 +192,6 @@ class BaseProcess(Setter):
 
                 next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
 
-                if self.subdivision is not None:
-                    next_assets = self.asset_division(next_assets)
-
                 next_assets = self.filter(
                     next_assets,
                     v.get("filter", "highest"),
@@ -222,20 +219,8 @@ class BaseProcess(Setter):
 
     def filter(self, data, filter = "all", **kwargs):
 
-        # types = [type(i) for i in data.values()]
+        if self.verbose > 2: print("Filter data\n", data)
 
-        # if len(types) == 0: 
-        #     if self.verbose > 2:
-        #         print(data)
-
-        #     raise ValueError("Types None")
-
-        # if types.count(types[0]) != len(types):
-        #     raise ValueError("List of data compossed by different data types. Types: {}".format(types))
-
-        # types = list( set(types) )[ 0 ]
-
-        # if types in [float, int, np.float64]:
         if self.subdivision is None:
             return {
                 "all":data,
@@ -244,8 +229,9 @@ class BaseProcess(Setter):
                 "lowest":{k:v for k, v in sorted(data.items(), key = lambda item:item[1], reverse = False)[ 0: kwargs.get("filter_qty", 3)] if v > 0},
             }[filter]
 
-        # elif types in [dict]:
         else:
+            data = self.asset_division(data)
+
             if filter == "positive":
                 aux = { i:{ j:k for j,k in v.items() if k > 0 } for i, v in data.items() }
             elif filter in ["highest", "lowest"]:
@@ -263,10 +249,16 @@ class BaseProcess(Setter):
 
     def preanalisis(self, data = None, pwd = None, filter = "positive", **kwargs ):
         
+        if self.verbose > 1: 
+            if pwd is not None: print("-- Preanalisis for ", pwd)
+            else: print("-- Preanalisis for ", len(data))
+
         if data is None:
             with open( pwd, "r" ) as fp:
                 data = json.load(fp)
         
+        if self.verbose > 2: print( "Preanalisis data: \n", data )
+
         if len(data) == 0: return None
 
         if isinstance(data, pd.DataFrame):

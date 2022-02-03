@@ -36,6 +36,8 @@ class PyPort(BaseOptimizer):
         
         self.exp_returns = exp_returns if not isinstance(exp_returns, str) else self.get_exp_returns(exp_returns)
 
+        self.exp_returns = self.exp_returns.loc[ self.df.columns ]
+
         self.risk_aux = risk_aux
 
     def get_exp_returns(self, value):

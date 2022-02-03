@@ -54,10 +54,10 @@ def bring_results(pwd, data = {}):
 
     files = os.listdir(pwd)
 
-    if "resumen.csv" in files:
+    if "resume.csv" in files:
         
         try:
-            d = pd.read_csv(pwd + "/resumen.csv")
+            d = pd.read_csv(pwd + "/resume.csv")
             data[pwd] = {}
             data[pwd]["sharpe"] = d["net"].mean() / d["net"].std()
             data[pwd]["sortino"] = d["net"].mean() / d[d["net"] < 0]["net"].std()
@@ -67,6 +67,7 @@ def bring_results(pwd, data = {}):
             data[pwd]["acc"] = d["acc"].iloc[-1]
             data[pwd]["mean net"] = d["net"].mean()
         except:
+            print("Could not read file ", pwd)
             pass
 
     else:

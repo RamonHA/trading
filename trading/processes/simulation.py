@@ -8,7 +8,7 @@ import warnings
 
 from trading.assets import Asset
 from .base_process import BaseProcess
-from trading.func_aux import PWD, folder_creation
+from trading.func_aux import PWD, folder_creation, bring_results
 from trading.optimization import Optimization
 
 def relative_time(end, time, frequency):
@@ -163,21 +163,6 @@ class Simulation(BaseProcess):
             if save:
                 with open( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ), "w" ) as fp:
                     json.dump( self.results, fp )
-    
-    def strategy_dummy(self):
-        pass
-
-    def _analyze_dummy(self,
-            test_time,
-            save = True,
-            parallel = 0,
-            **kwargs
-        ):
-
-        dates = [ self.start_end_relative( simulation, test_time, verbose = True ) for simulation in range(self.simulations) ]
-
-        if parallel == 0:
-            r = {}
             
     def optimize(
             self,
@@ -350,3 +335,27 @@ class Simulation(BaseProcess):
             tr += ( v*r )
         
         return tr
+
+    def results_compilation(self, pwd = None):
+        pwd = pwd if pwd is not None else self.pwd_analysis[:-3]
+        dicc = pd.DataFrame.from_dict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
+
+        return dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
+
+    def behaviour(self, route):
+
+        route = route if "resume.csv" in route else ( route + "/resume.csv" )
+
+        try:
+            df = pd.read_csv( route )
+        except:
+            print("No file in resume route {}".format(route))
+            return None
+        
+        if "Unnamed: 0" in df.columns:
+            df.drop(columns = ["Unnamed: 0"], inplace = True)
+        
+        df.set_index("end", inplace = True)
+        df.index = pd.to_datetime( df.index ) 
+
+        return df
