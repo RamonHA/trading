@@ -282,6 +282,23 @@ class TimeSeries():
         return corr.loc[ testetors, targets ]
 
     # Some other aux
+
+    def reindex(self, df, frequency, interpolate = "linear", end = None):
+        df = df.reindex( 
+            pd.date_range(
+                start = df.index[0],
+                end = df.index[-1] if end is None else end,
+                freq = {
+                    "1m":"1MS",
+                }[frequency]
+            ),
+            fill_value = "NaN"
+        )
+
+        df[ df.columns[0] ] = pd.to_numeric( df[df.columns[0]], errors="coerce" )
+
+        return df.interpolate(method = interpolate)
+
     def ensure_date_col(self, df):
         if "date" in df.columns:
             return df
@@ -321,17 +338,7 @@ class TimeSeries():
 
         df.set_index("date", inplace = True)
 
-        df = df.reindex( 
-            pd.date_range(
-                start = df.index[0],
-                end = df.index[-1],
-                freq = "1MS" # Month start
-            ),
-            fill_value = "NaN"
-        )
-
-        df[ df.columns[0] ] = pd.to_numeric( df[df.columns[0]], errors="coerce" )
-        return df.interpolate(method = "linear")
+        return self.reindex( df, frequency="linear" )
 
     def _to_monthly(self, df):
         return df.resample( "1MS", on = "date" ).agg( {self.data:"last"} )

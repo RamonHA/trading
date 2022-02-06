@@ -12,6 +12,7 @@ class BaseMEV(TimeSeries):
             start = None,
             end = None,
             from_ = "db",
+            interpolate = "linear",
             **kwargs
         ):
         super().__init__()
@@ -23,6 +24,7 @@ class BaseMEV(TimeSeries):
         self.frequency = frequency
         self.start = start
         self.end = end
+        self.interpolate = interpolate
         if frequency is not None:
             self.period, self.interval = re.findall(r'(\d+)(\w+)', self.frequency)[0]
 
@@ -44,13 +46,17 @@ class BaseMEV(TimeSeries):
             "db":self.df_db
         }[ self.from_ ]()
 
-        if self.from_ == "db": return df
-
-        if self.frequency is not None:
+        if self.from_ != "db" and self.frequency is not None:
             df = self.transform(df, self.frequency)
-
         else:
             df.set_index("date", inplace = True)
+
+            df = self.reindex( 
+                df, 
+                self.frequency, 
+                interpolate=self.interpolate,
+                end = None if self.end is None else self.end
+            )
 
         return df
 
@@ -88,8 +94,6 @@ class BaseMEV(TimeSeries):
             col = list(df.columns)
             col[0] = "date"
             df.columns = col
-
-        df.set_index( "date", inplace = True )
 
         return df
     

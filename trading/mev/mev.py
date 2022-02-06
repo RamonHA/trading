@@ -115,7 +115,8 @@ class MEV(TimeSeries):
             start = None,
             end = None,
             from_ = "api",
-            token = None
+            token = None,
+            interpolate = "linear",
         ):
         """  
             source (str): inegi, sie (Banxico)
@@ -136,6 +137,8 @@ class MEV(TimeSeries):
         self.set_mev(source)
 
         self.symbol_aux = self.mev.data
+
+        self.interpolate = interpolate
 
     def get_mev(self, source):        
         
@@ -167,7 +170,8 @@ class MEV(TimeSeries):
             start = self.start,
             end = self.end,
             from_ = self.from_,
-            token = self.token
+            token = self.token,
+            interpolate = self.interpolate,
         )
 
     

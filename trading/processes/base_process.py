@@ -272,6 +272,23 @@ class BaseProcess(Setter):
 
         return data
 
+    def filter_by_qty(self, data, value=0, min_qty=0, lower_lim = 0):
+        if min_qty > 0:
+            min_pos = min_qty / value
+        elif lower_lim > 0:
+            min_pos = lower_lim
+        
+        n = int( 1 // min_pos ) - 1
+
+        data = sorted( 
+            data.items(), 
+            key = lambda item: item[1] , 
+            reverse = True 
+        )[ 0: n ]
+        data = { k:v for k,v in data }
+        
+        return data, min_pos
+
     def set_pwd_analysis(self, frequency, test_time, analysis, folder):
         aux_analysis = "_".join( list( analysis.keys() ) )
 
@@ -347,4 +364,3 @@ class BaseProcess(Setter):
             start_analysis = end_analysis - timedelta(seconds=3600*analysis_time*period)
 
         return start, end, end_analysis, start_analysis
-

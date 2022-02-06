@@ -14,14 +14,16 @@ class Investing(BaseMEV):
             start = None,
             end = None,
             from_= "db", 
-            token = None
+            token = None,
+            interpolate = "linear",
         ):
         super().__init__(
             data = data,
             frequency = frequency,
             start = start,
             end = end,
-            from_ = from_
+            from_ = from_,
+            interpolate = interpolate
         )
         self.source = "investing"
 

@@ -174,6 +174,7 @@ class Simulation(BaseProcess):
             risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
+            min_qty = 0,
             run = True,
             **kwargs
         ):
@@ -189,6 +190,9 @@ class Simulation(BaseProcess):
 
         if value > 0 and self.realistic == 0:
             self.realistic = 1
+        
+        if min_qty != 0 and value == 0:
+            raise ValueError( "If min_qty, input portfolio value." ) 
 
         self.pwd_balance = self.pwd_analysis.format( 
             "{}_{}_{}_{}_{}".format( risk, objective, time, frequency, balance_time )         
@@ -208,6 +212,7 @@ class Simulation(BaseProcess):
                 risk = risk,
                 objective = objective,
                 limits = limits,
+                min_qty = min_qty,
                 **kwargs
             )
 
@@ -221,6 +226,7 @@ class Simulation(BaseProcess):
             risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
+            min_qty = 0,
             **kwargs
         ):
 
@@ -251,6 +257,12 @@ class Simulation(BaseProcess):
 
             if data is None:
                 raise ValueError("No data to work with. Pwd".format( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ) ))
+
+            ll, ul = limits
+
+            if min_qty != 0 or ll > 0 :
+                data, ll = self.filter_by_qty(data, value=value, min_qty = min_qty, lower_lim = ll)
+                limits = ( ll, ul )
 
             opt = Optimization(
                 assets= list( data.keys() ),

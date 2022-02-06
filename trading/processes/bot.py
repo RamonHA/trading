@@ -82,6 +82,7 @@ class Bot(BaseProcess):
             risk = "efficientfrontier",
             objective = "maxsharpe",
             limits = (0,1),
+            min_qty = 0,
             **kwargs
         ):
 
@@ -93,6 +94,12 @@ class Bot(BaseProcess):
         data = self.preanalisis( data = self.results, **kwargs )
 
         if data is None: raise ValueError("No data to work with.")
+
+        ll, ul = limits
+
+        if min_qty != 0 or ll > 0 :
+            data, ll = self.filter_by_qty(data, value=value, min_qty = min_qty, lower_lim = ll)
+            limits = ( ll, ul )
 
         _, _, end_analysis, start_analysis = self.start_end_relative( test_time = time, analysis_time=balance_time, interval = interval, period = period, simulation = 0, verbose = True )
 
