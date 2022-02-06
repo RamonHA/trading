@@ -20,3 +20,5 @@ examples/__pycache__/
 timeit/__pycache__/
 timeit/results.txt
 timeit.sh
+
+gitupdate.sh
