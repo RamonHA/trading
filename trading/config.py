@@ -95,6 +95,7 @@ def historic_download():
     parser.add_argument('-fiat', dest = 'fiat', help = 'Fiat to download info (If not, defualt values from Instrumento are taken.)')
     parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
     parser.add_argument('-start', dest = 'start', help = "From which date to start downloading data.")
+    parser.add_argument('-from', dest = 'from_', help = "Datasource, Default = yahoo")
     parser.add_argument('-verbose', dest = 'verbose', help = "Print process", action = "store_true")
     args = parser.parse_args()
 
@@ -103,8 +104,8 @@ def historic_download():
 
     start = args.start if args.start is not None else "1990-01-01"
 
-    print("Flags: {} {} {} {} {}".format(
-        args.broker, args.fiat, args.frequency, start, args.verbose
+    print("Flags: {} {} {} {} {} {}".format(
+        args.broker, args.fiat, args.frequency, start, args.from_, args.verbose
     ))
 
     from .func_brokers import historic_download
@@ -113,6 +114,7 @@ def historic_download():
         fiat = args.fiat, 
         frequency = args.frequency, 
         start = start, 
+        from_=args.from_,
         verbose = args.verbose
     )
 

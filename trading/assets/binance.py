@@ -69,7 +69,7 @@ class Binance(BaseAsset):
             
             df = pd.concat( [ df, dff ], axis = 0 )
 
-            tdiff = time_diff( end, self.end ) 
+            tdiff = time_diff( end, self.end, self.interval ) 
 
             if tdiff == 0:
                 break

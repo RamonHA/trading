@@ -171,7 +171,7 @@ class BaseAsset():
         raise NotImplementedError
 
     def update(self, value = "df", pwd = None, from_ = "yahoo"):
-        self.from_ = from_
+        
         aux = {
             'min':'minutes',
             'h':'hour',

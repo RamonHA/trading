@@ -65,7 +65,7 @@ def octetos(broker, fiat):
 def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ = "yahoo", verbose = False):
     
     if verbose:
-        print("Historic Download for {} {} in {} from {} to today".format( broker, fiat, frequency, start ))
+        print("Historic Download for {} {} in {} from {} to today, through {}".format( broker, fiat, frequency, start, from_ ))
 
     carpeta = {
         '1min':'minutes',
