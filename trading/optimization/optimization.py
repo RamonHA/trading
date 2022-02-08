@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import date
 
 from trading.assets import Asset
-from trading.func_aux import get
+from trading.func_aux import PWD
 
 class Optimization():
     def __init__(
@@ -123,7 +123,7 @@ class Optimization():
 
             to_buy (list)
         """
-        return get( "/binance/octetos_{}.json".format(self.fiat) )
+        return PWD( "binance/octetos.json" )[ self.fiat ]
 
     def octetos_bitso(self):
         return {
