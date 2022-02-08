@@ -947,6 +947,6 @@ class Asset(TimeSeries):
             Lecturas de -80, -100 se considera sobrevendido.
         """
         return ta.momentum.WilliamsRIndicator(high=self.df[high], low=self.df[low], close=self.df[close], \
-            lbp=lookback_p).wr()
+            lbp=lookback_p).williams_r()
 
     
