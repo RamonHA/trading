@@ -215,7 +215,7 @@ def octetos():
 
     import json
     try:
-        pwd = pkg_resources.resource_filename("trading", "{}/octetos.json".format(args.broker))
+        pwd = pkg_resources.resource_filename("trading", "{}/octetos_{}.json".format(args.broker, args.fiat))
 
         with open(pwd, 'r') as fp:
             data = json.load(fp)
@@ -225,7 +225,7 @@ def octetos():
 
     data[ args.fiat ] = oct    
 
-    with open( "{}/octetos.json".format(args.broker) , "w") as fp:
+    with open( "{}/octetos_{}.json".format(args.broker, args.fiat) , "w") as fp:
         json.dump(octetos, fp)
         
     print("Done!")

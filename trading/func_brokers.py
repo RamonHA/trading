@@ -25,11 +25,11 @@ def octetos(broker, fiat):
         de "actualizar" dichas listas 
     """
 
-    if broker == "Binance":
+    if broker.lower() == "binance":
         from binance.client import Client
 
         try:
-            api = Client(DATA["binance"]["api_key"], DATA["binance"]["secret_key"])
+            api = Client(get_config()["binance"]["api_key"], get_config()["binance"]["secret_key"])
         except:
             raise Exception("Problemas Cliente Binance")
 
