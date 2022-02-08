@@ -196,12 +196,14 @@ class BaseAsset():
     def get(self):
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
-        return {
+        df = {
             "yahoo":self.df_yahoo,
             "api":self.df_api,
             "ext_api":self.df_ext_api,
             "db":self.df_db
         }[ self.from_ ]()
+
+        return df if df is not None else pd.DataFrame()
 
         # if self.from_api:
         #     return self.df_ext_api() if self.from_ext else self.df_api()
