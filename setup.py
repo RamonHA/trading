@@ -21,7 +21,8 @@ setup(
             "mev_download = trading.config:mev_download",
             "add_assets = trading.config:add_assets",
             "get_assets = trading.config:get_assets",
-            "get_brokers = trading.config:get_brokers"
+            "get_brokers = trading.config:get_brokers",
+            "octetos = trading.config:octetos"
         ]
     }
 )
