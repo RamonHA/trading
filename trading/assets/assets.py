@@ -830,6 +830,10 @@ class Asset(TimeSeries):
     def momentum(self, periodos, target = "close"):
         return self.df[target].pct_change(periods = periodos) + 1
 
+    def obv(self):
+        """ On Balance Volume """
+        return ta.volume.OnBalanceVolumeIndicator( self.df["close"], self.df["volume"] ).on_balance_volume()
+
     def roc(self, length, target = 'close'):
         """ Regresa una SERIE de Rate of Change
 
