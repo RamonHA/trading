@@ -79,7 +79,7 @@ class PyPort(BaseOptimizer):
         }[ self.risk ]()
 
         if ef is None:
-            print("Couldnt do ef")
+            warnings.warn("Error with EF object")
             return None, None, None
 
         return self.discretization( ef )
@@ -88,13 +88,11 @@ class PyPort(BaseOptimizer):
         
         s = self.get_risk( self.risk_aux )
 
-        print("It is not risk")
-
         ef = EfficientFrontier(self.exp_returns, s, weight_bounds = self.limits )
-        print("Neither the initialization")
+        
         try:
             ef = self.raw_weigths( ef )
-            print("It is the raw")
+            
         except Exception as e:
             warnings.warn("Error with Raw Weights in EfficientFrontier. Exception: {}".format(e))
             return None
