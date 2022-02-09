@@ -93,3 +93,4 @@ def time_diff(start, end, frequency):
         diff = ( end - start ).total_seconds() / 60
 
     return math.ceil( diff )
+

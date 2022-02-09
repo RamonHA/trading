@@ -49,7 +49,8 @@ class Optimization():
         if isinstance(exp_returns, pd.Series):
             return exp_returns
         elif isinstance(exp_returns, dict):
-            return pd.DataFrame.from_dict( exp_returns, orient="index" )
+            exp_returns = pd.DataFrame.from_dict( exp_returns, orient="index" )
+            return exp_returns[ exp_returns.columns[0] ]
         elif isinstance(exp_returns, pd.DataFrame):
             return exp_returns[ exp_returns.columns[0] ]
 
@@ -148,6 +149,10 @@ class Optimization():
 
         if self.broker in ["binance", "bitso"]:
             for i in self.df.columns: self.df[i] /= pow(10, self.octetos.get(i, 1))
+
+        if len(self.df) == 0:
+            
+            return None, None, None
 
         opt = self.optimizer(
             value = value,

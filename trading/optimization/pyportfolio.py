@@ -67,7 +67,7 @@ class PyPort(BaseOptimizer):
         elif self.objective == "efficientreturn":
             raw_weights = ef.efficient_return( target_return = self.target_return )
 
-        return raw_weights
+        return ef
 
     def optimize(self, **kwargs):
         
@@ -79,6 +79,7 @@ class PyPort(BaseOptimizer):
         }[ self.risk ]()
 
         if ef is None:
+            print("Couldnt do ef")
             return None, None, None
 
         return self.discretization( ef )
@@ -86,10 +87,14 @@ class PyPort(BaseOptimizer):
     def efficient_frontier(self):    
         
         s = self.get_risk( self.risk_aux )
+
+        print("It is not risk")
+
         ef = EfficientFrontier(self.exp_returns, s, weight_bounds = self.limits )
+        print("Neither the initialization")
         try:
-            raw_weigths = self.raw_weigths( ef )
-            
+            ef = self.raw_weigths( ef )
+            print("It is the raw")
         except Exception as e:
             warnings.warn("Error with Raw Weights in EfficientFrontier. Exception: {}".format(e))
             return None
@@ -102,7 +107,7 @@ class PyPort(BaseOptimizer):
         ef = EfficientSemivariance( self.exp_returns, h, weight_bounds = self.limits)
 
         try:
-           raw_weigths = self.raw_weigths( ef )
+           ef = self.raw_weigths( ef )
         except Exception as e:
             warnings.warn("Error con RawWeights en Efficient Semivariance. Exception: {}".format(e))
             return None
@@ -124,7 +129,7 @@ class PyPort(BaseOptimizer):
                     )
         
         try:
-            raw_weigths = self.raw_weigths( ef )
+            ef = self.raw_weigths( ef )
         except Exception as e:
             warnings.warn("Error with RawWeights in Efficient CVaR. Exception: {}".format(e))
             return None
@@ -143,7 +148,7 @@ class PyPort(BaseOptimizer):
         )
         
         try:
-           raw_weigths = self.raw_weigths( ef )
+           ef = self.raw_weigths( ef )
         except Exception as e:
             warnings.warn("Error with RawWeights in Efficient CDaR. Exception: {}".format(e))
             return None

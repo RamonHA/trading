@@ -264,7 +264,7 @@ class Simulation(BaseProcess):
                 data, ll = self.filter_by_qty(data, value=value, min_qty = min_qty, lower_lim = ll)
                 limits = ( ll, ul )
 
-            opt = Optimization(
+            self.opt = Optimization(
                 assets= list( data.keys() ),
                 start = start_analysis,
                 end = end_analysis,
@@ -280,7 +280,7 @@ class Simulation(BaseProcess):
                 **kwargs
             )   
 
-            allocation, qty, pct = opt.optimize( value, time = time, limits = limits )
+            allocation, qty, pct = self.opt.optimize( value, time = time, limits = limits )
 
             with open( self.pwd_balance.format( "{}_{}.json".format( start, end ) ), "w" ) as fp:
                 json.dump(
