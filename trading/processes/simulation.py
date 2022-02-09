@@ -1,6 +1,7 @@
 from copy import deepcopy
 import re
 from datetime import date, timedelta, datetime
+import time
 from dateutil.relativedelta import relativedelta
 import json
 import pandas as pd
@@ -319,12 +320,16 @@ class Simulation(BaseProcess):
         """  
             allocation (dict): If None (Defualt) assume 1/N allocation
         """
+        if self.verbose > 1:
+            print("- Test for assets:\n", assets)
 
         if isinstance( assets, list ):
             l = len(assets)
             assets = { i:(1/l) for i in assets }
 
         tr = 0
+        if frequency == "1d":
+            start -= timedelta(days=1)
 
         for i, v in assets.items():
             inst = Asset(
@@ -338,14 +343,21 @@ class Simulation(BaseProcess):
             )
 
 
-            if inst.df is None or len(inst.df) == 0: continue
+            if inst.df is None or len(inst.df) == 0: 
+                print( "Issues to download {} from {} to {}".format(i, start, end) )
+                continue
 
             # Here should be immplemented realistic
 
             r = ( inst.df["close"].iloc[-1] / inst.df["close"].iloc[0] ) - 1
 
             tr += ( v*r )
-        
+
+            if self.verbose > 2: 
+                print("-- Test return for {} with allocation {} is {}".format(i, v, r))
+                print("-- With close price {} and open price {}".format( inst.df["close"].iloc[-1] , inst.df["close"].iloc[0] ))
+
+
         return tr
 
     def results_compilation(self, pwd = None):
