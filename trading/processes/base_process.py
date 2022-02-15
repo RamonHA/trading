@@ -7,13 +7,11 @@ import multiprocess as mp
 import re
 import json
 import pandas as pd
+import math
 
-from trading.func_aux import PWD, folder_creation
+from trading.func_aux import PWD, folder_creation, get_config
 from trading.assets import Asset
 
-COMMISSIONS = {
-
-}
 
 def strategy(
         asset,
@@ -76,8 +74,8 @@ class Setter():
             assets = None,
             **kwargs
         ):
-        self.broker = broker
-        self.commission = COMMISSIONS.get( commission, 0.0 )
+        self.broker = broker.lower()
+        self.commission = commission if commission is not None else get_config()[ self.broker ][ "commission" ]
         self.fiat = fiat if fiat is not None else self.set_fiat()
         self.assets = assets if assets is not None else self.get_assets()
 
@@ -221,12 +219,19 @@ class BaseProcess(Setter):
 
         if self.verbose > 2: print("Filter data\n", data)
 
+        n = kwargs.get("filter_qty", 3)
+        n = math.floor( len(data)*n ) if n < 1 else n
+
+        if n < len(data): 
+            n = len(data)
+            warnings.warn( "Filter qty ({}) exceed the number of assets ({}).".format( n, len(data) ) )
+
         if self.subdivision is None:
             return {
                 "all":data,
                 "positive":{ i:v for i,v in data.items() if v > 0 },
-                "highest":{k:v for k, v in sorted(data.items(), key = lambda item:item[1], reverse = True)[ 0: kwargs.get("filter_qty", 3)] if v > 0},
-                "lowest":{k:v for k, v in sorted(data.items(), key = lambda item:item[1], reverse = False)[ 0: kwargs.get("filter_qty", 3)] if v > 0},
+                "highest":{k:v for k, v in sorted(data.items(), key = lambda item:item[1], reverse = True)[ 0: n] if v > 0},
+                "lowest":{k:v for k, v in sorted(data.items(), key = lambda item:item[1], reverse = False)[ 0: n] if v > 0},
             }[filter]
 
         else:
@@ -239,7 +244,7 @@ class BaseProcess(Setter):
                             v.items(),
                             key = lambda item:item[1], 
                             reverse = True if filter == "highest" else False
-                    )[ 0: kwargs.get("filter_qty", 3)] if k > 0 
+                    )[ 0: n] if k > 0 
                 } for i, v in data.items() }
 
             auxx = {}

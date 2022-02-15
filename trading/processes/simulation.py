@@ -257,7 +257,8 @@ class Simulation(BaseProcess):
             )
 
             if data is None:
-                raise ValueError("No data to work with. Pwd".format( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ) ))
+                print("No data to work with. Pwd".format( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ) ))
+                continue
 
             ll, ul = limits
 
