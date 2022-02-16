@@ -9,6 +9,7 @@
 # donde se entregue como tal la correcta estrategia_filtro
 # basado en los resultados que se puedan extraer con esta herramienta
 
+from msilib.schema import Error
 import numpy as np
 from numpy.lib.arraysetops import isin
 import pandas as pd
@@ -63,13 +64,21 @@ class Strategy():
         # Column and parameters
         c_aux = c.split("_")
         ta = c_aux[0]
-        param = tuple( c_aux[1:] ) 
+        param = tuple( list(map(int, c_aux[1:])) ) 
         col = "{} {} {}".format( c, o, v )
 
-        # Calcular analyzador tecnico
-        exec(
-            "self.inst.df[ c ] = self.inst.{}{}".format( ta, param )
-        )
+        # Cal(cular analyzador tecnico
+        try:
+            exec(
+                "self.asset.df[ c ] = self.asset.{}{}".format( ta, param )
+            )
+        except Exception as e:
+            raise ValueError( 
+                "Execution of : {} , with exception:\n{}".format(
+                    "self.asset.df[ c ] = self.asset.{}{}".format( ta, param ),
+                    e
+                ) 
+            )
 
         based_on = False
         try: 
@@ -80,32 +89,36 @@ class Strategy():
         # Calcular si la regla se cumple en col
         if not based_on:
             exec(
-                "self.inst.df[ col ] = self.inst.df[ c ].apply( lambda x : 1 if x {} {} else 0)".format(o, v)
+                "self.asset.df[ col ] = self.asset.df[ c ].apply( lambda x : 1 if x {} {} else 0)".format(o, v)
             )
         else:
             exec(
-                "self.inst.df[ col ] = (self.inst.df[ c ] - self.inst.df[ v ] ).apply( lambda x : 1 if x {} 0 else 0)".format(o)
+                "self.asset.df[ col ] = (self.asset.df[ c ] - self.asset.df[ v ] ).apply( lambda x : 1 if x {} 0 else 0)".format(o)
             )
 
-        if t == "sell": self.inst.df[col] *= (-1)
+        if t == "sell": self.asset.df[col] *= (-1)
 
         self.col[t].append( col )
 
     def rule_eval(self, period = 1):
-        self.inst.df["net"] = self.inst.df[ self.col ].prod(axis = 1).apply(lambda x : 1 if x > 0 else 0) * self.inst.df["Close"].pct_change(periods = period)
-        self.inst.df["acc"] = ( self.inst.df["net"] + 1 ).cumprod()
+
+        self.asset.df["net"] = self.asset.df[ self.col ].prod(axis = 1).apply(lambda x : 1 if x > 0 else 0) * self.asset.df["close"].pct_change(periods = period)
+        self.asset.df["acc"] = ( self.asset.df["net"] + 1 ).cumprod()
 
     def apply(self, rule, type):
         rules = self.rule_sep( rule )
 
         for c, o, v in rules: self.rule_app( type, c, o, v ) 
 
-        self.rule_eval()
-
     def evaluate(self):
-        for t in [ "buy", "sell"]:
-            for r in self.rules[ t ]:
-                self.apply( r, t )
+        for t, r in self.rules.items():
+            self.apply( r, t )
+        
+            self.asset.df[t] = self.asset.df[ self.col ].prod(axis = 1)
+
+            # if t == "sell":
+        
+        # self.rule_eval()
     
     def optimize(self):
         raise NotImplementedError
