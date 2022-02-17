@@ -9,10 +9,6 @@
 # donde se entregue como tal la correcta estrategia_filtro
 # basado en los resultados que se puedan extraer con esta herramienta
 
-from msilib.schema import Error
-import numpy as np
-from numpy.lib.arraysetops import isin
-import pandas as pd
 
 class Strategy():
     def __init__(
@@ -96,29 +92,53 @@ class Strategy():
                 "self.asset.df[ col ] = (self.asset.df[ c ] - self.asset.df[ v ] ).apply( lambda x : 1 if x {} 0 else 0)".format(o)
             )
 
-        if t == "sell": self.asset.df[col] *= (-1)
+        # if t == "sell": self.asset.df[col] *= (-1)
 
         self.col[t].append( col )
 
-    def rule_eval(self, period = 1):
-
-        self.asset.df["net"] = self.asset.df[ self.col ].prod(axis = 1).apply(lambda x : 1 if x > 0 else 0) * self.asset.df["close"].pct_change(periods = period)
-        self.asset.df["acc"] = ( self.asset.df["net"] + 1 ).cumprod()
 
     def apply(self, rule, type):
         rules = self.rule_sep( rule )
 
         for c, o, v in rules: self.rule_app( type, c, o, v ) 
 
-    def evaluate(self):
-        for t, r in self.rules.items():
-            self.apply( r, t )
+    def rule_eval(self, periods = None):
+        if len( self.rules["buy"]) > 0 and len( self.rules["sell"]) > 0:
+            eval = self.rule_eval_all()
         
-            self.asset.df[t] = self.asset.df[ self.col ].prod(axis = 1)
+        else:
+            assert periods is not None, "If about to analze buy/sell order, input periods after/before to compute return."
 
-            # if t == "sell":
+            if len( self.rules["buy"]) > 0:
+                eval = self.rule_eval_buy(periods=periods)
+            elif len( self.rules["sell"]) > 0:
+                eval = self.rule_eval_sell(periods=periods)
+            else:
+                raise ValueError("No buy or sell orders")
         
-        # self.rule_eval()
+        self.asset.df["net"] = self.asset.df[ self.col ].prod(axis = 1).apply(lambda x : 1 if x > 0 else 0) * self.asset.df["close"].pct_change(periods = period)
+        self.asset.df["acc"] = ( self.asset.df["net"] + 1 ).cumprod()
+
+        return eval
+
+    def rule_eval_all(self):
+        pass
+
+    def rule_eval_buy(self, periods):
+        pass
+
+    def rule_eval_sell(self, periods):
+        pass
+
+    def evaluate(self, periods  = None):
+        for t, rules in self.rules.items():
+            for rule in rules:
+                self.apply( rule, t )
+        
+            self.asset.df[t] = self.asset.df[ self.col[t] ].prod(axis = 1)
+        
+        self.rule_eval(periods=periods)
+        
     
     def optimize(self):
         raise NotImplementedError

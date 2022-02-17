@@ -23,3 +23,7 @@ def test_strategy():
     )
 
     st.evaluate()
+
+    print( st.asset.df )
+
+    assert False

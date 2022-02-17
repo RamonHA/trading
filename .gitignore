@@ -15,6 +15,7 @@ trading.egg-info/
 .pytest_cache/
 update.sh
 useless_folder/
+config.json
 examples/__pycache__/
 
 timeit/__pycache__/

@@ -11,9 +11,6 @@ import yfinance as yf
 # Asset
 import ta
 
-# Google Trends
-from pytrends import dailydata
-from pytrends.request import TrendReq
 from trading.func_aux import *
 
 # Timeseries + statsmodels
