@@ -84,8 +84,8 @@ class Setter():
     def print_func(self, value):
         print( "\n\n", "#"*20, value, "#"*20 )
     
-    def print_for(self, value):
-        print("--- ", value)
+    def print_0(self, value):
+        print("- ", value)
 
     @property
     def assets(self):
@@ -142,14 +142,11 @@ class BaseProcess(Setter):
 
     def strategy(self, end, from_ = "db", **kwargs):
 
-        if self.verbose > 2:
-            self.print_func( "Strategy" )
-
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
 
-            if self.verbose > 2:
-                self.print_for("Analysis: {}".format( a ) )
+            if self.verbose > 0:
+                self.print_0("Analysis: {}".format( a ) )
 
             next_assets = {}
 
@@ -217,7 +214,7 @@ class BaseProcess(Setter):
 
     def filter(self, data, filter = "all", **kwargs):
 
-        if self.verbose > 2: print("Filter data\n", data)
+        if self.verbose > 1: self.print_0("Filter data:\n", data)
 
         n = kwargs.get("filter_qty", 3)
         n = math.floor( len(data)*n ) if n < 1 else n
@@ -253,10 +250,10 @@ class BaseProcess(Setter):
             return auxx
 
     def preanalisis(self, data = None, pwd = None, filter = "positive", **kwargs ):
-        
-        if self.verbose > 1: 
-            if pwd is not None: print("-- Preanalisis for ", pwd)
-            else: print("-- Preanalisis for ", len(data))
+
+        if self.verbose > 0: 
+            if pwd is not None: self.print_0("Preanalisis for ", pwd)
+            else: self.print_0("Preanalisis for ", len(data))
 
         if data is None:
             with open( pwd, "r" ) as fp:

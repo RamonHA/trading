@@ -22,7 +22,8 @@ class PyPort(BaseOptimizer):
             time = 1,
             limits = (0, 1),
             target_return = 0,
-            risk_aux = "simple"
+            risk_aux = "simple",
+            **kwargs
         ):
         super().__init__(
             df = df,
@@ -31,7 +32,8 @@ class PyPort(BaseOptimizer):
             objective = objective,
             time = time,
             limits = limits,
-            target_return = target_return
+            target_return = target_return,
+            **kwargs
         )
         
         self.exp_returns = exp_returns if not isinstance(exp_returns, str) else self.get_exp_returns(exp_returns)
@@ -71,6 +73,8 @@ class PyPort(BaseOptimizer):
 
     def optimize(self, **kwargs):
         
+        if self.verbose > 0: print("- ", "Optimization: Optimize with ", self.risk)
+
         ef = {
             "efficientfrontier":self.efficient_frontier,
             "efficientsemivariance":self.efficient_semivariance,
@@ -157,7 +161,9 @@ class PyPort(BaseOptimizer):
         """  
             Objeto de frontera eficiente
         """
-        # print("Discretizacion")
+        
+        if self.verbose > 1: print("- ", "Optimization: Discretization")
+
         latest_prices = get_latest_prices(self.df)
         cleaned_weights = ef.clean_weights()
 

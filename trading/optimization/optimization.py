@@ -4,8 +4,9 @@ import json
 
 from trading.assets import Asset
 from trading.func_aux import PWD
+from trading.processes.base_process import Setter
 
-class Optimization():
+class Optimization(Setter):
     def __init__(
             self,
             assets,
@@ -22,8 +23,15 @@ class Optimization():
             verbose = 0 ,
             **kwargs
         ):
+
+        super().__init__(
+            broker = broker,
+            commission=0,
+            fiat = fiat,
+            assets=assets
+        )
+
         self.verbose = verbose
-        self.assets = assets
         
         if exp_returns is None or isinstance(exp_returns, str):
             self.exp_returns = exp_returns
@@ -33,8 +41,6 @@ class Optimization():
         self.start = start
         self.end = end
         self.frequency = frequency.lower()
-        self.broker = broker.lower()
-        self.fiat = fiat.lower()
         self.from_ = from_
 
         self.interpolate = interpolate
@@ -77,6 +83,9 @@ class Optimization():
             raise ValueError()
     
     def get_df(self):
+        
+        if self.verbose > 0: self.print_0("Optimization: Getting Df")
+
         df = pd.DataFrame()
         for i in self.assets:
             inst = Asset(
@@ -163,6 +172,7 @@ class Optimization():
             time = time,
             limits = limits,
             target_return=self.target_return,
+            verbose = self.verbose,
             **kwargs
         )
 

@@ -12,71 +12,6 @@ from .base_process import BaseProcess
 from trading.func_aux import PWD, folder_creation, bring_results
 from trading.optimization import Optimization
 
-def relative_time(end, time, frequency):
-    period_analysis, interval_analysis = re.findall(r'(\d+)(\w+)', frequency)[0]
-    period_analysis = int(period_analysis)
-
-    if interval_analysis == "m":
-        start = end - relativedelta(months = time*period_analysis) 
-        start = start.replace(day = 1)
-    elif interval_analysis == "w":
-        start = end - timedelta(days = 7*time*period_analysis)
-    elif interval_analysis == "d":
-        start = end - timedelta(days = time*period_analysis ) 
-    elif interval_analysis == "h":
-        start = end - timedelta(seconds = 3600*time*period_analysis )
-
-    return start
-
-def ind_strategy(inst, end, time, frequency, function):
-    instt = deepcopy( inst )
-
-    start = relative_time(end, time, frequency)
-
-    instt.df = instt.df.loc[ start:end ]
-
-    if len(instt.df) == 0: return None
-
-    return [ end, function(instt) ]
-
-def strategy_dummy(
-        asset,
-        start_abs,
-        end_abs,
-        time,
-        end_analysis,
-        frequency,
-        fiat,
-        broker,
-        function,
-        from_ = "db",
-        parallel = 0,
-
-    ):
-
-    start = relative_time( end_analysis[0][-1], time, frequency )
-
-    inst = Asset( 
-        asset, 
-        start, 
-        end_abs, 
-        frequency = frequency, 
-        fiat = fiat, 
-        broker = broker, 
-        from_ = from_, 
-        sentiment = False
-    )
-
-    if inst.df is None or len(inst.df) <= 3: 
-        warnings.warn("Error in strategy. Df import issue")
-        return None
-
-    if parallel == 0:
-        r = [ ind_strategy( inst, end[-1], time, frequency, function ) for end in end_analysis ]
-
-    return r
-
-
 class Simulation(BaseProcess):
     def __init__(
             self,
@@ -117,8 +52,6 @@ class Simulation(BaseProcess):
 
         self.pwd = PWD( "{}/results/{}/{}".format( self.broker, self.fiat, "{}" ) )
 
-    
-
     def analyze(
             self,
             frequency,
@@ -129,6 +62,9 @@ class Simulation(BaseProcess):
             folder = None,
             **kwargs
         ):
+
+        if self.verbose > 0: self.print_func("Analyze")
+
         self.test_time = test_time
         self.analysis = analysis
         self.frequency_analysis = frequency
@@ -148,16 +84,13 @@ class Simulation(BaseProcess):
             **kwargs
         ):
 
-        if self.verbose > 0:
-            self.print_func("Analyze")
-
         # self.assets_inst = [ Asset() for i in self.assets ]
 
         for simulation in range( self.simulations ):
             start, end, end_analysis, _ = self.start_end_relative( time, 0, self.interval_analysis, self.period_analysis, simulation=simulation, verbose = True )
 
-            if self.verbose > 1:
-                self.print_for( "{} {}".format( start, end) )
+            if self.verbose > 0:
+                self.print_0( "{} {}".format( start, end) )
 
             self.results = self.strategy( end_analysis, **kwargs )
 
@@ -186,6 +119,8 @@ class Simulation(BaseProcess):
             
         """
         
+        if self.verbose > 0: self.print_func( "Optimize" )
+
         time = self.test_time if time == 0 else time
         frequency = self.frequency_analysis if frequency is None else frequency
 
@@ -231,8 +166,6 @@ class Simulation(BaseProcess):
             **kwargs
         ):
 
-        if self.verbose > 0: self.print_func( "Optimize" )
-
         if ( value != 0 and self.realistic == 0 ):
             warnings.warn("Value of portfolio is set to 0 to run simultion. Priority of value over realistic")
             self.realistic = 1
@@ -247,8 +180,8 @@ class Simulation(BaseProcess):
         for simulation in range( self.simulations ):
             start, end, end_analysis, start_analysis = self.start_end_relative( test_time = time, analysis_time=balance_time, interval = interval, period = period, simulation = simulation, verbose = True )
 
-            if self.verbose > 1:
-                self.print_for( "Opt for {} {}".format(start, end) )
+            if self.verbose > 0:
+                self.print_0( "{} {}".format(start, end) )
 
             data = self.preanalisis(
                 pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ),
@@ -265,6 +198,8 @@ class Simulation(BaseProcess):
             if min_qty != 0 or ll > 0 :
                 data, ll = self.filter_by_qty(data, value=value, min_qty = min_qty, lower_lim = ll)
                 limits = ( ll, ul )
+
+                if self.verbose > 2: self.print_0( "Filter: Data:\n", data )
 
             self.opt = Optimization(
                 assets= list( data.keys() ),
@@ -321,8 +256,7 @@ class Simulation(BaseProcess):
         """  
             allocation (dict): If None (Defualt) assume 1/N allocation
         """
-        if self.verbose > 1:
-            print("- Test for assets:\n", assets)
+        if self.verbose > 1: self.print_0("Test for assets:\n", assets)
 
         if isinstance( assets, list ):
             l = len(assets)
