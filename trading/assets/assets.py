@@ -54,6 +54,15 @@ class TimeSeries():
         # here assertions will come out
         self.df = self.df.replace([np.inf, -np.inf], np.nan).dropna()
 
+    def target_testetor(self, targets = []):
+        if len(targets) == 0:
+            targets = self.df.columns
+            testetors = targets
+        else:
+            testetors = list( set(self.df.columns) - set(targets) )
+
+        return targets, testetors
+
     # Propiedades de yahoo finanzas
     @property
     def yf(self):
@@ -248,12 +257,7 @@ class TimeSeries():
 
         self.ensure_df(df)
         method = method.lower()
-
-        if len(targets) == 0:
-            targets = self.df.columns
-            testetors = targets
-        else:
-            testetors = list( set(self.df.columns) - set(targets) )
+        targets, testetors = self.target_testetor(targets)
 
         r = pd.DataFrame( index = testetors, columns = targets )
 
@@ -267,16 +271,47 @@ class TimeSeries():
 
     def corr(self, df = None, targets = [], method = "pearson"):
         self.ensure_df(df)
-        
-        if len(targets) == 0:
-            targets = self.df.columns
-            testetors = targets
-        else:
-            testetors = list( set(self.df.columns) - set(targets) )
+        targets, testetors = self.target_testetor(targets)
         
         corr = self.df.corr()
 
         return corr.loc[ testetors, targets ]
+
+    def redundancy(self, df = None, targets = [], threshold = 0.08, above = False):
+        """ 
+            Redundancy is considered below certain threshold.
+
+            If want above threshold, set above = True
+        """
+        
+        self.ensure_df(df)
+
+        if len(targets) == 0:
+            targets = df.columns
+            testetors = targets
+        else:
+            testetors = list( set(df.columns) - set(targets) )
+
+        df = df.loc[ testetors, targets ]
+
+        r = []
+
+        if not above:
+            for c in df.columns:
+                if c in r: continue
+                for i in df.index:
+                    if df.loc[ i, c ] > threshold:
+                        r.append( i )
+
+        else:
+            for c in df.columns:
+                if c in r: continue
+                for i in df.index:
+                    if df.loc[ i, c ] < threshold:
+                        r.append( i )
+
+        return list(set(r))
+
 
     # Some other aux
 

@@ -3,6 +3,7 @@
 # o clasificacion
 
 from datetime import date, timedelta, datetime
+from attr import has
 import pandas as pd
 import numpy as np
 import parser
@@ -13,9 +14,9 @@ from scipy.sparse import data
 from sklearn.metrics import mean_squared_error, mean_absolute_error, precision_score
 from sklearn.model_selection import ParameterGrid
 
-from .procesos import Setter
-from .instrumento import Instrumento
-from .func_aux import *
+from trading.processes.base_process import Setter
+from trading.assets import Asset
+from trading.func_aux import *
 
 ERRORS = {
         "rmse":mean_absolute_error,
@@ -29,14 +30,17 @@ class MyGridSearch():
             self, 
             df = pd.DataFrame(), 
             regr = None, 
-            parameters = None, 
+            parameters = {}, 
             train_test_split = 0.8, 
             target = "target", 
             error = "mae",
-            error_ascending = True
+            error_ascending = True,
+            verbose = 0
         ):
         
-        assert type(df) == pd.DataFrame, "Df no es tipo Pandas DataFrame. Se entrego {}.".format( type(df) )
+        self.verbose = verbose
+
+        assert type(df) == pd.DataFrame, "Df is not type Pandas DataFrame. It is  {}.".format( type(df) )
 
         self.df = df
         self.regr = regr
@@ -60,7 +64,7 @@ class MyGridSearch():
         elif callable( value ):
             self._error = value
         else:
-            raise ValueError("Error no es callable ni esta en la lista de funciones.")
+            raise ValueError("Error is not callable nor is not the list of errors available.")
             
     @property
     def regr(self):
@@ -68,18 +72,16 @@ class MyGridSearch():
     
     @regr.setter
     def regr(self, value):
-        # if regr tipo sklearn
+        # if regr type sklearn
         self._regr = value
 
     @property
     def parameters(self):
-        return self._parameters
-    
+            return self._parameters
+       
     @parameters.setter
     def parameters(self, value):
-        if value is None:
-            self._parameters = value
-        elif isinstance(value, dict):
+        if isinstance(value, dict):
             self._parameters = list( ParameterGrid(value) )
         else:
             raise NotImplementedError
@@ -138,7 +140,7 @@ class MyGridSearch():
         if debug: print( self.best )
     
     def predict(self, one = True):
-        assert self.best is not None, "No se ha corrido la prueba test"
+        assert self.best is not None, "Test has not been run"
 
         for j, v in self.best["param"].items(): self.regr.__dict__[j] = v
 
