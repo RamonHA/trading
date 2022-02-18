@@ -37,6 +37,10 @@ class MyGridSearch():
             error_ascending = True,
             verbose = 0
         ):
+        """  
+        
+            error_ascending (bool): True if lowest error means better. False if highest error means better.
+        """
         
         self.verbose = verbose
 
@@ -155,6 +159,10 @@ class MyGridSearch():
 
         if one: return predict[-1]
         else: return predict
+    
+    def run(self, **kwargs):
+        self.test(**kwargs)
+        self.predict(**kwargs)
 
 
 class Prediction(Setter):
