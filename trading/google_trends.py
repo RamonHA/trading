@@ -1,6 +1,5 @@
 # Google Trends
-from ast import Pass
-from nis import cat
+from dataclasses import dataclass
 from pytrends import dailydata
 from pytrends.request import TrendReq
 import pandas as pd
@@ -8,6 +7,8 @@ from datetime import date, datetime
 from dateutil import parser
 import time
 import re
+
+from trading.func_aux import PWD, folder_creation
 
 class GoogleTrend():
     def __init__(
@@ -58,13 +59,54 @@ class GoogleTrend():
         if self.from_ == "db":
             return self.df_db()
         else:
-            return {
+            df = {
                 "m":self.monthly,
                 "d":self.daily
             }[ self.interval ]()
-    
+
+            self.update( df )
+
+            return df
+
+    def update(self, df):
+
+        aux = {
+            "m":"monthly",
+            "d":"daily",
+            "h":"hourly"
+        }[ self.interval ] 
+
+        for c in df.columns: df[[c]].to_csv( PWD( "/sentiment/google_trends/{}/{}.csv".format( aux , c) ) )
+
+    def df_db_indv(self, pwd):
+        df = pd.read_csv( pwd )
+
+        df.set_index("date", inplace = True)
+
+        return df
+
     def df_db(self):
-        raise NotImplementedError
+
+        pwd = PWD( "/sentiment/google_trends/{}".format( 
+                {
+                    "m":"monthly",
+                    "d":"daily",
+                    "h":"hourly"
+                }[ self.interval ] 
+            ) 
+        )
+        
+        folder_creation(pwd)
+
+        pwd += "/{}.csv"
+
+        df = pd.DataFrame()
+        for k in self.keywords:
+            data = self.df_db_indv( pwd.format(k) )
+            df = pd.concat( [df, data], axis = 1 )
+        
+        return df
+
 
     def hourly(self):
         pytrends = TrendReq()

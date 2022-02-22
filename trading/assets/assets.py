@@ -580,28 +580,6 @@ class Asset(TimeSeries):
 
         return self.gt.df
 
-    def google_trends_api(self):
-        assert Bitso[ self.symbol ].get("google_trends", False), "No hay ´keywords´ en Assets.py de Bitso para la busqueda en Google Trends"
-   
-        df = pd.DataFrame()
-        for i in Bitso[ self.symbol ][ "google_trends" ]:
-            pytrends = TrendReq(hl = 'en-US', tz = 360)
-            pytrends.build_payload(
-                i,
-                cat = 0, # 0 -> All categories, 7 -> Finance 
-                timeframe = "all"
-            )
-
-            data = pytrends.interest_over_time()
-
-            if "isPartial" in data.columns: data.drop(columns = ["isPartial"], inplace = True)
-
-            df = pd.concat([df, data[i]], axis = 1)
-
-            time.sleep(1)
-
-        return df
-
     # # Fundamental Analyzers
 
     # def _beta(self):
