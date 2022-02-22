@@ -569,16 +569,16 @@ class Asset(TimeSeries):
 
         from trading.google_trends import GoogleTrend
 
-        g = GoogleTrend( 
+        self.gt = GoogleTrend( 
             keywords=keywords,
-            start = self.start,
-            end = self.end,
-            frequency = self.frequency,
+            start = self.asset.start,
+            end = self.asset.end,
+            frequency = self.asset.frequency,
             from_ = from_,
             **kwargs
         )
 
-        return g.df
+        return self.gt.df
 
     def google_trends_api(self):
         assert Bitso[ self.symbol ].get("google_trends", False), "No hay ´keywords´ en Assets.py de Bitso para la busqueda en Google Trends"

@@ -1,4 +1,6 @@
 # Google Trends
+from ast import Pass
+from nis import cat
 from pytrends import dailydata
 from pytrends.request import TrendReq
 import pandas as pd
@@ -18,6 +20,12 @@ class GoogleTrend():
             **kwargs
         ):
 
+        """  
+
+            cat: Default = 0 ("all categories"). See: https://github.com/pat310/google-trends-api/wiki/Google-Trends-Categories
+
+        """
+
         self.keywords = keywords
         self.start = self.ensure_date(start)
         self.end = self.ensure_date(end)
@@ -32,7 +40,7 @@ class GoogleTrend():
         if type(value) not in [ date, datetime ]:
             value = parser.parse(value)
 
-        return date
+        return value
 
     @property
     def df(self):
@@ -51,13 +59,27 @@ class GoogleTrend():
             return self.df_db()
         else:
             return {
-                "m":self.month
+                "m":self.monthly,
+                "d":self.daily
             }[ self.interval ]()
     
     def df_db(self):
         raise NotImplementedError
 
-    def month(self):
+    def hourly(self):
+        pytrends = TrendReq()
+
+        df = pytrends.get_historical_interest(
+            self.keywords, 
+            year_start=self.start.year, month_start=self.start.month, day_start=self.start.day, hour_start=self.start.hour, 
+            year_end=self.end.year, month_end=self.end.month, day_end=self.end.hour, hour_end=self.end.hour, 
+            cat=0 if not hasattr(self, "cat") else self.cat, 
+            sleep = self.sleep if hasattr(self, "sleep") else 5
+        )
+
+        return df[ self.keywords ]
+
+    def daily(self):
         df = pd.DataFrame()
 
         for keyword in self.keywords:
@@ -76,5 +98,15 @@ class GoogleTrend():
 
             time.sleep(1)
 
+        return df
+    
+    def monthly(self):
+        pytrends = TrendReq()
+
+        pytrends.build_payload(self.keywords, timeframe='all', cat=0 if not hasattr(self, "cat") else self.cat)
+
+        df = pytrends.interest_over_time()
+
+        return df.loc[ self.start:self.end ][ self.keywords ]
 
 
