@@ -294,23 +294,25 @@ class TimeSeries():
 
         df = df.loc[ testetors, targets ]
 
-        r = []
+        r = [] # Remove
 
-        if not above:
+        if above:
             for c in df.columns:
-                if c in r: continue
+                if (c in r): continue
                 for i in df.index:
+                    if (i == c) or (i in r): continue
                     if df.loc[ i, c ] > threshold:
                         r.append( i )
 
         else:
             for c in df.columns:
-                if c in r: continue
+                if (c in r): continue
                 for i in df.index:
+                    if (i == c) or (i in r): continue
                     if df.loc[ i, c ] < threshold:
                         r.append( i )
 
-        return list(set(r))
+        return r
 
 
     # Some other aux

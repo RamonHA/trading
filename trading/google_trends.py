@@ -70,6 +70,17 @@ class GoogleTrend():
 
     def update(self, df):
 
+        pwd = PWD( "/sentiment/google_trends/{}".format( 
+                {
+                    "m":"monthly",
+                    "d":"daily",
+                    "h":"hourly"
+                }[ self.interval ] 
+            ) 
+        )
+        
+        folder_creation(pwd)
+
         aux = {
             "m":"monthly",
             "d":"daily",
@@ -87,18 +98,15 @@ class GoogleTrend():
 
     def df_db(self):
 
-        pwd = PWD( "/sentiment/google_trends/{}".format( 
+        pwd = PWD( "/sentiment/google_trends/{}/{}.csv".format( 
                 {
                     "m":"monthly",
                     "d":"daily",
                     "h":"hourly"
-                }[ self.interval ] 
+                }[ self.interval ] ,
+                "{}"
             ) 
         )
-        
-        folder_creation(pwd)
-
-        pwd += "/{}.csv"
 
         df = pd.DataFrame()
         for k in self.keywords:
@@ -148,6 +156,9 @@ class GoogleTrend():
         pytrends.build_payload(self.keywords, timeframe='all', cat=0 if not hasattr(self, "cat") else self.cat)
 
         df = pytrends.interest_over_time()
+
+        if len(df) == 0: 
+            return pd.DataFrame()
 
         return df.loc[ self.start:self.end ][ self.keywords ]
 
