@@ -137,6 +137,73 @@ def mev_download():
         verbose = args.verbose
     )
 
+def get_mevs():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-mev', dest = 'mev' )
+    parser.add_argument( '-mode', dest = 'mode' )
+    parser.add_argument( '-modes', dest = 'modes', action = 'store_true' )
+    args = parser.parse_args()
+
+    from .func_aux import get
+    mevs = get( "mev/mevs.json" )
+    
+    if args.modes or args.mode is not None:
+        mevs = mevs[ "modes" ]
+
+        if args.mode is not None:
+            mevs = mevs[ args.mode ]
+
+    else:
+        mevs = mevs["mevs"]
+
+        if args.mev is not None:
+            mevs = mevs[args.mev]
+
+    print( mevs )
+
+def add_mevs():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-mev', dest = 'mev' )
+    parser.add_argument( '-mode', dest = 'mode' )
+    parser.add_argument( '-source', dest = 'source' )
+    parser.add_argument( '-id', dest = 'id' )
+    parser.add_argument( '-json', dest = 'json', help='Path to Json file' )
+    parser.add_argument( '-overwrite', dest = 'overwrite', action="store_true" )
+    args = parser.parse_args()
+
+    assert (args.mev or args.mode), "Input either mev or mode"
+
+    assert ( args.json or ( args.source and args.id ) ), "Input either path to json file or info of source and id"
+
+    mode = "mevs" if args.mev else "modes"
+    var = args.mev if args.mev else args.mode
+
+    import json
+    if args.json:
+        try:
+            with open(args.json, "r") as fp:
+                data = json.load(fp)
+        except Exception as e:
+            raise ValueError("Could not load json file {}. Exception: {}".format(args.json, e) ) 
+    else:
+        data = { args.source:args.id }
+
+    from .func_aux import get, get_pwd
+    mevs = get( "mev/mevs.json" )
+
+    if args.overwrite or ( var not in mevs[mode] ):
+        mevs[ mode ][ var ] = data
+    else:
+        for i, v in data.items():
+            mevs[ mode ][ var ][i] = v
+
+    with open( get_pwd( "mev/mevs.json" ), "w" ) as fp:
+        json.dump( mevs, fp )
+    
+    print("Done!")
+
 def get_brokers():
     from .func_aux import get_assets
     assets = list(get_assets().keys())

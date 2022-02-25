@@ -134,11 +134,11 @@ class MEV(TimeSeries):
         self.token = token
         self.source = source
 
+        self.interpolate = interpolate
+
         self.set_mev(source)
 
-        self.symbol_aux = self.mev.data
-
-        self.interpolate = interpolate
+        self.symbol = self.symbol_aux = self.mev.data
 
     def get_mev(self, source):        
         
