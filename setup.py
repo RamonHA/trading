@@ -22,7 +22,9 @@ setup(
             "add_assets = trading.config:add_assets",
             "get_assets = trading.config:get_assets",
             "get_brokers = trading.config:get_brokers",
-            "octetos = trading.config:octetos"
+            "octetos = trading.config:octetos",
+            "get_mevs = trading.config:get_mevs",
+            "add_mevs = trading.config:add_mevs"
         ]
     }
 )
