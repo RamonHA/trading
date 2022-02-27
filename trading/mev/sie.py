@@ -4,7 +4,7 @@ import pandas as pd
 
 
 from .base_mev import BaseMEV
-from trading.func_aux import get_assets, get_config
+from trading.func_aux import get, get_config
 
 class SIE(BaseMEV):
     def __init__(
@@ -40,10 +40,11 @@ class SIE(BaseMEV):
     
     @data.setter
     def data(self, value):
-        if "sie" not in get_assets():
-            self._data = value
+        f = get("mev/mevs.json")
+        if value in f["mevs"]:
+            self._data = f["mevs"][ value ].get( "sie" , value)
         else:
-            self._data = get_assets()["sie"].get( value, value )
+            self._data = value 
 
     def df_api(self):
 

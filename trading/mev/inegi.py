@@ -5,7 +5,7 @@ import pandas as pd
 
 
 from .base_mev import BaseMEV
-from trading.func_aux import get_assets, get_config
+from trading.func_aux import get, get_config
 
 class Inegi(BaseMEV):
     def __init__(
@@ -41,10 +41,11 @@ class Inegi(BaseMEV):
     
     @data.setter
     def data(self, value):
-        if "inegi" not in get_assets():
-            self._data = value
+        f = get("mev/mevs.json")
+        if value in f["mevs"]:
+            self._data = f["mevs"][ value ].get( "inegi" , value)
         else:
-            self._data = get_assets()["inegi"].get( value, value )
+            self._data = value 
 
     def df_api(self):
 

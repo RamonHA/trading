@@ -175,10 +175,10 @@ def add_mevs():
 
     assert (args.mev or args.mode), "Input either mev or mode"
 
-    assert ( args.json or ( args.source and args.id ) ), "Input either path to json file or info of source and id"
+    assert ( args.json or ( args.source or args.id ) ), "Input either path to json file or info of source or id"
 
-    mode = "mevs" if args.mev else "modes"
-    var = args.mev if args.mev else args.mode
+    mode = "modes" if args.mode else "mevs"
+    var = args.mode if args.mode else args.mev
 
     import json
     if args.json:
@@ -188,7 +188,10 @@ def add_mevs():
         except Exception as e:
             raise ValueError("Could not load json file {}. Exception: {}".format(args.json, e) ) 
     else:
-        data = { args.source:args.id }
+        if mode == "mevs":
+            data = { args.source:args.id }
+        else:
+            data = { args.mev: args.source }
 
     from .func_aux import get, get_pwd
     mevs = get( "mev/mevs.json" )

@@ -1,68 +1,15 @@
 # Macroeconomic variables
 import pandas as pd
 from trading.assets import TimeSeries
-from trading.func_aux import PWD
+from trading.func_aux import PWD, get
 
-# Easy path for now
-mev = {
-        "bonos":{"sie":"SF117753"},
-        "cetes":{"sie":"SF43936"},
-        "consumo frecuente":{"investing":27260},         # 27260
-        "consumo no basico":{"investing":27259},         # 27259
-        "dax":{"yahoo":"^GDAXI"},
-        "desempleo":{"inegi":"6200093973", "sie":"SL1"},
-        "financiero":{"investing":27262},                # 27262, RT 27240
-        "industrial":{"investing":27242},                # 27258, RT 27242
-        "inpc":{"sie":"SP1"},                            # SP1
-        "er":{"yahoo":"MXN=X"},
-        "inflacion":{"sie":"SP68257"},
-        "intereses":{"sie":"SF3338"},
-        "materiales":{"investing":27265},               # 27265, RT 27243
-        "mexbol":{"yahoo":"^MXX", "investing":27254},
-        "petroleo":{"sie":"SP67185", "yahoo":"CL=F"},
-        "pib":{"inegi":"6207061899", "sie":"SR16643"},
-        "mexbol":{"yahoo":"^MXX"},
-        "nikkei":{"yahoo":"^N225"},
-        "reservas internacionales":{"sie":"SF43707"},
-        "salud":{"investing":27263},
-        "s&p500":{"yahoo":"^GSPC"},
-        "sse":{"yahoo":"000001.SS"},
-        "telecomunicaciones":{"investing":27266},
-        "tsx":{"yahoo":"^GSPTSE"},
-    }
-
-modes = {
-    "all":[
-            ("petroleo", "yahoo"),
-            ("er", "yahoo"),
-            ("inflacion", "sie"),
-            ("pib", "inegi"),
-            ("cetes", "sie"),
-            ("inpc", "sie"),
-            ("reservas internacionales", "sie"),
-            ("desempleo", "inegi"),
-            
-            ("s&p500", "yahoo"),
-            ("sse", "yahoo"),
-            ("nikkei", "yahoo"),
-            ("tsx", "yahoo"),
-            ("dax", "yahoo"),
-
-            ("industrial", "investing"),
-            ("materiales", "investing"),
-            ("financiero", "investing"),
-            ("consumo frecuente", "investing"),
-            ("consumo no basico", "investing"),
-            ("salud", "investing"),
-            ("telecomunicaciones", "investing"),
-
-            ("mexbol", "yahoo")
-    ]
-}
+config = get( "mev/mevs.json" )
+mevs = config[ "mevs" ]
+modes = config[ "modes" ]
 
 def mevs_to_csv(mode, frequency = "1m"):
     mev_df = pd.DataFrame()
-    for i, v in modes[mode]:
+    for i, v in modes[mode].items():
         df = MEV(
                 data = i,
                 source = v,

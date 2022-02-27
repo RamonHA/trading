@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 from .base_mev import BaseMEV
-from trading.func_aux import get_assets, get_config
+from trading.func_aux import get, get_config
 
 class Investing(BaseMEV):
     def __init__(
@@ -40,10 +40,11 @@ class Investing(BaseMEV):
     
     @data.setter
     def data(self, value):
-        if "investing" not in get_assets():
-            self._data = value
+        f = get("mev/mevs.json")
+        if value in f["mevs"]:
+            self._data = f["mevs"][ value ].get( "investing" , value)
         else:
-            self._data = get_assets()["investing"].get( value, value )
+            self._data = value 
 
     def df_api(self):
 
