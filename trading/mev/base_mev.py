@@ -51,12 +51,7 @@ class BaseMEV(TimeSeries):
         else:
             df.set_index("date", inplace = True)
 
-            df = self.reindex( 
-                df, 
-                self.frequency, 
-                interpolate=self.interpolate,
-                end = None if self.end is None else self.end
-            )
+            # df = self.reindex( df, frequency= )
 
         return df
 
