@@ -115,7 +115,8 @@ class Bot(BaseProcess):
             fiat = self.fiat,
             from_ = kwargs.get("from_", "db"),
             interpolate=kwargs.get("interpolate", True),
-            verbose = self.verbose
+            verbose = self.verbose,
+            **kwargs
         )   
 
         self.allocation, self.qty, self.pct = opt.optimize( value, time = time, limits = limits )
