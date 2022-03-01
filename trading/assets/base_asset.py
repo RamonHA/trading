@@ -259,14 +259,14 @@ class BaseAsset():
         
             positions (dict): { asset:position }
         """
-        raise NotImplementedError
+        return positions
     
     def sell(self, positions):
         """ Positions to Sell 
 
             positions (dict): { asset:position }
         """
-        raise NotImplementedError
+        return positions
 
     def value(self):
         """ Value of Portfolio """

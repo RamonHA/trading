@@ -180,7 +180,10 @@ class Bot(BaseProcess):
 
         past_resume = self.past_resume()
 
-        open_positions = past_resume["final_real_allocation"].keys()
+        if past_resume is None:
+            open_positions = []
+        else:
+            open_positions = past_resume["final_real_allocation"].keys()
 
         ptc = self.positions_to_close( open_positions )
 
