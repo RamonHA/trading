@@ -79,7 +79,7 @@ from trading.processes import Simulation
     ("efficientcvar", "mincvar"),
     ("efficientcdar", "mincdar")
 ])
-def test_optimize_exp_return(risk, objective):
+def test_optimize_exp_return(risk, objective):gnfxjnfdxjy
     def rf(inst):
         inst.df.dropna(inplace = True)
         inst.df["target"] = inst.df["close"].pct_change().shift(-1)
