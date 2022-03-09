@@ -121,7 +121,7 @@ def historic_download():
 def mev_download():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-mode', dest = 'mode', help = 'Broker name')
+    parser.add_argument('-mode', dest = 'mode', help = 'MEV mode (check get_mevs)')
     parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
     parser.add_argument('-verbose', dest = 'verbose', help = "Print process", action = "store_true")
     args = parser.parse_args()
