@@ -11,6 +11,14 @@ import re
 from trading.func_aux import PWD, folder_creation
 
 class GoogleTrend():
+
+    __PERIODS = {
+        "m":"monthly",
+        "w":"weekly",
+        "d":"daily",
+        "h":"hourly"
+    }
+
     def __init__(
             self,
             keywords = [],
@@ -61,7 +69,9 @@ class GoogleTrend():
         else:
             df = {
                 "m":self.monthly,
-                "d":self.daily
+                "w":self.weekly,
+                "d":self.daily,
+                "h":self.hourly
             }[ self.interval ]()
 
             self.update( df )
@@ -70,22 +80,11 @@ class GoogleTrend():
 
     def update(self, df):
 
-        pwd = PWD( "/sentiment/google_trends/{}".format( 
-                {
-                    "m":"monthly",
-                    "d":"daily",
-                    "h":"hourly"
-                }[ self.interval ] 
-            ) 
-        )
+        pwd = PWD( "/sentiment/google_trends/{}".format( self.__PERIODS[ self.interval ] ) )
         
         folder_creation(pwd)
 
-        aux = {
-            "m":"monthly",
-            "d":"daily",
-            "h":"hourly"
-        }[ self.interval ] 
+        aux = self.__PERIODS[ self.interval ] 
 
         for c in df.columns: df[[c]].to_csv( PWD( "/sentiment/google_trends/{}/{}.csv".format( aux , c) ) )
 
@@ -98,15 +97,7 @@ class GoogleTrend():
 
     def df_db(self):
 
-        pwd = PWD( "/sentiment/google_trends/{}/{}.csv".format( 
-                {
-                    "m":"monthly",
-                    "d":"daily",
-                    "h":"hourly"
-                }[ self.interval ] ,
-                "{}"
-            ) 
-        )
+        pwd = PWD( "/sentiment/google_trends/{}/{}.csv".format( self.__PERIODS[ self.interval ] , "{}" )  )
 
         df = pd.DataFrame()
         for k in self.keywords:
@@ -127,7 +118,7 @@ class GoogleTrend():
             sleep = self.sleep if hasattr(self, "sleep") else 5
         )
 
-        return df[ self.keywords ]
+        return df.loc[ self.start:self.end ][ self.keywords ]
 
     def daily(self):
         df = pd.DataFrame()
@@ -148,8 +139,17 @@ class GoogleTrend():
 
             time.sleep(1)
 
-        return df
+        df.index.name = "date"
+
+        return df.loc[ self.start:self.end ][ self.keywords ]
     
+    def weekly(self):
+        df = self.daily()
+        df.index = pd.to_datetime( df.index )
+        df.resample( "W" ).mean()
+
+        return df
+
     def monthly(self):
         pytrends = TrendReq()
 

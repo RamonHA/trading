@@ -29,13 +29,17 @@ class Bot(BaseProcess):
             **kwargs
         )
 
+        folder_creation( PWD( "{}/bots/{}".format( self.broker, self.fiat ) ) )
         self.pwd = PWD( "{}/bots/{}/{}".format( self.broker, self.fiat, "{}" ) )
+        self.bot_date = str(datetime.today()).replace(":", " ").split(".")[0]
+
         self.resume = {
-            "date":datetime.today(),
-            "subdivision":subdivision
+            "date":str(datetime.today()),
+            "subdivision":subdivision,
+            "comission":self.commission
         }
     
-        self.asset = self.get_asset()()
+        self.asset = self.set_asset()()
 
         self.verbose = verbose
 
@@ -58,6 +62,7 @@ class Bot(BaseProcess):
             analysis,
             test_time = None,
             folder = None,
+            run = True,
             **kwargs
         ):
         self.analysis = analysis
@@ -66,11 +71,25 @@ class Bot(BaseProcess):
         self.period_analysis, self.interval_analysis = re.findall(r'(\d+)(\w+)', frequency)[0]
         self.period_analysis = int( self.period_analysis )
 
-        self.results = self.strategy( self.end, **kwargs )
+        if run:
+            self.results = self.strategy( self.end, **kwargs )
 
-        self.resume["frequency"] = frequency
-        self.resume["analysis"] = { i:v for i, v in analysis.items() if i != "function" }
-        self.resume["results"] = {"analysis":self.results}
+            analisis_aux = {}
+            for j, k in analysis.items():
+                analisis_aux[j] = {}
+                for i, v in k.items():
+                    if i == "function": continue
+                    analisis_aux[ i ] = v
+
+            self.resume["frequency"] = frequency
+            self.resume["analysis"] = analisis_aux
+            self.resume["results"] = {"analysis":self.results}
+
+            try:
+                with open( self.pwd.format( "{}.json".format(self.bot_date)  ) , "w") as fp:
+                    json.dump( self.resume, fp )
+            except Exception as e:
+                print("Cannot dump json with exception {}.\n{}".format(e, self.resume))
 
     def optimize(
             self,
@@ -101,7 +120,8 @@ class Bot(BaseProcess):
             data, ll = self.filter_by_qty(data, value=value, min_qty = min_qty, lower_lim = ll)
             limits = ( ll, ul )
 
-        _, _, end_analysis, start_analysis = self.start_end_relative( test_time = time, analysis_time=balance_time, interval = interval, period = period, simulation = 0, verbose = True )
+        self.start, _  = self.start_end( end = self.end, interval=interval, period=period, simulations=1 , time=time)
+        _, _, end_analysis, start_analysis = self.start_end_relative( test_time = time, analysis_time=balance_time, interval = interval, period = period, simulation = 1, verbose = True )
 
         opt = Optimization(
             assets= list( data.keys() ),
@@ -127,8 +147,8 @@ class Bot(BaseProcess):
             "time":time,
             "frequency":frequency,
             "balance_time":balance_time,
-            "start":start_analysis,
-            "end":end_analysis,
+            "start":str(start_analysis),
+            "end":str(end_analysis),
             "limits":limits,
             "value":value
         }
@@ -138,6 +158,9 @@ class Bot(BaseProcess):
             "qty":self.qty,
             "pct":self.pct
         }
+
+        with open( self.pwd.format( "{}.json".format(self.bot_date)  ) , "w") as fp:
+            json.dump( self.resume, fp )
 
         return self.allocation, self.qty, self.pct
 
@@ -155,8 +178,9 @@ class Bot(BaseProcess):
         if len(json_files) == 0: return None
 
         # Order based on date
-        json_files_order = [i.split("_")[0] for i in json_files]
-        json_files_order.sort(key = lambda date: datetime.strptime(date, '%Y-%m-%d %H:%M:%S')) 
+        json_files_order = [i.split("_")[0].replace(".json", "") for i in json_files]
+
+        json_files_order.sort(key = lambda date: datetime.strptime(date, '%Y-%m-%d %H %M %S')) 
 
         # File of interest
         json_files = [i for i in json_files if json_files_order[-1] in i][0]
@@ -180,24 +204,24 @@ class Bot(BaseProcess):
 
         past_resume = self.past_resume()
 
-        if past_resume is None:
-            open_positions = []
+        if past_resume is None or "final_real_allocation" not in past_resume:
+            open_positions = {}
         else:
             open_positions = past_resume["final_real_allocation"].keys()
 
         ptc = self.positions_to_close( open_positions )
 
-        no_sell = self.sell( { i:v for i, v in self.qty if i in ptc} )
+        no_sell = self.sell( { i:v for i, v in self.qty.items() if i in ptc} )
 
         pto = self.position_to_open( open_positions )
 
-        real_bougth = self.buy( { i:v for i, v in self.qty if i in pto} )
+        real_bougth = self.buy( { i:v for i, v in self.qty.items() if i in pto} )
 
-        real_bougth.update( { i:v for i, v in open_positions if i in no_sell } )
+        real_bougth.update( { i:v for i, v in open_positions.items() if i in no_sell } )
 
         self.resume["final_real_allocation"] = real_bougth
 
-        with open( self.pwd.format( "{}.json".format(datetime.today())  ) ) as fp:
+        with open( self.pwd.format( "{}.json".format(self.bot_date)  ), "w" ) as fp:
             json.dump( self.resume, fp )
 
     

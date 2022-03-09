@@ -372,7 +372,7 @@ class TimeSeries():
 
         df.set_index("date", inplace = True)
 
-        return self.reindex( df, frequency="linear" )
+        return self.reindex( df, frequency="1m" )
 
     def _to_monthly(self, df):
         return df.resample( "1MS", on = "date" ).agg( {self.data:"last"} )

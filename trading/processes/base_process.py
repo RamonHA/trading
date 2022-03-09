@@ -106,7 +106,7 @@ class Setter():
 
     def get_assets(self):
         from trading.func_aux import get_assets
-        return get_assets().get( self.broker, None )
+        return get_assets().get( self.broker.lower(), None )
 
     def set_fiat(self):
         # Defaults values
