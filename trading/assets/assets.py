@@ -703,7 +703,7 @@ class Asset(TimeSeries):
         """
 
         bb_obj = ta.volatility.BollingerBands(close=self.df[close], \
-            window=length, ndev=std)
+            window=length, window_dev=std)
 
         return bb_obj.bollinger_hband(), bb_obj.bollinger_mavg(), bb_obj.bollinger_lband()
 
@@ -919,7 +919,7 @@ class Asset(TimeSeries):
             Demuestra la direccion de tendencias, así como condiciones
             de sobrecompra o sobreventa.
         """
-        return ta.momentum.TSIIndicator(close=self.df[target], r=high, s=low).tsi()
+        return ta.momentum.TSIIndicator(close=self.df[target], window_fast=high, window_slow=low).tsi()
     
     def uo(self, short, medium, long, wshort, wmedium, wlong, high='high', low='low', close='close'):
         """ Regresa una Serie de Ultimate Oscillator 

@@ -1,5 +1,6 @@
 # Google Trends
 from dataclasses import dataclass
+from matplotlib.pyplot import contour
 from pytrends import dailydata
 from pytrends.request import TrendReq
 import pandas as pd
@@ -89,7 +90,10 @@ class GoogleTrend():
         for c in df.columns: df[[c]].to_csv( PWD( "/sentiment/google_trends/{}/{}.csv".format( aux , c) ) )
 
     def df_db_indv(self, pwd):
-        df = pd.read_csv( pwd )
+        try:
+            df = pd.read_csv( pwd )
+        except:
+            return None
 
         df.set_index("date", inplace = True)
 
@@ -102,6 +106,7 @@ class GoogleTrend():
         df = pd.DataFrame()
         for k in self.keywords:
             data = self.df_db_indv( pwd.format(k) )
+            if data is None: continue
             df = pd.concat( [df, data], axis = 1 )
         
         return df
