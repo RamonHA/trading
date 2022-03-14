@@ -79,7 +79,7 @@ class Simulation(BaseProcess):
 
     def _analyze(
             self,
-            time,
+            test_time,
             save = True,
             **kwargs
         ):
@@ -94,7 +94,7 @@ class Simulation(BaseProcess):
 
         for simulation in range( self.simulations ):
             s_st = time.time()
-            start, end, end_analysis, _ = self.start_end_relative( time, 0, self.interval_analysis, self.period_analysis, simulation=simulation, verbose = True )
+            start, end, end_analysis, _ = self.start_end_relative( test_time, 0, self.interval_analysis, self.period_analysis, simulation=simulation, verbose = True )
 
             if self.verbose > 0:
                 self.print_0( "{} {}".format( start, end) )
@@ -119,7 +119,7 @@ class Simulation(BaseProcess):
     def optimize(
             self,
             balance_time, 
-            time = 0,
+            test_time = 0,
             frequency = None,
             value = 0,
             exp_return = "mean",
@@ -132,14 +132,14 @@ class Simulation(BaseProcess):
         ):
         """  
             balance_time (int): Time considered to optimize a portfolio
-            time (int): Default = 0
+            test_time (int): Default = 0
                         Time considered to optimize to portfolio to (similat to test_time)
             
         """
         
         if self.verbose > 0: self.print_func( "Optimize" )
 
-        time = self.test_time if time == 0 else time
+        test_time = self.test_time if test_time == 0 else test_time
         frequency = self.frequency_analysis if frequency is None else frequency
 
         if value > 0 and self.realistic == 0:
@@ -149,7 +149,7 @@ class Simulation(BaseProcess):
             raise ValueError( "If min_qty, input portfolio value." ) 
 
         self.pwd_balance = self.pwd_analysis.format( 
-            "{}_{}_{}_{}_{}".format( risk, objective, time, frequency, balance_time )         
+            "{}_{}_{}_{}_{}".format( risk, objective, test_time, frequency, balance_time )         
         )
 
         folder_creation( self.pwd_balance )
@@ -158,7 +158,7 @@ class Simulation(BaseProcess):
 
         if run:
             self._optimize(
-                time = time, 
+                test_time = test_time, 
                 frequency = frequency, 
                 balance_time = balance_time, 
                 value = value,
@@ -172,7 +172,7 @@ class Simulation(BaseProcess):
 
     def _optimize(
             self, 
-            time, 
+            test_time, 
             frequency, 
             balance_time, 
             value = 0,
@@ -196,7 +196,7 @@ class Simulation(BaseProcess):
         self.df = []
 
         for simulation in range( self.simulations ):
-            start, end, end_analysis, start_analysis = self.start_end_relative( test_time = time, analysis_time=balance_time, interval = interval, period = period, simulation = simulation, verbose = True )
+            start, end, end_analysis, start_analysis = self.start_end_relative( test_time = test_time, analysis_time=balance_time, interval = interval, period = period, simulation = simulation, verbose = True )
 
             if self.verbose > 0:
                 self.print_0( "{} {}".format(start, end) )
@@ -235,7 +235,7 @@ class Simulation(BaseProcess):
                 **kwargs
             )   
 
-            allocation, qty, pct = self.opt.optimize( value, time = time, limits = limits )
+            allocation, qty, pct = self.opt.optimize( value, time = test_time, limits = limits )
 
             with open( self.pwd_balance.format( "{}_{}.json".format( start, end ) ), "w" ) as fp:
                 json.dump(
