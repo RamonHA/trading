@@ -214,7 +214,7 @@ class BaseProcess(Setter):
 
     def filter(self, data, filter = "all", **kwargs):
 
-        if self.verbose > 1: self.print_0("Filter data:\n", data)
+        if self.verbose > 1: self.print_0("Filter data:\n{}".format( data))
 
         n = kwargs.get("filter_qty", 3)
         n = math.floor( len(data)*n ) if n < 1 else n
@@ -252,14 +252,14 @@ class BaseProcess(Setter):
     def preanalisis(self, data = None, pwd = None, filter = "positive", **kwargs ):
 
         if self.verbose > 0: 
-            if pwd is not None: self.print_0("Preanalisis for ", pwd)
-            else: self.print_0("Preanalisis for ", len(data))
+            if pwd is not None: self.print_0("Preanalisis for {}".format( pwd))
+            else: self.print_0("Preanalisis for {}".format( len(data)) )
 
         if data is None:
             with open( pwd, "r" ) as fp:
                 data = json.load(fp)
         
-        if self.verbose > 2: print( "Preanalisis data: \n", data )
+        if self.verbose > 2: print( "Preanalisis data: \n{}".format( data) )
 
         if len(data) == 0: return None
 

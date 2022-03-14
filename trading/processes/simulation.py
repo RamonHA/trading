@@ -85,8 +85,15 @@ class Simulation(BaseProcess):
         ):
 
         # self.assets_inst = [ Asset() for i in self.assets ]
+        
+        self.analysis_times = {
+            "simulations":[]
+        }
+
+        a_st = time.time()
 
         for simulation in range( self.simulations ):
+            s_st = time.time()
             start, end, end_analysis, _ = self.start_end_relative( time, 0, self.interval_analysis, self.period_analysis, simulation=simulation, verbose = True )
 
             if self.verbose > 0:
@@ -97,7 +104,18 @@ class Simulation(BaseProcess):
             if save:
                 with open( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ), "w" ) as fp:
                     json.dump( self.results, fp )
-            
+        
+            self.analysis_times["simulations"].append( [simulation, time.time() - s_st] )
+
+        self.analysis_times["total"] = time.time() - a_st
+
+        if self.verbose > 0:
+            print(" Total analysis time: {}")
+
+        if save:
+            with open( self.pwd_analysis.format( "resume.json" ), "w" ) as fp:
+                json.dump( self.analysis_times, fp )
+
     def optimize(
             self,
             balance_time, 

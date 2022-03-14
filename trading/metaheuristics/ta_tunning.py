@@ -99,27 +99,30 @@ class TATunning(Problem):
         return error
 
     def update_ta(self, vector):
+        """ Modified the asset object from the new vector parameters """
+
         if self.verbose > 0: print("- Update TA")
 
         try:
-            self.asset.df['rsi'] = self.asset.rsi(vector[0])
-            self.asset.df['cci'] = self.asset.cci(vector[1])
-            self.asset.df['roc'] = self.asset.roc(vector[2])
-            self.asset.df['trix'] = self.asset.trix(vector[3])
-            self.asset.df['vi'], _ = self.asset.vortex_indicator(vector[4])
-            self.asset.df['stoch'], _ = self.asset.stoch(vector[5], 3)
-            self.asset.df['mass_index'] = self.asset.mass_index( vector[6] )
-            
-            try:
-                self.asset.df['adx'], *_ = self.asset.adx( vector[7] )
-            except:
-                self.asset.df['adx'] = 0
-
-            self.asset.df['macd'], *_ = self.asset.macd(vector[8], vector[9], vector[10])
-
+            self._update_ta(vector=vector)
         except Exception as e:
             if self.verbose > 1: print("Update ta exception: {} \n  Vector: {} \n {}".format( e, vector.shape, vector ))
 
+    def _update_ta(self, vector):
+        self.asset.df['rsi'] = self.asset.rsi(vector[0])
+        self.asset.df['cci'] = self.asset.cci(vector[1])
+        self.asset.df['roc'] = self.asset.roc(vector[2])
+        self.asset.df['trix'] = self.asset.trix(vector[3])
+        self.asset.df['vi'], _ = self.asset.vortex_indicator(vector[4])
+        self.asset.df['stoch'], _ = self.asset.stoch(vector[5], 3)
+        self.asset.df['mass_index'] = self.asset.mass_index( vector[6] )
+        
+        try:
+            self.asset.df['adx'], *_ = self.asset.adx( vector[7] )
+        except:
+            self.asset.df['adx'] = 0
+
+        self.asset.df['macd'], *_ = self.asset.macd(vector[8], vector[9], vector[10])
 
     def train_test(self,df ):
         df = df.replace([np.inf, -np.inf], np.nan).dropna()
