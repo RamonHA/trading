@@ -90,10 +90,11 @@ class Binance(BaseAsset):
         pwd = PWD("/binance/dccd")
 
         aux = {
-            'm':'minutely',
+            'min':'minutely',
             'h':'hourly',
             'd':'daily',
-            'w':'weekly'
+            'w':'weekly',
+            'm':'monthly'
         }
         b = binance.FromBinance( pwd, crypto=self.symbol.upper(), span= aux[self.interval],fiat=self.fiat.upper())
 
