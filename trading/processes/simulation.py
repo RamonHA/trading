@@ -110,7 +110,7 @@ class Simulation(BaseProcess):
         self.analysis_times["total"] = time.time() - a_st
 
         if self.verbose > 0:
-            print(" Total analysis time: {}")
+            print(" Total analysis time: {}".format( self.analysis_times["total"] ))
 
         if save:
             with open( self.pwd_analysis.format( "resume.json" ), "w" ) as fp:
@@ -217,7 +217,7 @@ class Simulation(BaseProcess):
                 data, ll = self.filter_by_qty(data, value=value, min_qty = min_qty, lower_lim = ll)
                 limits = ( ll, ul )
 
-                if self.verbose > 2: self.print_0( "Filter: Data:\n", data )
+                if self.verbose > 2: self.print_0( "Filter: Data:\n{}".format( data) )
 
             self.opt = Optimization(
                 assets= list( data.keys() ),
@@ -274,7 +274,7 @@ class Simulation(BaseProcess):
         """  
             allocation (dict): If None (Defualt) assume 1/N allocation
         """
-        if self.verbose > 1: self.print_0("Test for assets:\n", assets)
+        if self.verbose > 1: self.print_0("Test for assets:\n{}".format( assets))
 
         if isinstance( assets, list ):
             l = len(assets)
