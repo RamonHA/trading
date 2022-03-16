@@ -1,12 +1,49 @@
-from tabnanny import verbose
 import numpy as np
 import pandas as pd
 
 from trading.func_aux import min_max
-
 from pymoo.model.problem import Problem
+from .metaheuristics import Metaheuristic
 
-class TATunning(Problem):
+class TATunning(Metaheuristic):
+    def __init__(
+            self,
+            asset,
+            regr,
+            n_var,
+            xu,
+            xl,
+            places = 1,
+            normalize = True,
+            seasonality = False,
+            error = "relative",
+            verbose = 0,
+            algorithm = "de", 
+            algorithm_params ={},
+            n_obj = 1,
+            n_constr = 0,
+            type_var = np.int,
+        ):
+        
+        self.set_algorithm(algorithm, algorithm_params)
+
+        self.problem = TATunningProblem(
+            asset=asset,
+            regr=regr,
+            n_var=n_var,
+            xu=xu,
+            xl=xl,
+            places = places,
+            normalize = normalize,
+            seasonality = seasonality,
+            error = error,
+            verbose = verbose,
+            n_obj = n_obj,
+            n_constr = n_constr,
+            type_var = type_var
+        )
+
+class TATunningProblem(Problem):
 
     def __init__(
             self,
