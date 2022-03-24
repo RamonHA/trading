@@ -38,6 +38,8 @@ def strategy(
         start = end - timedelta(days = time*period_analysis ) 
     elif interval_analysis == "h":
         start = end - timedelta(seconds = 3600*time*period_analysis )
+    elif interval_analysis == "min":
+        start = end - timedelta(seconds = 60*time*period_analysis )
 
     if verbose:
         print("Func Strategy", asset, start, end, frequency, fiat, broker)
@@ -333,6 +335,8 @@ class BaseProcess(Setter):
         elif interval == "h":
             end = datetime.combine( end, datetime.min.time() )
             start = end - timedelta(seconds = 3600*simulations*period*time)            
+        elif interval == "min":
+            start = end - timedelta(seconds = 60*simulations*period*time)
 
         return start, end
 
@@ -364,5 +368,12 @@ class BaseProcess(Setter):
             end = start + timedelta( seconds = test_time*self.period_analysis*3600 ) 
             end_analysis = datetime.combine(start, datetime.min.time())
             start_analysis = end_analysis - timedelta(seconds=3600*analysis_time*period)
+
+        elif interval == "min":
+            start = self.start + timedelta( seconds = simulation*test_time*self.period_analysis*60 )
+            end = start + timedelta( seconds = test_time*self.period_analysis*60 ) 
+            end_analysis = start
+            start_analysis = end_analysis - timedelta(seconds=60*analysis_time*period)
+
 
         return start, end, end_analysis, start_analysis

@@ -4,9 +4,10 @@ import re
 from dateutil import parser
 import yfinance as yf
 
+from trading.assets import TimeSeries
 from trading.func_aux import PWD, get_assets
 
-class BaseAsset():
+class BaseAsset(TimeSeries):
     def __init__(
         self, 
         symbol = None, 
@@ -19,6 +20,8 @@ class BaseAsset():
         sentiment = False,
         social_media = None,
     ):
+        super().__init__()
+
         self.broker = broker
         self.fiat = fiat.lower() if fiat is not None else None
 
@@ -159,6 +162,8 @@ class BaseAsset():
                 )
             return None
         
+        if df is None or len(df) == 0: return None
+
         df.set_index( "date", inplace = True )
         # df.index = pd.to_datetime( df.index )
 
@@ -202,6 +207,11 @@ class BaseAsset():
             "ext_api":self.df_ext_api,
             "db":self.df_db
         }[ self.from_ ]()
+
+        if df is None: return pd.DataFrame()
+
+        if self.from_ == "db" and self.period > 1:
+            df = self.transform( df, self.frequency )
 
         return df if df is not None else pd.DataFrame()
 

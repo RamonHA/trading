@@ -44,7 +44,7 @@ class BaseOptimizer():
             warnings.warn("First column of Exp Return is considered as the exp returns")
             value = value[ col[0] ]
 
-        assert type(value) in [ pd.Series, np.ndarray, list ], "Exp returns is not Series, list or array. It is {}".format(type(value))
+        assert type(value) in [ pd.Series, np.ndarray, list ], "Exp returns is not Series, list or array. It is {} with values {}".format(type(value), value)
         self._exp_returns = value
 
     def N(self):
@@ -52,4 +52,4 @@ class BaseOptimizer():
         raise NotImplementedError
 
     def optimize(self):
-        raise NotImplementedError
+        raise NotImplementedError   

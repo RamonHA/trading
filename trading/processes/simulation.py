@@ -102,7 +102,8 @@ class Simulation(BaseProcess):
             self.results = self.strategy( end_analysis, **kwargs )
 
             if save:
-                with open( self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ), "w" ) as fp:
+                pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ).replace(":", "-") )
+                with open( pwd, "w" ) as fp:
                     json.dump( self.results, fp )
         
             self.analysis_times["simulations"].append( [simulation, time.time() - s_st] )
@@ -201,8 +202,10 @@ class Simulation(BaseProcess):
             if self.verbose > 0:
                 self.print_0( "{} {}".format(start, end) )
 
+            pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ).replace(":", "-") )
+
             data = self.preanalisis(
-                pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ) ),
+                pwd = pwd,
                 # filter = kwargs.get("filter", "all"),
                 **kwargs
             )
@@ -220,24 +223,26 @@ class Simulation(BaseProcess):
                 if self.verbose > 2: self.print_0( "Filter: Data:\n{}".format( data) )
 
             self.opt = Optimization(
-                assets= list( data.keys() ),
-                start = start_analysis,
-                end = end_analysis,
-                frequency=frequency,
-                exp_returns = exp_return if isinstance(exp_return, str) else data,
-                risk = risk,
-                objective=objective,
-                broker = self.broker,
-                fiat = self.fiat,
-                from_ = kwargs.get("from_", "db"),
-                interpolate=kwargs.get("interpolate", True),
-                verbose = self.verbose,
-                **kwargs
-            )   
-
+                    assets= list( data.keys() ),
+                    start = start_analysis,
+                    end = end_analysis,
+                    frequency=frequency,
+                    exp_returns = exp_return if isinstance(exp_return, str) else data,
+                    risk = risk,
+                    objective=objective,
+                    broker = self.broker,
+                    fiat = self.fiat,
+                    from_ = kwargs.get("from_", "db"),
+                    interpolate=kwargs.get("interpolate", True),
+                    verbose = self.verbose,
+                    **kwargs
+                )   
+    
             allocation, qty, pct = self.opt.optimize( value, time = test_time, limits = limits )
 
-            with open( self.pwd_balance.format( "{}_{}.json".format( start, end ) ), "w" ) as fp:
+            pwd = self.pwd_balance.format( "{}_{}.json".format( start, end ).replace(":", "-") )
+
+            with open( pwd, "w" ) as fp:
                 json.dump(
                     {
                         "allocation":allocation,
@@ -249,10 +254,20 @@ class Simulation(BaseProcess):
             
             if allocation is None: continue
 
+            fr = {
+                "m":5,
+                "w":4,
+                "d":3,
+                "h":2,
+                "min":1,
+                "s":0
+            }
+
             tr_aux = self.test(
                 assets= pct if self.realistic > 0 else allocation,
                 start = start,
-                end = end
+                end = end,
+                frequency = frequency if fr[interval] < 3 else "1d",
             )
         
 

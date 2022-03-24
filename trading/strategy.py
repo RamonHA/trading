@@ -50,9 +50,9 @@ class Strategy():
             assert (self.target in self.asset.df.columns), "Target {} not in DataFrame columns".format(self.target)
         elif type(self.target) in [int, float]:
             if is_buy:
-                self.asset.df["target"] = self.df["close"].pct_change(periods = self.target).shift(-self.target)
+                self.asset.df["target"] = self.asset.df["close"].pct_change(periods = self.target).shift(-self.target)
             else:
-                self.asset.df["target"] = self.df["close"].pct_change(periods = self.target)
+                self.asset.df["target"] = self.asset.df["close"].pct_change(periods = self.target)
 
             self.target = "target"
         
@@ -63,9 +63,8 @@ class Strategy():
         assert self.asset is not None, "Introduce dataframe or asset to run"
         assert self.buy or self.sell, "Either introduce the values to enter or exit market"
 
-        df = self.asset.df.copy()
-
         if self.buy and self.sell:
+            df = self.asset.df.copy()
             df = df[ (df[self.buy] == 1) | (df[self.sell] == 1) ]
             df = df[ ( (df[self.buy] - df[self.buy].shift()) == 1) | (df[self.sell] == 1) ]
             df["target"] = df["close"].pct_change()
@@ -73,17 +72,19 @@ class Strategy():
 
         else:
             self.set_target( is_buy= bool(self.buy) )
+            df = self.asset.df.copy()
             df = df[ df[ self.buy ] == 1 ]
         
         if len(df) == 0:
             print("No transactions done with this strategy")
             return None
 
+        df["acc"] = (df[self.target] + 1).cumprod()
+        self.df = df
+
         return self.resume(df)
         
     def resume(self, df):
-
-        df["acc"] = (df[self.target] + 1).cumprod()
 
         self.results = {
             "acc":df["acc"].iloc[-1],

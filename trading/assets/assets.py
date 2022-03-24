@@ -5,8 +5,8 @@ from copy import copy
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import time
 import yfinance as yf
+import re
 
 # Asset
 import ta
@@ -349,33 +349,81 @@ class TimeSeries():
         df.sort_values(by = "date" , ascending=True, inplace = True)
         df["date"] = pd.to_datetime(df["date"])
 
-        t = 360 / df["date"].diff().mean().days
+        diff_time = df["date"].diff().mean()
 
-        times = [1, 2, 3, 4, 6, 12, 52, 360]
+        frequencies = {
+            "dailys":{
+                1:"1a",
+                2:"1b",
+                3:"1t",
+                4:"1q",
+                6:"1sem",
+                12:"1m",
+                52:"1w",
+                360:"1d"
+            },
+            "minutes":{
+                1:"1d",
+                2:"12h",
+                3:"8h",
+                4:"6h",
+                6:"4h",
+                8:"3h",
+                12:"2h",
+                24:"1h",
+                48:"30min",
+                96:"15min",
+                144:"10min",
+                288:"5min",
+                480:"3min",
+                1440:"1min"
+            }
+        }
 
-        dist = lambda x: abs( x - t )
+        if diff_time.days >= 1:
+            t = 360 / diff_time.days
+            mode = "dailys"
 
-        closes = min( times, key = dist )
+        else:
+            diff_time = diff_time.seconds / 60
+            t = 1440 / diff_time
+            mode = "minutes"
 
-        return {
-            1:"1a",
-            2:"1b",
-            3:"1t",
-            4:"1q",
-            6:"1sem",
-            12:"1m",
-            52:"1w",
-            360:"1d"
-        }[closes]
+        times = list(frequencies[mode].keys())
 
-    def quarterly_to_monthly(self, df):
+        dist = lambda x: abs(x - t)
+
+        closes = min(times, key = dist)
+
+        return frequencies[mode][closes]
+
+    def to_lower_freq(self, df, frequency):
 
         df.set_index("date", inplace = True)
 
-        return self.reindex( df, frequency="1m" )
+        return self.reindex( df, frequency=frequency )
 
-    def _to_monthly(self, df):
-        return df.resample( "1MS", on = "date" ).agg( {self.data:"last"} )
+    def to_higher_freq(self, df, p, f):
+
+        # p, f  = re.findall(r'(\d+)(\w+)', frequency)[0]
+
+        new_freq = "{}{}".format( p, {
+            "m":"MS",
+            "min":"min"
+        }[f] )
+
+        if "close" in df.columns:
+
+            return df.resample( new_freq , on = "date" ).agg( {
+                "open":"first", 
+                "low":"min",
+                "high":"max",
+                "close":"last",
+                "volume":"sum"
+            } )
+        
+        else:
+            return df.resample( new_freq, on = "date" ).agg( {self.data:"last"} )
 
     def transform(self, df, frequency):
         
@@ -385,17 +433,23 @@ class TimeSeries():
 
         if freq == frequency: return df
 
-        return {
-            "1q":{
-                "1m":self.quarterly_to_monthly
-            },
-            "1w":{
-                "1m":self._to_monthly
-            },
-            "1d":{
-                "1m":self._to_monthly
-            }
-        }[freq][frequency](df)
+        freq_p, freq_i = re.findall(r'(\d+)(\w+)', freq)[0]
+        frequency_p, frequency_i = re.findall(r'(\d+)(\w+)', frequency)[0]
+
+        freqs = {
+            "q":5,
+            "m":4,
+            "d":3,
+            "h":2,
+            "min":1,
+            "s":0
+        }
+
+        if ( freqs[frequency_i] > freqs[freq_i] ) or \
+            ( freq_i == frequency_i and frequency_p > freq_p ):
+            return self.to_higher_freq( df, frequency_p, frequency_i )
+        else:
+            return self.to_lower_freq( df, frequency )
 
     # Trend TA
 

@@ -2,10 +2,9 @@ from pypfopt import EfficientFrontier, EfficientSemivariance, EfficientCVaR, Eff
 from pypfopt import risk_models
 from pypfopt import expected_returns
 from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
-from pypfopt import objective_functions
-from pypfopt import plotting
 
 import warnings
+import pandas as pd
 
 from .base_optimizer import BaseOptimizer
 
@@ -36,17 +35,29 @@ class PyPort(BaseOptimizer):
             **kwargs
         )
         
-        self.exp_returns = exp_returns if not isinstance(exp_returns, str) else self.get_exp_returns(exp_returns)
+        try:
+            self.exp_returns = exp_returns if not isinstance(exp_returns, str) else self.get_exp_returns(exp_returns)
+        except Exception as e:
+            print("Could compute exp returns with exception {}".format(e))
+            print(self.df)
 
         self.exp_returns = self.exp_returns.loc[ self.df.columns ]
 
         self.risk_aux = risk_aux
 
     def get_exp_returns(self, value):
-        return {
+        m = {
             "mean":expected_returns.mean_historical_return,
             "ema":expected_returns.ema_historical_return
-        }[value](self.df, frequency = self.time)[0]
+        }[value](self.df, frequency = self.time)
+
+        return m
+
+        # if type(m) == pd.Series:
+        #     return m
+        # else:
+        #     # When dealing with dataframes and want only a Series
+        #     return m[0]
 
     def get_risk(self, value):
         return {

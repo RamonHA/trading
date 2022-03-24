@@ -154,14 +154,27 @@ class Optimization(Setter):
             "MANA":8
         }
     
+    def one_asset(self, value = 0):
+        asset = self.df.columns[0]
+        if value == 0:
+            allocation = pct = qty = { asset:1 }
+        else:
+            allocation = pct = { asset:1 }
+            qty = self.opt.df[asset].iloc[-1]
+            qty = {asset: value // qty }
+        
+        return allocation, qty, pct
+
     def optimize(self, value = 0, time = 1, limits = (0,1), **kwargs):
 
         if self.broker in ["binance", "bitso"]:
             for i in self.df.columns: self.df[i] /= pow(10, self.octetos.get(i, 1))
 
         if len(self.df) == 0:
-            
             return None, None, None
+        
+        if len( self.df.columns ) == 1:
+            return self.one_asset(value = value)
 
         opt = self.optimizer(
             value = value,
