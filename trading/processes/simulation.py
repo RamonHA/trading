@@ -117,6 +117,21 @@ class Simulation(BaseProcess):
             with open( self.pwd_analysis.format( "resume.json" ), "w" ) as fp:
                 json.dump( self.analysis_times, fp )
 
+    def optimize_pwd(self, risk, objective, test_time, frequency, balance_time, **kwargs):
+
+        if kwargs.get("target_return", 0) == 0:
+            self.pwd_balance = self.pwd_analysis.format( 
+                "{}/{}/{}_{}_{}".format( risk, objective, test_time, frequency, balance_time )         
+            )
+        else:
+            self.pwd_balance = self.pwd_analysis.format( 
+                "{}/{}_{}/{}_{}_{}".format( risk, objective, kwargs["target_return"], test_time, frequency, balance_time )         
+            )
+
+        folder_creation( self.pwd_balance )
+
+        self.pwd_balance += "/{}"
+
     def optimize(
             self,
             balance_time, 
@@ -149,13 +164,7 @@ class Simulation(BaseProcess):
         if min_qty != 0 and value == 0:
             raise ValueError( "If min_qty, input portfolio value." ) 
 
-        self.pwd_balance = self.pwd_analysis.format( 
-            "{}_{}_{}_{}_{}".format( risk, objective, test_time, frequency, balance_time )         
-        )
-
-        folder_creation( self.pwd_balance )
-
-        self.pwd_balance += "/{}"
+        self.optimize_pwd( risk, objective, test_time, frequency, balance_time, **kwargs )
 
         if run:
             self._optimize(
