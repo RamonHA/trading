@@ -1,38 +1,57 @@
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
+from datetime import datetime
 
-    # def df_bitso(self):
-    #     return self.df_bitso_api() if self.desde_api else self.df_bitso_archivo()
+from .base_asset import BaseAsset
+from trading.func_aux import PWD, time_diff, get_config
 
-    # def df_bitso_api_historica(self):
-    #     cr = CryptoCurrencies(DATA["alpha_vantage"]["api_key"], output_format='pandas')
-    #     data, meta_data = cr.get_digital_currency_daily(self.symbol, self.fiat)
+class Bitso(BaseAsset):
 
-    #     data.drop(columns = [i for i in data.columns if 'USD' in i], inplace = True)
-
-    #     data.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-
-    #     data.sort_index(ascending=True, inplace=True)
-
-    #     if self.intervalo == "w":
-    #         data = remuestreo(data, self.intervalo)
-
-    #     return data
-
-    # def df_bitso_api(self):
-
-    #     data = self.df_bitso_api_historica()
-    #     return data.loc[self.inicio:self.fin]
-
-    # def df_bitso_archivo(self):
-    #     aux = {
-    #         'h':'Hora',
-    #         'd':'Diario',
-    #         'w':'Semanal',
-    #         'm':'Mensual'
-    #     }
-
-    #     df = pd.read_csv( PWD("/Bitso/Mercado/{}/{}.csv".format(aux[ self.intervalo ] , self.symbol + self.fiat) ) )
-    #     df['Date'] = pd.to_datetime(df['Date'])
-    #     df.set_index('Date', inplace = True)
+    def __init__(
+        self, 
+        symbol = None, 
+        start = None, 
+        end = datetime.today(), 
+        frequency = "1d", 
+        broker = "binance",
+        fiat = "usdt", 
+        from_ = "yahoo",
+        sentiment = False,
+        social_media = None,
+    ):
         
-    #     return df.loc[self.inicio:self.fin]
+        super().__init__(
+            symbol = symbol,
+            start = start,
+            end = end,
+            frequency = frequency,
+            from_ = from_,
+            sentiment=sentiment,
+            social_media=social_media
+        )
+
+        self.fiat = fiat.lower() if fiat is not None else "mx"
+        self.symbol_aux = self.symbol + self.fiat
+        self.broker = broker
+
+    def alpha_vantage(self):
+        return CryptoCurrencies(get_config()["alpha_vantage"]["api_key"], output_format='pandas')
+
+    def df_api(self):
+        raise NotImplementedError
+
+    def df_ext_api(self):
+
+        cr = self.alpha_vantage()
+
+        data, meta_data = cr.get_digital_currency_daily(self.symbol, self.fiat)
+
+        data.drop(columns = [i for i in data.columns if 'USD' in i], inplace = True)
+
+        data.columns = ['open', 'high', 'low', 'close', 'volume']
+
+        data.sort_index(ascending=True, inplace=True)
+
+        return data.loc[ str(self.start):str(self.end) ]
+
+    # Bot Functions
+
