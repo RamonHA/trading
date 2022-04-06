@@ -437,8 +437,9 @@ class TimeSeries():
         frequency_p, frequency_i = re.findall(r'(\d+)(\w+)', frequency)[0]
 
         freqs = {
-            "q":5,
-            "m":4,
+            "q":6,
+            "m":5,
+            "w":4,
             "d":3,
             "h":2,
             "min":1,
@@ -864,6 +865,26 @@ class Asset(TimeSeries):
         """
         return ta.momentum.KAMAIndicator(close=self.df[close], \
             window=length, pow1=fast_ema, pow2=slow_ema).kama()
+
+    def keltner(self, window = 20, windows_atr = 10, high = "high", low = "low", close = "close", original_version = True ):
+        """ Keltner Channel 
+        
+            Trend following indicator used to identify revsal with channel breakouts 
+            channel directions
+
+            original_version (bool) – if True, use original version as the centerline (SMA of typical price) if False, use EMA of close as the centerline. More info: https://school.stockcharts.com/doku.php?id=technical_indicators:keltner_channels
+        """
+        keltner = ta.volatility.Keltner_Channel(
+            high = high,
+            low = low, 
+            close = close,
+            window = window,
+            windows_atr = windows_atr,
+            original_version = original_version
+        )
+
+        return 
+
 
     def macd(self, fast, slow, sign, target = 'close'):
         """ Regresa una SERIE de Moving Average Convergence-Divergence """

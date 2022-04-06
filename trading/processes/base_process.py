@@ -298,8 +298,8 @@ class BaseProcess(Setter):
 
         aux = []
         for k, v in analysis.items():
-            if v["type"] == "prediction" and "time" in v:
-                aux.append( [v["time"]] )
+
+            aux.append( [v["time"]] )
 
             if "parameters" in v:
                 if isinstance(v["parameters"], list):

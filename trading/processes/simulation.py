@@ -103,9 +103,13 @@ class Simulation(BaseProcess):
 
             if save:
                 pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ).replace(":", "-") )
-                with open( pwd, "w" ) as fp:
-                    json.dump( self.results, fp )
-        
+                try:
+                    with open( pwd, "w" ) as fp:
+                        json.dump( self.results, fp )
+                except Exception as e:
+                    print("Exception in json dump: {}. \nAnalysis json: {}".format(e, self.results))
+                    raise ValueError("")
+
             self.analysis_times["simulations"].append( [simulation, time.time() - s_st] )
 
         self.analysis_times["total"] = time.time() - a_st

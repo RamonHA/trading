@@ -49,9 +49,12 @@ class Investing(BaseMEV):
     def df_api(self):
 
         url = "https://api.investing.com/api/financialdata/{}/historical/chart/?period=MAX&interval=P1M&pointscount=120"
-        
+        header = {
+            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.83 Safari/537.36"
+        }
+
         try:
-            response = requests.get( url.format( self.data ) )
+            response = requests.get( url.format( self.data ), headers=header )
             assert response.status_code == 200, "Error in url request"
             data = json.loads(response.content)
         except Exception as e:

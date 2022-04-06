@@ -162,7 +162,7 @@ class MyGridSearch():
     
     def run(self, **kwargs):
         self.test(**kwargs)
-        self.predict(**kwargs)
+        return self.predict(**kwargs)
 
 
 class Prediction(Setter):
