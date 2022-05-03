@@ -149,6 +149,9 @@ class BaseProcess(Setter):
 
             if self.verbose > 0:
                 self.print_0("Analysis: {}".format( a ) )
+            
+                if self.verbose > 2:
+                    self.print_0("Assets: {}".format( or_assets))
 
             next_assets = {}
 

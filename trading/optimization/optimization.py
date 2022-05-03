@@ -160,7 +160,7 @@ class Optimization(Setter):
             allocation = pct = qty = { asset:1 }
         else:
             allocation = pct = { asset:1 }
-            qty = self.opt.df[asset].iloc[-1]
+            qty = self.df[asset].iloc[-1]
             qty = {asset: value // qty }
         
         return allocation, qty, pct
