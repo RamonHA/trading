@@ -46,10 +46,10 @@ def set_fees(name, commission):
 def set_broker():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-name', dest = 'name', help = 'API name (Binance, Bitso, Alpha_Vantage). If more than one word, separate it with "_".')
-    parser.add_argument('-apikey', dest = 'apikey', help = 'Api key')
-    parser.add_argument('-secretkey', dest = 'secretkey', help = 'API Secret key')
-    parser.add_argument('-commission', dest = 'commission', help = 'Brokers commission fees')
+    parser.add_argument('--name','-n',  dest = 'name', help = 'API name (Binance, Bitso, Alpha_Vantage). If more than one word, separate it with "_".')
+    parser.add_argument('--apikey', '-k' , dest = 'apikey', help = 'Api key')
+    parser.add_argument('--secretkey', '-s',  dest = 'secretkey', help = 'API Secret key')
+    parser.add_argument('--commission', '-c', dest = 'commission', help = 'Brokers commission fees')
     args = parser.parse_args()
 
     if args.name is None:
@@ -63,9 +63,9 @@ def set_broker():
 def set_api():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-name', dest = 'name', help = 'API name (Binance, Bitso, Alpha_Vantage). If more than one word, separate it with "_".')
-    parser.add_argument('-apikey', dest = 'apikey', help = 'Api key')
-    parser.add_argument('-secretkey', dest = 'secretkey', help = 'API Secret key')
+    parser.add_argument('--name', '-n', dest = 'name', help = 'API name (Binance, Bitso, Alpha_Vantage). If more than one word, separate it with "_".')
+    parser.add_argument('--apikey', '-k', dest = 'apikey', help = 'Api key')
+    parser.add_argument('--secretkey', '-s', dest = 'secretkey', help = 'API Secret key')
     args = parser.parse_args()
 
     if args.name is None:
@@ -91,12 +91,12 @@ def set_pwd():
 def historic_download():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-broker', dest = 'broker', help = 'Broker name')
-    parser.add_argument('-fiat', dest = 'fiat', help = 'Fiat to download info (If not, defualt values from Instrumento are taken.)')
-    parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
-    parser.add_argument('-start', dest = 'start', help = "From which date to start downloading data.")
-    parser.add_argument('-from', dest = 'from_', help = "Datasource, Default = yahoo")
-    parser.add_argument('-verbose', dest = 'verbose', help = "Print process", action = "store_true")
+    parser.add_argument('--broker', '-b', dest = 'broker', help = 'Broker name')
+    parser.add_argument('--fiat', '-f', dest = 'fiat', help = 'Fiat to download info (If not, defualt values from Instrumento are taken.)')
+    parser.add_argument('--frequency', '-fr', dest = 'frequency', help = 'Data frequency')
+    parser.add_argument('--start', '-s', dest = 'start', help = "From which date to start downloading data.")
+    parser.add_argument('--from', dest = 'from_', help = "Datasource, Default = yahoo")
+    parser.add_argument('--verbose', '-v', dest = 'verbose', help = "Print process", action = "store_true")
     args = parser.parse_args()
 
     if not (args.broker and args.fiat and args.frequency):
@@ -121,9 +121,9 @@ def historic_download():
 def mev_download():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-mode', dest = 'mode', help = 'MEV mode (check get_mevs)')
-    parser.add_argument('-frequency', dest = 'frequency', help = 'Data frequency')
-    parser.add_argument('-verbose', dest = 'verbose', help = "Print process", action = "store_true")
+    parser.add_argument('--mode', '-m', dest = 'mode', help = 'MEV mode (check get_mevs)')
+    parser.add_argument('--frequency', '-fr', dest = 'frequency', help = 'Data frequency')
+    parser.add_argument('--verbose', '-v', dest = 'verbose', help = "Print process", action = "store_true")
     args = parser.parse_args()
 
     from .func_brokers import mev_download
@@ -140,9 +140,9 @@ def mev_download():
 def get_mevs():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument( '-mev', dest = 'mev' )
-    parser.add_argument( '-mode', dest = 'mode' )
-    parser.add_argument( '-modes', dest = 'modes', action = 'store_true' )
+    parser.add_argument( '--mev', dest = 'mev' )
+    parser.add_argument( '--mode', dest = 'mode' )
+    parser.add_argument( '--modes', dest = 'modes', action = 'store_true' )
     args = parser.parse_args()
 
     from .func_aux import get
@@ -165,12 +165,12 @@ def get_mevs():
 def add_mevs():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument( '-mev', dest = 'mev' )
-    parser.add_argument( '-mode', dest = 'mode' )
-    parser.add_argument( '-source', dest = 'source' )
-    parser.add_argument( '-id', dest = 'id' )
-    parser.add_argument( '-json', dest = 'json', help='Path to Json file' )
-    parser.add_argument( '-overwrite', dest = 'overwrite', action="store_true" )
+    parser.add_argument( '--mev', dest = 'mev' )
+    parser.add_argument( '--mode', '-m', dest = 'mode' )
+    parser.add_argument( '--source', '-s', dest = 'source' )
+    parser.add_argument( '--id', '-i', dest = 'id' )
+    parser.add_argument( '--json', '-j', dest = 'json', help='Path to Json file' )
+    parser.add_argument( '--overwrite', '-o', dest = 'overwrite', action="store_true" )
     args = parser.parse_args()
 
     assert (args.mev or args.mode), "Input either mev or mode"
@@ -227,21 +227,35 @@ def get_assets():
 def add_assets():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument( '-broker', dest = 'broker' )
-    parser.add_argument( '-json', dest = 'json', help='Path to Json file' )
-    parser.add_argument( '-overwrite', dest = 'overwrite', action = "store_true" , help = "Flag for overwrite all Broker Assets")
-    parser.add_argument('-overwrite-asset', dest = 'overwrite_asset', action = "store_true", help = 'Flag if wnat to overwrite only asset(s) data without disturbing the rest')
-    parser.add_argument( '-augment', dest = 'augment', action = 'store_true', help = "Flag for adding features/characteristics to Broker Assets. If this flag is not set, and asset is duplicated, then, asset information will be overwritten.")
+    parser.add_argument( '--broker', '-b', dest = 'broker' )
+    parser.add_argument( '--json', '-j', dest = 'json', help='Path to Json file' )
+    parser.add_argument( '--overwrite', '-o', dest = 'overwrite', action = "store_true" , help = "Flag for overwrite all Broker Assets")
+    parser.add_argument('--overwrite-asset', '-oa', dest = 'overwrite_asset', action = "store_true", help = 'Flag if wnat to overwrite only asset(s) data without disturbing the rest')
+    parser.add_argument( '--augment', '-a', dest = 'augment', action = 'store_true', help = "Flag for adding features/characteristics to Broker Assets. If this flag is not set, and asset is duplicated, then, asset information will be overwritten.")
+    parser.add_argument( '--full-overwrite', '-fo', dest = 'fo', action = 'store_true', help = "Flag: Overwrite full assets.json file.")
+    # parser.add_argument( '--set', '-s' , dest = "set", action = "store_true", help = "Flag to install assets.json file in package.")
     args = parser.parse_args()
 
-    if args.broker is None or args.json is None:
-        raise ValueError("Broker name requiered")
+    # if args.set:
+    #     from .func_aux import get
+    #     data = get("assets.json")
+        
+    #     with open( get_pwd("assets.json"), "w" ) as fp:
+    #         json.dump( data, fp )
+        
+    #     return
+
+    if args.fo is None and args.broker is None or args.json is None:
+        raise ValueError("Broker name or json file requiered")
 
     if args.overwrite and args.overwrite_asset:
         raise ValueError("Cannot overwerite all assets and specific assets.")
 
     if (args.overwrite or  args.overwrite_asset) and args.augment:
         raise ValueError("Can not overwrite files while augmenting the information.")
+
+    if (args.overwrite or  args.overwrite_asset) and args.fo:
+        raise ValueError("Can not overwrite with specificity and full file.")
 
     import json
     try:
@@ -251,18 +265,22 @@ def add_assets():
         raise ValueError("Could not load json file {}. Exception: {}".format(args.json, e) ) 
 
     from .func_aux import get_assets, get_pwd
-    assets = get_assets()
 
-    if args.overwrite:
-        assets[ args.broker ] =  data
+    if args.fo:
+        assets = data
+    else:
+        
+        assets = get_assets()
 
-    elif args.augment:
-        for i, v in data.items():
-            assets[ args.broker ][ i ].update( v )
-    
-    else: # = elif args.overwrite_asset:
-        assets[ args.broker ].update( data )
+        if args.overwrite:
+            assets[ args.broker ] =  data
 
+        elif args.augment:
+            for i, v in data.items():
+                assets[ args.broker ][ i ].update( v )
+        
+        else: # = elif args.overwrite_asset:
+            assets[ args.broker ].update( data )
 
     with open( get_pwd("assets.json"), "w" ) as fp:
         json.dump( assets, fp )
@@ -273,7 +291,7 @@ def octetos():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("broker")
-    parser.add_argument("-fiat", dest = "fiat")
+    parser.add_argument("--fiat", '-f', dest = "fiat")
     args = parser.parse_args()
 
     if args.broker is None and args.broker is None:

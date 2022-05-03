@@ -165,5 +165,20 @@ def mev_download(mode = "all", frequency = "1m", verbose = False):
             ) 
         )
 
+def gt_download(broker, frequency = "1m", start = date(2000,1,1), verbose = False):
+    if verbose:
+        print()
+    
+    broker = broker.lower()
 
+    assets = get_assets()[broker]
+
+    for i in assets:
+        Asset(
+            symbol=i,
+            start = start,
+            end = date.today(),
+            frequency=frequency,
+            broker = broker
+        ).google_trends()
 
