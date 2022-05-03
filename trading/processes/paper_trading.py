@@ -33,7 +33,7 @@ class PaperTrading():
         with open( pwd, "r" ) as fp:
             data = json.load(fp)
 
-        return data
+        return data 
 
     def simulate(self):
         
@@ -41,7 +41,9 @@ class PaperTrading():
 
         final_return = 0
 
-        for a, pct in self.portfolio[ "pct" ].items():
+        for a in self.portfolio["final_real_allocation"]:
+
+            pct = self.portfolio["results"]["optimization"]["pct"][a]
 
             asset = Asset(
                 symbol=a,
