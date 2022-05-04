@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import pkg_resources
 import math
+from datetime import datetime
 
 def get_pwd(file):
     return pkg_resources.resource_filename("trading", file)
@@ -94,3 +95,16 @@ def time_diff(start, end, frequency):
 
     return math.ceil( diff )
 
+def get_last_date_file(pwd, file = "json"):
+
+    json_files = [j for j in os.listdir( pwd ) if j.endswith('.{}'.format(file))]
+
+    if len(json_files) == 0: return None
+
+    json_files_order = [ i.split(".")[0] for i in json_files ]
+
+    json_files_order.sort(key = lambda date: datetime.strptime(date, '%Y-%m-%d %H %M %S')) 
+
+    json_files = [i for i in json_files if json_files_order[-1] in i][0]
+
+    return json_files

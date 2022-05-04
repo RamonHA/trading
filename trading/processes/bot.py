@@ -3,8 +3,10 @@ import re
 import json
 import os
 
+from requests import get
+
 from .base_process import BaseProcess
-from trading.func_aux import PWD, folder_creation
+from trading.func_aux import PWD, folder_creation, get_last_date_file
 from trading.optimization import Optimization
 
 class Bot(BaseProcess):
@@ -91,6 +93,11 @@ class Bot(BaseProcess):
             except Exception as e:
                 print("Cannot dump json with exception {}.\n{}".format(e, self.resume))
 
+    def ensure_results(self):
+        if not hasattr(self, "results"):
+            self.resume = self.past_resume()
+            self.results = self.resume["results"]
+
     def optimize(
             self,
             balance_time, 
@@ -105,12 +112,14 @@ class Bot(BaseProcess):
             **kwargs
         ):
 
+        self.ensure_results()
+
         time = self.test_time if time == 0 else time
         frequency = self.frequency_analysis if frequency is None else frequency
         period, interval = re.findall(r'(\d+)(\w+)', frequency)[0]
         period = int(period)
 
-        data = self.preanalisis( data = self.results, **kwargs )
+        data = self.preanalisis( data = self.results["analysis"], **kwargs )
 
         if data is None: raise ValueError("No data to work with.")
 
@@ -173,17 +182,9 @@ class Bot(BaseProcess):
 
     def past_resume(self):
         
-        json_files = [j for j in os.listdir( self.pwd[:-3] ) if j.endswith('.json')]
+        json_files = get_last_date_file( self.pwd[:-3], file="json" )
         
         if len(json_files) == 0: return None
-
-        # Order based on date
-        json_files_order = [i.split("_")[0].replace(".json", "") for i in json_files]
-
-        json_files_order.sort(key = lambda date: datetime.strptime(date, '%Y-%m-%d %H %M %S')) 
-
-        # File of interest
-        json_files = [i for i in json_files if json_files_order[-1] in i][0]
 
         print("File to check is ", json_files)
 
