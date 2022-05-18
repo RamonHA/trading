@@ -34,6 +34,9 @@ class BaseAsset(TimeSeries):
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0] if frequency is not None else (None, None)
         self.period = int(self.period) if self.period is not None else None
 
+        # Fix variables
+        self.default_source = None
+
     @property
     def descr(self):
         if hasattr(self, "_descr"):
@@ -138,7 +141,7 @@ class BaseAsset(TimeSeries):
 
         return df
 
-    def df_db(self, verbose = False):
+    def df_db_(self, verbose = False):
         aux = {
             'min':'minutes',
             'h':'hour',
@@ -151,6 +154,7 @@ class BaseAsset(TimeSeries):
 
         try:
             df = pd.read_csv( pwd )
+            self.frequency_db = "1" + self.interval
         except:
             if verbose:
                 print(
@@ -166,6 +170,14 @@ class BaseAsset(TimeSeries):
 
         df.set_index( "date", inplace = True )
         # df.index = pd.to_datetime( df.index )
+
+        return df
+
+    def df_db(self,verbose = False):
+        
+        df = self.df_db_(verbose = verbose)
+
+        if df is None or len(df) == 0: return None
 
         return df.loc[ str(self.start):str(self.end) ]
 
@@ -188,40 +200,47 @@ class BaseAsset(TimeSeries):
         pwd = pwd if pwd is not None else PWD("/{}/data/{}/{}.csv".format(self.broker, aux[ self.interval ], self.symbol_aux ))
 
         if value == "df":
+            df_source = self.get( self.default_source )
+            df_db = self.df_db_()
+
+            df = pd.concat( [ df_db, df_source ], axis = 0 )
+            df.sort_index(inplace=True, ascending=True)
+            df.drop_duplicates(keep="last", inplace=True )
+
             self.save( 
-                self.df,
+                df,
                 pwd
             )
+
         elif value == "sentiment":
             raise NotImplementedError
         
         else:
             raise ValueError("Update of {} not recognize".format( value ))
 
-    def get(self):
+    def get(self, source = None):
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
+        if source is None: source = self.from_
+
         df = {
             "yahoo":self.df_yahoo,
             "api":self.df_api,
             "ext_api":self.df_ext_api,
             "db":self.df_db
-        }[ self.from_ ]()
+        }[ source ]()
 
         if df is None: return pd.DataFrame()
 
-        if self.from_ == "db" and self.period > 1:
+        # Maybe this will be done for all sources
+        if source == "db" and self.period > 1:
             df = self.transform( df, self.frequency )
 
         return df if df is not None else pd.DataFrame()
-
-        # if self.from_api:
-        #     return self.df_ext_api() if self.from_ext else self.df_api()
-        # else:
-        #     return self.df_db()
     
     def refresh(self):
-        self.df = self.update_df()
+        # self.df = self.update_df()
+        raise NotImplementedError
 
     def save(self, value, pwd = None):
 

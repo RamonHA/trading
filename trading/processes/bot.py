@@ -12,6 +12,7 @@ from trading.optimization import Optimization
 class Bot(BaseProcess):
     def __init__(
             self,
+            name,
             broker = "yahoo_asset",
             fiat = None,
             commission = None,
@@ -31,8 +32,9 @@ class Bot(BaseProcess):
             **kwargs
         )
 
-        folder_creation( PWD( "{}/bots/{}".format( self.broker, self.fiat ) ) )
-        self.pwd = PWD( "{}/bots/{}/{}".format( self.broker, self.fiat, "{}" ) )
+        self.name = name
+        folder_creation( PWD( "{}/bots/{}/{}".format( self.broker, self.fiat, self.name ) ) )
+        self.pwd = PWD( "{}/bots/{}/{}/{}".format( self.broker, self.fiat, self.name, "{}" ) )
         self.bot_date = str(datetime.today()).replace(":", " ").split(".")[0]
 
         self.resume = {
@@ -44,6 +46,8 @@ class Bot(BaseProcess):
         self.asset = self.set_asset()()
 
         self.verbose = verbose
+
+        self.cache = {}
 
     def set_asset(self):
         if self.broker == "binance":
@@ -96,7 +100,8 @@ class Bot(BaseProcess):
     def ensure_results(self):
         if not hasattr(self, "results"):
             self.resume = self.past_resume()
-            self.results = self.resume["results"]
+            self.results = self.resume["results"]["analysis"]
+            self.bot_date = self.cache["past_resume"].split(".")[0]
 
     def optimize(
             self,
@@ -119,7 +124,7 @@ class Bot(BaseProcess):
         period, interval = re.findall(r'(\d+)(\w+)', frequency)[0]
         period = int(period)
 
-        data = self.preanalisis( data = self.results["analysis"], **kwargs )
+        data = self.preanalisis( data = self.results, **kwargs )
 
         if data is None: raise ValueError("No data to work with.")
 
@@ -187,6 +192,7 @@ class Bot(BaseProcess):
         if len(json_files) == 0: return None
 
         print("File to check is ", json_files)
+        self.cache["past_resume"] = json_files
 
         with open( self.pwd.format( json_files ), "r" ) as fp:
             json_files = json.load(fp)

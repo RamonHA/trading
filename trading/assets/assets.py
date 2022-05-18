@@ -406,6 +406,7 @@ class TimeSeries():
     def to_higher_freq(self, df, p, f):
 
         # p, f  = re.findall(r'(\d+)(\w+)', frequency)[0]
+        df["date"] = pd.to_datetime( df["date"] ) 
 
         new_freq = "{}{}".format( p, {
             "m":"MS",
@@ -429,12 +430,21 @@ class TimeSeries():
         
         df = self.ensure_date_col(df)
 
-        freq = self.get_frequency( df )
+        try:
+           freq = self.asset.frequency_db
+        except Exception as e:
+            try:
+                freq = self.frequency_db
+            except Exception as ee:
+                freq = self.get_frequency( df )
 
         if freq == frequency: return df
 
         freq_p, freq_i = re.findall(r'(\d+)(\w+)', freq)[0]
         frequency_p, frequency_i = re.findall(r'(\d+)(\w+)', frequency)[0]
+
+        freq_p = int(freq_p)
+        frequency_p = int(frequency_p)
 
         freqs = {
             "q":6,
@@ -447,7 +457,7 @@ class TimeSeries():
         }
 
         if ( freqs[frequency_i] > freqs[freq_i] ) or \
-            ( freq_i == frequency_i and frequency_p > freq_p ):
+            ( freqs[frequency_i] == freqs[freq_i] and frequency_p > freq_p ):
             return self.to_higher_freq( df, frequency_p, frequency_i )
         else:
             return self.to_lower_freq( df, frequency )
@@ -497,6 +507,7 @@ class Asset(TimeSeries):
             from_ = "yahoo",
             sentiment = False,
             social_media = None,
+            verbose = 0,
             **kwargs
             ):
         """  
@@ -505,6 +516,7 @@ class Asset(TimeSeries):
         super().__init__()
 
         self.broker = broker.lower() 
+        self.verbose = verbose
 
         self.asset = self.get_asset()(
             symbol = symbol, 

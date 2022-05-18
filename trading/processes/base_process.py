@@ -8,7 +8,7 @@ import re
 import json
 import pandas as pd
 import math
-
+from dateutil import parser
 from trading.func_aux import PWD, folder_creation, get_config
 from trading.assets import Asset
 
@@ -141,6 +141,24 @@ class BaseProcess(Setter):
         self.end = end
         self.subdivision = subdivision
         self.parallel = parallel
+
+    @property
+    def end(self):
+        return self._end
+
+    @end.setter
+    def end(self, value):
+        if value is None:
+            self._end = None
+        elif type(value) == datetime:
+            self._end = value
+        elif type(value) == date:
+            self._end = datetime.combine(value, datetime.min.time())
+        elif type(value) == str:
+            self._end = parser.parse(value)
+        else:
+            raise ValueError("End must be date, datetime, or str with valid format. Type {}.".format(type(value)))
+
 
     def strategy(self, end, from_ = "db", **kwargs):
 

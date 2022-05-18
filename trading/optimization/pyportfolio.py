@@ -191,7 +191,7 @@ class PyPort(BaseOptimizer):
                 
                 except:
                     warnings.warn("Error with greedy portfolio")
-                    return None, None
+                    return None, None, None
         else:
             allocation = cleaned_weights
 

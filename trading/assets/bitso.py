@@ -1,7 +1,7 @@
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
 from datetime import datetime
 
-from .base_asset import BaseAsset
+from trading.assets.base_asset import BaseAsset
 from trading.func_aux import PWD, time_diff, get_config
 
 class Bitso(BaseAsset):
@@ -12,13 +12,12 @@ class Bitso(BaseAsset):
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
-        broker = "binance",
-        fiat = "usdt", 
-        from_ = "yahoo",
+        broker = "bitso",
+        fiat = "MXN", 
+        from_ = "ext_api",
         sentiment = False,
         social_media = None,
     ):
-        
         super().__init__(
             symbol = symbol,
             start = start,
@@ -29,9 +28,19 @@ class Bitso(BaseAsset):
             social_media=social_media
         )
 
-        self.fiat = fiat.lower() if fiat is not None else "mx"
+        self.symbol = self.symbol.upper()
+
+        self.fiat = {
+            "mx":"MXN",
+            None:"MXN",
+            "MXN":"MXN"
+        }.get( fiat, fiat.upper() )
+
         self.symbol_aux = self.symbol + self.fiat
         self.broker = broker
+
+        if frequency is not None:
+            assert self.interval not in ["min", "h", "s"], "With Bitso there isnt still frequency lower than 1d"
 
     def alpha_vantage(self):
         return CryptoCurrencies(get_config()["alpha_vantage"]["api_key"], output_format='pandas')

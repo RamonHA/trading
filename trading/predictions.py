@@ -6,7 +6,7 @@ from datetime import date, timedelta, datetime
 from attr import has
 import pandas as pd
 import numpy as np
-import parser
+from dateutil import parser
 import time
 import random
 from scipy.sparse import data
