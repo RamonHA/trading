@@ -17,6 +17,7 @@ setup(
             "get_config = trading.config:get_config",
             "create_config = trading.config:create_config",
             "set_api = trading.config:set_api",
+            "get_api = trading.config:get_api",
             "historic_download = trading.config:historic_download",
             "mev_download = trading.config:mev_download",
             "add_assets = trading.config:add_assets",

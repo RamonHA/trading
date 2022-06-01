@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 import json
 import pandas as pd
 import warnings
+import os
 
 from trading.assets import Asset
 from .base_process import BaseProcess
@@ -341,11 +342,23 @@ class Simulation(BaseProcess):
 
         return tr
 
-    def results_compilation(self, pwd = None):
+    def results_compilation(self, pwd = None, extend = False):
+        """  """
         pwd = pwd if pwd is not None else self.pwd_analysis[:-3]
         dicc = pd.DataFrame.from_dict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
 
-        return dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
+        dicc = dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
+
+        if extend:
+            extended = []
+            for i in dicc["route"]:
+                extended.append(i.replace(self.pwd[:-2], "").split(os.path.sep))
+            
+            extended = pd.DataFrame( extended, columns = ["freq", "analysis", "analysis_params", "po_risk", "po_target", "po_params"] )
+
+            dicc = pd.concat([ dicc, extended ], axis = 1)
+
+        return dicc
 
     def behaviour(self, route):
 

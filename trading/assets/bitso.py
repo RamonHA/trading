@@ -42,6 +42,8 @@ class Bitso(BaseAsset):
         if frequency is not None:
             assert self.interval not in ["min", "h", "s"], "With Bitso there isnt still frequency lower than 1d"
 
+        self.default_source = "ext_api"
+
     def alpha_vantage(self):
         return CryptoCurrencies(get_config()["alpha_vantage"]["api_key"], output_format='pandas')
 

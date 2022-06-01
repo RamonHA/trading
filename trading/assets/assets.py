@@ -404,13 +404,15 @@ class TimeSeries():
         return self.reindex( df, frequency=frequency )
 
     def to_higher_freq(self, df, p, f):
-
+        """ https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#dateoffset-objects   """
         # p, f  = re.findall(r'(\d+)(\w+)', frequency)[0]
         df["date"] = pd.to_datetime( df["date"] ) 
 
         new_freq = "{}{}".format( p, {
             "m":"MS",
-            "min":"min"
+            "min":"min",
+            "h":"H",
+            "d":"D"
         }[f] )
 
         if "close" in df.columns:

@@ -64,6 +64,9 @@ class Optimization(Setter):
         if self.risk in ["efficientfrontier", "efficientsemivariance", "efficientcvar", "efficientcdar"]:
             from .pyportfolio import PyPort
             return PyPort
+        elif self.risk == "1/n":
+            from .base_optimizer import BaseOptimizer
+            return BaseOptimizer
         else:
             raise ValueError("No optimizer for {}".format(self.risk))
 

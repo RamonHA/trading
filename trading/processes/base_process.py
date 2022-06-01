@@ -168,8 +168,8 @@ class BaseProcess(Setter):
             if self.verbose > 0:
                 self.print_0("Analysis: {}".format( a ) )
             
-                if self.verbose > 2:
-                    self.print_0("Assets: {}".format( or_assets))
+                if self.verbose > 1:
+                    self.print_0("Assets: {}".format( len(or_assets)))
 
             next_assets = {}
 
@@ -204,15 +204,21 @@ class BaseProcess(Setter):
                             True if self.verbose > 2 else False
                         ) for i in or_assets ]
 
+            # if not all(r):
+            #     if self.verbose > 0:
+            #         self.print_0("Analysis: {} does not have any Trues".format( a ) )
+                
+            #     return {}
+
             if v.get("filter", "all") == "all":
-                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
+                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value==True }
             else:
 
                 next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
 
                 next_assets = self.filter(
                     next_assets,
-                    v.get("filter", "highest"),
+                    v.get("filter", "all"),
                     filter_qty = v.get("filter_qty", 3),
                     **kwargs
                 )

@@ -108,3 +108,16 @@ def get_last_date_file(pwd, file = "json"):
     json_files = [i for i in json_files if json_files_order[-1] in i][0]
 
     return json_files
+
+def prettify_time(time):
+    """ 
+        Makes a function to prettify time
+            Hour:Minuts:Seconds
+
+        time (float): time in seconds 
+    """
+    hours = time // 3600
+    time %= 3600
+    minutes = time // 60
+    time %= 60
+    print( "%02d:%02d:%02d" % (hours, minutes, time) )

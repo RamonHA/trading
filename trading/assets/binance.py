@@ -40,6 +40,8 @@ class Binance(BaseAsset):
         self.symbol_aux = self.symbol + self.fiat
         self.broker = broker
 
+        self.default_source = "ext_api"
+
     def df_api(self):
         raise NotImplementedError
 

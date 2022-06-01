@@ -74,6 +74,18 @@ def set_api():
     set_keys(args.name, args.apikey, args.secretkey)
 
 @config
+def get_api():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--name', '-n', dest = 'name', help = 'API name (Binance, Bitso, Alpha_Vantage). If more than one word, separate it with "_".')
+    args = parser.parse_args()
+
+    if args.name is None:
+        raise ValueError("API name must be filled")
+    
+    print(get_api.data[args.name]  )
+
+@config
 def set_pwd_f(pwd):
     set_pwd_f.data["pwd"] = pwd
 
@@ -313,7 +325,9 @@ def octetos():
 
     data[ args.fiat ] = oct    
 
-    with open( "{}/octetos.json".format(args.broker) , "w") as fp:
+    from .func_aux import PWD
+
+    with open( PWD("{}/octetos.json".format(args.broker)) , "w") as fp:
         json.dump(data, fp)
         
     print("Done!")

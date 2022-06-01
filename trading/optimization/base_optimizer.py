@@ -12,7 +12,8 @@ class BaseOptimizer():
             time = 1,
             limits = (0, 1),
             target_return = 0,
-            verbose = 0
+            verbose = 0,
+            **kwargs
         ):
         self.value = value
         self.df = df
@@ -49,7 +50,18 @@ class BaseOptimizer():
 
     def N(self):
         """ 1/N Optimizer """
+        n = 1 / len(self.df.columns)
+        pct = { c:n for c in self.df.columns }
+
+        qty = { c:0 for c in self.df.columns }
+        allocation = pct
+
+        return allocation, qty, pct
+
+    def discretization(self, ):
+        """ Discretization """
         raise NotImplementedError
 
     def optimize(self):
-        raise NotImplementedError   
+        if self.risk == "1/n":
+            return self.N()
