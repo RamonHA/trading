@@ -201,6 +201,9 @@ class BaseAsset(TimeSeries):
 
         if value == "df":
             df_source = self.get( self.default_source )
+            if df_source is None or df_source.empty:
+                raise ValueError( "Error downloading information from ", self.default_source )
+
             df_source.index = pd.to_datetime( df_source.index )
 
             df_db = self.df_db_()
