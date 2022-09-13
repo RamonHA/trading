@@ -275,7 +275,8 @@ def add_assets():
         with open(args.json, "r") as fp:
             data = json.load(fp)
     except Exception as e:
-        raise ValueError("Could not load json file {}. Exception: {}".format(args.json, e) ) 
+        print("Could not load json file {}. Exception: {}".format(args.json, e) ) 
+        data = {}
 
     from .func_aux import get_assets, get_pwd
 
