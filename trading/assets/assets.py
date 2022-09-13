@@ -314,7 +314,6 @@ class TimeSeries():
 
         return r
 
-
     # Some other aux
 
     def reindex(self, df, frequency, interpolate = "linear", end = None):
@@ -898,7 +897,6 @@ class Asset(TimeSeries):
         )
 
         return 
-
 
     def macd(self, fast, slow, sign, target = 'close'):
         """ Regresa una SERIE de Moving Average Convergence-Divergence """

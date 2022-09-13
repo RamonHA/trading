@@ -201,12 +201,15 @@ class BaseAsset(TimeSeries):
 
         if value == "df":
             df_source = self.get( self.default_source )
-            df_db = self.df_db_()
-
             df_source.index = pd.to_datetime( df_source.index )
-            df_db.index = pd.to_datetime( df_db.index )
 
-            df = pd.concat( [ df_db, df_source ], axis = 0 )
+            df_db = self.df_db_()
+            if df_db is None or len(df_db) == 0:
+                df = df_source
+            else:            
+                df_db.index = pd.to_datetime( df_db.index )
+                df = pd.concat( [ df_db, df_source ], axis = 0 )
+
 
             df.sort_index(inplace=True, ascending=True)
 

@@ -347,7 +347,14 @@ class Simulation(BaseProcess):
         pwd = pwd if pwd is not None else self.pwd_analysis[:-3]
         dicc = pd.DataFrame.from_dict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
 
-        dicc = dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
+        if dicc.empty:
+            return dicc
+        
+        try:
+            dicc = dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
+        except Exception as e:
+            print("Result compilation df does not have 'acc' column. Exception: ", e)
+            return dicc
 
         if extend:
             extended = []

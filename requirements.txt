@@ -3,3 +3,6 @@ ta==0.7.0
 yfinance==0.1.63
 multiprocess
 statsmodels
+sklearn
+pymoo==0.4.2
+PyPortfolioOpt

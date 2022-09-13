@@ -26,3 +26,5 @@ timeit.sh
 
 gitupdate.sh
 VirtualEnv/
+
+.vscode/
