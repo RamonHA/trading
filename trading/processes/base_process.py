@@ -159,8 +159,9 @@ class BaseProcess(Setter):
         else:
             raise ValueError("End must be date, datetime, or str with valid format. Type {}.".format(type(value)))
 
-
     def strategy(self, end, from_ = "db", **kwargs):
+
+        cpus = kwargs.get( "cpus", -1 )
 
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
@@ -174,7 +175,7 @@ class BaseProcess(Setter):
             next_assets = {}
 
             if self.parallel:
-                with mp.Pool( mp.cpu_count() // 2 ) as pool:
+                with mp.Pool( cpus ) as pool:
                     r = pool.starmap(
                         strategy,
                         [(
