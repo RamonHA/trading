@@ -198,7 +198,8 @@ def add_mevs():
             with open(args.json, "r") as fp:
                 data = json.load(fp)
         except Exception as e:
-            raise ValueError("Could not load json file {}. Exception: {}".format(args.json, e) ) 
+            print("Could not load json file {}. Exception: {}".format(args.json, e) ) 
+            data = {}
     else:
         if mode == "mevs":
             data = { args.source:args.id }
