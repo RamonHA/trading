@@ -7,8 +7,6 @@ class BaseOptimizer():
             self,
             df,
             value = 0,
-            risk = None,
-            objective = None,
             time = 1,
             limits = (0, 1),
             target_return = 0,
@@ -17,8 +15,6 @@ class BaseOptimizer():
         ):
         self.value = value
         self.df = df
-        self.risk = risk.lower()
-        self.objective = objective.lower()
         self.time = time
         self.limits = limits
         self.target_return = target_return

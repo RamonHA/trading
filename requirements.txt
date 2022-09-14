@@ -6,3 +6,4 @@ statsmodels
 sklearn
 pymoo==0.4.2
 PyPortfolioOpt
+riskfolio-lib

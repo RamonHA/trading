@@ -27,13 +27,14 @@ class PyPort(BaseOptimizer):
         super().__init__(
             df = df,
             value = value,
-            risk = risk,
-            objective = objective,
             time = time,
             limits = limits,
             target_return = target_return,
             **kwargs
         )
+
+        self.risk = risk.lower()
+        self.objective = objective.lower()
         
         try:
             self.exp_returns = exp_returns if not isinstance(exp_returns, str) else self.get_exp_returns(exp_returns)
