@@ -211,11 +211,9 @@ class BaseProcess(Setter):
                 
             #     return {}
 
-            if v.get("filter", "all") == "all":
-                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value==True }
-            else:
+            next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
 
-                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
+            if v.get("filter", "all") != "all":
 
                 next_assets = self.filter(
                     next_assets,

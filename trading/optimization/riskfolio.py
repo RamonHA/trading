@@ -99,6 +99,9 @@ class Riskfolio(BaseOptimizer):
             target_return = 0,
             **kwargs
         ):
+        """  
+            risk: 
+        """
         super().__init__(
             df = df,
             value = value,
@@ -114,7 +117,7 @@ class Riskfolio(BaseOptimizer):
         assert self.risk in self.__RISK, f"No risk with name '{self.risk}'."
         assert self.objective in self.__OBJECTIVES, f"No onjective with name '{self.objective}'."
 
-        if self.exp_returns is None:
+        if exp_returns is None:
             exp_returns = self.df.pct_change()
 
         self.exp_returns = exp_returns.replace([np.inf, -np.inf], np.nan).dropna()
