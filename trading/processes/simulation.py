@@ -102,6 +102,9 @@ class Simulation(BaseProcess):
 
             self.results = self.strategy( end_analysis, **kwargs )
 
+            # if self.verbose > 2:
+            #     print(" --- Results dictionary: ", self.results)
+
             if save:
                 pwd = self.pwd_analysis.format( "{}_{}_analysis.json".format( start, end ).replace(":", "-") )
                 try:

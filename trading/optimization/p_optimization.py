@@ -64,6 +64,9 @@ class Optimization(Setter):
         if self.risk in ["efficientfrontier", "efficientsemivariance", "efficientcvar", "efficientcdar"]:
             from .pyportfolio import PyPort
             return PyPort
+        elif self.risk in ["mv" , "mad", "msv", "flpm", "slpm", "cvar", "evar", "wr", "mdd", "add", "cdar", "edar", "uci"]:
+            from .riskfolio import Riskfolio
+            return Riskfolio
         elif self.risk == "1/n":
             from .base_optimizer import BaseOptimizer
             return BaseOptimizer

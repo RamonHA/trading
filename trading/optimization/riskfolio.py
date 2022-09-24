@@ -1,7 +1,7 @@
 from .base_optimizer import BaseOptimizer
 import numpy as np
 
-import riskfolio.Portfolio as pf
+import riskfolio 
 from riskfolio.AuxFunctions import weights_discretizetion
 
 def riskfolio(
@@ -48,7 +48,7 @@ def riskfolio(
 
     latest_price = df.iloc[-1]
 
-    port = pf.Portfolio(returns = df.pct_change(periods = 1).dropna())
+    port = riskfolio.Portfolio(returns = df.pct_change(periods = 1).dropna())
 
     port.assets_stats()
 
@@ -133,7 +133,7 @@ class Riskfolio(BaseOptimizer):
 
         latest_price = self.df.iloc[-1]
 
-        port = pf.Portfolio(returns = self.exp_returns)
+        port = riskfolio.Portfolio(returns = self.exp_returns)
 
         port.assets_stats()
 
