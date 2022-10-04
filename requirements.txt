@@ -1,3 +1,4 @@
+pandas
 pytrends==4.7.3
 ta==0.7.0
 yfinance==0.1.63
