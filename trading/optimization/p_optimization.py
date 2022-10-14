@@ -45,11 +45,16 @@ class Optimization(Setter):
 
         self.interpolate = interpolate
 
-        self.risk = risk.lower()
-        self.objective = objective.lower()
+        self.risk = risk
+        self.objective = objective
         self.optimizer = self.get_optimizer()
 
         self.target_return = kwargs.get("target_return", 0)
+
+        # Variables that control whether data from get_df is being clean from so many nans}
+        # and the minimum porcentage to be 'clean'
+        self.clean_data = kwargs.get( "clean_data" , True )
+        self.clean_data_pct = kwargs.get( "clean_data_pct" , 0.2 )
 
     def set_exp_returns(self, exp_returns):
         if isinstance(exp_returns, pd.Series):
@@ -64,7 +69,7 @@ class Optimization(Setter):
         if self.risk in ["efficientfrontier", "efficientsemivariance", "efficientcvar", "efficientcdar"]:
             from .pyportfolio import PyPort
             return PyPort
-        elif self.risk in ["mv" , "mad", "msv", "flpm", "slpm", "cvar", "evar", "wr", "mdd", "add", "cdar", "edar", "uci"]:
+        elif self.risk in [ "MV", "mad", "msv", "flpm", "slpm", "cvar", "evar", "wr", "mdd", "add", "cdar", "edar", "uci" ]:
             from .riskfolio import Riskfolio
             return Riskfolio
         elif self.risk == "1/n":
@@ -108,6 +113,15 @@ class Optimization(Setter):
 
             df = pd.concat([ df, inst.df["close"] ], axis = 1)
             df.rename(columns = {"close":i}, inplace = True)
+        
+        if self.clean_data:
+            nans = df.isna().sum(axis = 1)
+            nans = nans[ nans == len(df.columns) ].index.to_list()
+            df.drop(df.loc[nans].index, inplace = True)
+
+            nans = df.isna().sum()
+            nans = nans[ nans > int( len(df) * self.clean_data ) ].index.to_list()
+            df.drop( columns = nans, inplace = True )
 
         if self.interpolate:
             if df.isnull().any().any():

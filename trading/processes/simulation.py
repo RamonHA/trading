@@ -306,7 +306,7 @@ class Simulation(BaseProcess):
         """  
             allocation (dict): If None (Defualt) assume 1/N allocation
         """
-        if self.verbose > 1: self.print_0("Test for assets:\n{}".format( assets))
+        if self.verbose > 2: self.print_0("Test for assets:\n{}".format( assets))
 
         if isinstance( assets, list ):
             l = len(assets)

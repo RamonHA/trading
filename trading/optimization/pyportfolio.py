@@ -57,6 +57,7 @@ class PyPort(BaseOptimizer):
         # if type(m) == pd.Series:
         #     return m
         # else:
+
         #     # When dealing with dataframes and want only a Series
         #     return m[0]
 
@@ -95,7 +96,10 @@ class PyPort(BaseOptimizer):
         }[ self.risk ]()
 
         if ef is None:
-            warnings.warn("Error with EF object")
+            er = "Error with EF object"
+            if self.verbose > 1:
+                print(er)
+            warnings.warn(er)
             return None, None, None
 
         return self.discretization( ef )
@@ -110,7 +114,10 @@ class PyPort(BaseOptimizer):
             ef = self.raw_weigths( ef )
             
         except Exception as e:
-            warnings.warn("Error with Raw Weights in EfficientFrontier. Exception: {}".format(e))
+            er = "Error with Raw Weights in EfficientFrontier. Exception: {}".format(e)
+            if self.verbose > 1:
+                print(er)
+            warnings.warn(er)
             return None
 
         return ef
@@ -184,17 +191,24 @@ class PyPort(BaseOptimizer):
                 da = DiscreteAllocation(cleaned_weights, latest_prices, total_portfolio_value=self.value)
                 allocation, leftover = da.lp_portfolio()
             except:
-                warnings.warn( "Error in linear discretization, greedy portfolio to test" )
+                er = "Error in linear discretization, greedy portfolio to test"
+                if self.verbose > 1:
+                    print(er)
+                
+                warnings.warn( er )
 
                 try:
                     da = DiscreteAllocation(cleaned_weights, latest_prices, total_portfolio_value=self.value)
                     allocation, leftover = da.greedy_portfolio()
                 
                 except:
-                    warnings.warn("Error with greedy portfolio")
+                    er = "Error with greedy portfolio"
+                    if self.verbose > 1:
+                        print(er)
+                    warnings.warn( er )
                     return None, None, None
         else:
-            allocation = cleaned_weights
+            allocation = dict(cleaned_weights)
 
         qty = { i:( v*latest_prices[i] ) for i,v in allocation.items() }
         

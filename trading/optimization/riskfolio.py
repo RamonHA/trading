@@ -1,10 +1,12 @@
 from .base_optimizer import BaseOptimizer
 import numpy as np
+import warnings
+import pandas as pd
 
 import riskfolio 
 from riskfolio.AuxFunctions import weights_discretizetion
 
-def riskfolio(
+def riskfolio_first_function(
             df, 
             valor_portafolio,
             exp_return = None, 
@@ -83,9 +85,9 @@ def riskfolio(
 
 class Riskfolio(BaseOptimizer):
 
-    __RISK = [ "mv", "mad", "msv", "flpm", "slpm", "cvar", "evar", "wr", "mdd", "add", "cdar", "edar", "uci" ]
-    __OBJECTIVES = [ "minrisk", "utility", "sharpe", "maxret" ]
-    __MODELS = [ "classic", "bl", "fm" ]
+    __RISK = [ "MV", "mad", "msv", "flpm", "slpm", "cvar", "evar", "wr", "mdd", "add", "cdar", "edar", "uci" ]
+    __OBJECTIVES = [ "MinRisk", "Utility", "Sharpe", "MaxRet" ]
+    __MODELS = [ "Classic", "BL", "FM" ]
 
     def __init__(
             self,
@@ -111,33 +113,79 @@ class Riskfolio(BaseOptimizer):
             **kwargs
         )
 
-        self.risk = risk.lower()
-        self.objective = objective.lower()
+        self.risk = risk
+        self.objective = objective
 
         assert self.risk in self.__RISK, f"No risk with name '{self.risk}'."
-        assert self.objective in self.__OBJECTIVES, f"No onjective with name '{self.objective}'."
+        assert self.objective in self.__OBJECTIVES, f"No objective with name '{self.objective}'."
 
         if exp_returns is None:
-            exp_returns = self.df.pct_change()
-
-        self.exp_returns = exp_returns.replace([np.inf, -np.inf], np.nan).dropna()
+            self.exp_returns = None # self.df.pct_change()
+        else:
+            self.exp_returns = exp_returns.replace([np.inf, -np.inf], np.nan).dropna()
 
         if len(self.exp_returns) < 2:
             raise ValueError( "Data with more that one sample needed." )
         
-        self.model = kwargs.get("model", "classic").lower()
+        self.model = kwargs.get("model", "Classic")
 
         assert self.model in self.__MODELS, f"No model with name '{self.model}'."
+
+    @property
+    def df(self):
+        return self._df
+    
+    @df.setter
+    def df(self, value):
+        assert len(value) > 0, "DataFrame must not be empty"
         
+        nans = value.isna().sum(axis = 1)
+        nans = nans[ nans == len(value.columns) ].index.to_list()
+        value.drop(value.loc[nans].index, inplace = True)
+
+        nans = value.isna().sum()
+        nans = nans[ nans > int( len(value) * 0.2 ) ].index.to_list()
+        value.drop( columns = nans, inplace = True )
+
+        assert len(value) > 0, "DataFrame must not be empty"
+
+        self._df = value
+
+    @property
+    def exp_returns(self):
+        return self._exp_returns
+    
+    def set_exp_returns(self, value):
+        if isinstance(value, pd.Series):
+            value = self.set_exp_returns( value.to_frame() )
+
+        elif isinstance(value, pd.DataFrame):
+            col = value.columns
+            # assert len(col) == 1, "Exp returns is a pandas DataFrame with more than one column"
+            warnings.warn("First column of Exp Return is considered as the exp returns")
+            value = value[ [col[0]] ]
+        elif value is None:
+            value = value
+
+        else:
+            raise ValueError( "Exp returns is not pandas DataFrame. It is {} with values {}".format(type(value), value) )
+
+        return value
+
+    @exp_returns.setter
+    def exp_returns(self, value):
+        self._exp_returns = self.set_exp_returns(value)
+
     def optimize(self, **kwargs):
 
         latest_price = self.df.iloc[-1]
 
-        port = riskfolio.Portfolio(returns = self.exp_returns)
+        port = riskfolio.Portfolio(returns = self.df.pct_change().dropna())
 
         port.assets_stats()
 
-        port.mu = self.exp_returns
+        if self.exp_returns is not None:
+            port.mu = self.exp_returns
         
         hist = True # Use historical scenarios for risk measures that depend on scenarios
         rf = 0 # Risk free rate
@@ -146,6 +194,9 @@ class Riskfolio(BaseOptimizer):
                 # Es el factor de cuanto un inversionista es capaz de aceptar riesgo
 
         w = port.optimization(model=self.model, rm=self.risk, obj=self.objective, rf=rf, l=l, hist=hist)
+
+        if w is None:
+            raise Exception( "The problem doesn't have a solution with actual input parameters" )
 
         allocation = weights_discretizetion(w, latest_price, self.value)
 

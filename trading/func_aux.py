@@ -4,6 +4,8 @@ import pandas as pd
 import pkg_resources
 import math
 from datetime import datetime
+import numpy as np
+import time
 
 def get_pwd(file):
     return pkg_resources.resource_filename("trading", file)
@@ -121,3 +123,32 @@ def prettify_time(time):
     minutes = time // 60
     time %= 60
     print( "%02d:%02d:%02d" % (hours, minutes, time) )
+
+def dropna(axis = 1):
+    assert axis == 1, NotImplementedError("Axis '0' not implemented yet.")
+    
+    axis = { 0:"index", 1:"columns" }  
+
+    df = df.replace( [np.inf, -np.inf], np.nan )
+        
+    names = df.isna().all()
+    names = names[ names ].index.to_list()
+
+    return df.drop(columns = names)
+
+def timing(func):
+    def wrapper(*arg, **kw):
+        '''source: http://www.daniweb.com/code/snippet368.html'''
+        t1 = time.time()
+        res = func(*arg, **kw)
+        t2 = time.time() - t1
+        h = int(t2 // 3600)
+        a = (t2 % 3600)
+        m = int( a / 60 )
+        s = a % 60
+        
+        print( "{}:{}:{:0.2f}".format(h, m, s ) )
+
+        return res
+
+    return wrapper 

@@ -242,7 +242,7 @@ class BaseProcess(Setter):
 
     def filter(self, data, filter = "all", **kwargs):
 
-        if self.verbose > 1: self.print_0("Filter data:\n{}".format( data))
+        if self.verbose > 2: self.print_0("Filter data:\n{}".format( data))
 
         n = kwargs.get("filter_qty", 3)
         n = math.floor( len(data)*n ) if n < 1 else n
