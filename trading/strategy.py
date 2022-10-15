@@ -314,6 +314,8 @@ class Strategy():
                 vs = ValueStrategy(self.asset.df , cols = [ "target", col ])
 
                 v = vs.value( method = method )
+                
+                if v is None: continue
 
                 range_up = self.asset.df[ self.asset.df["target"] == 1 ][ col ].quantile( [0.25, 0.75] ).values.tolist()
                 range_down = self.asset.df[ self.asset.df["target"] == 0 ][ col ].quantile( [0.25, 0.75] ).values.tolist()

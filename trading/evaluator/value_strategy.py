@@ -78,6 +78,8 @@ class ValueStrategy():
 
             dist.append( self.get_dist( **kwargs ) )
         
+        if len(dist) == 0: return 
+
         kst = stats.kstest( *tuple( dist ) )
 
         return kst.pvalue
