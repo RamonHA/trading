@@ -161,7 +161,7 @@ class BaseProcess(Setter):
 
     def strategy(self, end, from_ = "db", **kwargs):
 
-        cpus = kwargs.get( "cpus", -1 )
+        cpus = kwargs.get( "cpus", mp.cpu_count() )
 
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
