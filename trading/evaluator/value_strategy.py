@@ -66,6 +66,10 @@ class ValueStrategy():
         """
         unique_values = self.df[ self.target ].unique()
 
+        if len(unique_values) != 2:
+            #print("Unique list might be wrong with values: ", ",".join( [str(i) for i in unique_values] ))
+            return
+
         dist = []
         for i in unique_values:
             self.get_pdf( self.df[ self.df[self.target] == i ][ self.data ] , **kwargs)
@@ -78,7 +82,7 @@ class ValueStrategy():
 
             dist.append( self.get_dist( **kwargs ) )
         
-        if len(dist) == 0: return 
+        if len(dist) != 2: return 
 
         kst = stats.kstest( *tuple( dist ) )
 

@@ -285,6 +285,10 @@ class Strategy():
         """
         self.run_tas()
 
+        if 0 in self.asset.df.shape:
+            print(f"{self.asset} has no data after tas.")
+            return pd.DataFrame()
+
         # if target is list
         if isinstance( target, list ):
             def check(x):
