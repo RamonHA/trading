@@ -124,7 +124,7 @@ def prettify_time(time):
     time %= 60
     print( "%02d:%02d:%02d" % (hours, minutes, time) )
 
-def dropna(axis = 1):
+def dropna(df, axis = 1):
     assert axis == 1, NotImplementedError("Axis '0' not implemented yet.")
     
     axis = { 0:"index", 1:"columns" }  

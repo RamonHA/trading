@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from trading.func_aux import min_max
+from trading.func_aux import min_max, dropna
 from pymoo.model.problem import Problem
 from .metaheuristics import Metaheuristic
 
@@ -162,7 +162,13 @@ class TATunningProblem(Problem):
         self.asset.df['macd'], *_ = self.asset.macd(vector[8], vector[9], vector[10])
 
     def train_test(self,df ):
+
+        df = dropna(df)
+
+        if 0 in df.shape: return None, None
+
         df = df.replace([np.inf, -np.inf], np.nan).dropna()
+        
         if len(df) < ( 5 ): return None, None
 
         self.test_size = int( len(df)*0.2 )      # self.places
