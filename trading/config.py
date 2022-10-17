@@ -149,6 +149,28 @@ def mev_download():
         verbose = args.verbose
     )
 
+def gt_download():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--broker', '-b', dest = 'broker')
+    parser.add_argument('--frequency', '-fr', dest = 'frequency', help = 'Data frequency')
+    parser.add_argument('--start', '-s', dest = 'start', help = "From which date to start downloading data.")
+    parser.add_argument('--verbose', '-v', dest = 'verbose', help = "Print process", action = "store_true")
+    args = parser.parse_args()
+
+    from .func_brokers import gt_download
+
+    # if args.mode is None: args.mode = "all"
+    if args.frequency is None: args.frequency = "1m"
+    start = args.start if args.start is not None else "2000-01-01"
+
+    gt_download(
+        broker = args.broker,
+        frequency = args.frequency,
+        start = start,
+        verbose = args.verbose
+    )
+
 def get_mevs():
     import argparse
     parser = argparse.ArgumentParser()

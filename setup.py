@@ -20,6 +20,7 @@ setup(
             "get_api = trading.config:get_api",
             "historic_download = trading.config:historic_download",
             "mev_download = trading.config:mev_download",
+            "gt_download = trading.config:gt_download",
             "add_assets = trading.config:add_assets",
             "get_assets = trading.config:get_assets",
             "get_brokers = trading.config:get_brokers",
