@@ -8,57 +8,66 @@ from dateutil import parser
 import time
 import random
 
-from trading.processes.base_process import Setter
 from trading.func_aux import *
 from trading.variables.errors import ERRORS
 from trading import Asset
 
-class Prediction(Setter):
+class Prediction():
 
     def __init__(
             self,
-            broker,
-            fiat = None,
-            instrumentos = None,
-            comision = None,
-
-            inicio = None,
-            fin = None,
-            frecuencia = None,
-
-            num_assets = 5,
+            model,
+            asset = None,
+            conf = {},
+            num_assets = 0,
             
             data_manipulation = None,
-            regr = None,
             error = None,
+            multiple_errors = False,
 
-            multiple_errors = False
+            train_size = None,
+            cv = False,
+
+            **kwargs,
 
         ):
         """  
+            Input:
+
+                train_size (int, float): If lower than '1', then it is set considered as a percentaje,
+                    but if '1' or bigger, it is considered as the quantity of instances to take for the train set.
+
+                cv (bool): Cross-Validation
+                    If true, set cvf (Cross-Validation folds) variable to the desired folds.
+                
+                kwargs:
+                    If desired to change model params of a already set model, you can set 'model_params'
+                    with a dictionary of the desired params to set.
 
             regr: 
                 Output: y_true, y_pred ( list/pd.Series tupple ) 
                     o   error (float)
         """
 
-        super().__init__(
-            broker = broker, 
-            fiat = fiat, 
-            comision = comision,
-            instrumentos=instrumentos
-        )
-        
+        self.model = model
+
+        assert asset or conf, "Asset or conf must be filled."
+
+        # Autogenerate assets
+        self.auto = False
+
+        if asset:
+            self.asset = asset
+        else:
+            self.auto = True
+            self.conf = conf
+            self.num_assets = num_assets
+
         self.data_manipulation = data_manipulation
-        self.regr = regr
         self.error = error
         self.multiple_errors = multiple_errors
 
-        self.instrumentos = random.choices( list( self.instrumentos ), k = num_assets )
-
-        self.inicio = inicio
-        self.fin = fin
-        self.frecuencia = frecuencia
+        # self.instrumentos = random.choices( list( self.instrumentos ), k = num_assets )
 
         self.exec_time = 0
         self.cache = {
@@ -66,63 +75,56 @@ class Prediction(Setter):
             "regr" : [],
             "error" : []
         }
+    
+    @property
+    def model(self):
+        return self.__model
+    
+    @model.setter
+    def model(self, value):
+        if value is None:
+            raise ValueError("model must be input")
+
+        if not (callable(value.fit) and callable(value.predict) ):
+            raise ValueError( f"model obj must have declared a 'fit' and 'predict' function." )
+
+        self.__model = value
+
+    @property
+    def data_manipulation(self):
+        return self.__data_manipulation
+    
+    @data_manipulation.setter
+    def data_manipulation(self, value):
+        if value is None:
+            self.__data_manipulation = value
+        # elif isinstance(value, str): # When datamanipulation (features) functions exists
+        #     self.__data_manipulation = ERRORS[ value ]
+        elif callable(value):
+            self.__data_manipulation = value
+        else:
+            raise ValueError(f"data_manipulation must be a known function or a function, but {type(value)} was given.")
 
     @property
     def error(self):
-        return self._error
+        return self.__error
     
     @error.setter
     def error(self, value):
         if value is None:
-            self._error = value
+            self.__error = value
         elif isinstance(value, str):
-            self._error = ERRORS[ value ]
+            self.__error = ERRORS[ value ]
         elif callable(value):
-            self._error = value
+            self.__error = value
         else:
-            raise ValueError("Error tiene que ser un str del diccionario de posibles o una funcion callable, pero se entrego {}".format(type(value)))
+            raise ValueError(f"error must be a known function or a function, but {type(value)} was given.")
 
-    @property
-    def frecuencia(self):
-        return self._frecuencia
-    
-    @frecuencia.setter
-    def frecuencia(self, value):
-        assert isinstance(value, str), "Frecuencia tiene que ser tipo str, se recibio {}.".format(type(value))
-        self._frecuencia = value
+    def single_run(self, asset):
+        asset = self.data_manipulation(asset)
 
-    @property
-    def inicio(self):
-        return self._inicio
+        
 
-    @inicio.setter
-    def inicio(self, value):
-        if type(value) == datetime:
-            self._inicio = value
-        elif type(value) == date:
-            self._inicio = datetime.combine(value, datetime.min.time())
-        elif type(value) == str:
-            self._inicio = parser.parse(value)
-        else:
-            raise ValueError("Inicio debe ser tipo date, datetime o str con formato valido, sin embargo se entrego {}.".format(type(value)))
-
-    @property
-    def fin(self):
-        return self._fin
-
-    @fin.setter
-    def fin(self, value):
-        if type(value) == datetime:
-            self._fin = value
-        elif type(value) == date:
-            self._fin = datetime.combine(value, datetime.min.time())
-        elif type(value) == str:
-            self._fin = parser.parse(value)
-        else:
-            raise ValueError("Inicio debe ser tipo date, datetime o str con formato valido, sin embargo se entrego {}.".format(type(value)))
-
-    def assertions(self):
-        pass
 
     def run(self, verbose = False, timing = True):
         

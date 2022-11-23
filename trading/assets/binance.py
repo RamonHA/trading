@@ -65,7 +65,7 @@ class Binance(BaseAsset):
         while True:
         
             try:
-                dff = b.import_data(start = str(start), end = str(end)).get_data()
+                dff = b.import_data(start = str(start).split(".")[0], end = str(end).split(".")[0]).get_data()
             except:
                 dff = pd.DataFrame() 
             
@@ -106,7 +106,7 @@ class Binance(BaseAsset):
             df = self.df_ext_api_aux( b )
         else:
             try:
-                df = b.import_data(start = str(self.start), end = str(self.end)).get_data()
+                df = b.import_data(start = str(self.start).split(".")[0] , end = str(self.end).split(".")[0] ).get_data()
             except Exception as e:
                 warnings.warn("Binance data importation Exception: {}".format(e))
                 df = pd.DataFrame()    

@@ -8,14 +8,14 @@ class BruteGridSearch():
 
     def __init__(
             self, 
-            df = pd.DataFrame(), 
-            regr = None, 
-            parameters = {}, 
+            df, 
+            regr, 
+            parameters, 
             train_test_split = 0.8, 
             target = "target", 
             error = "mae",
             error_ascending = True,
-            verbose = 0
+            verbose = 0,
         ):
         """  
         
@@ -67,6 +67,10 @@ class BruteGridSearch():
     def parameters(self, value):
         if isinstance(value, dict):
             self._parameters = list( ParameterGrid(value) )
+        elif isinstance(value, str):
+            from trading.variables import params_grid as pg
+            # Not use mode .get() because we want exception if key not found
+            self._parameters = pg.__dict__[ value ]
         else:
             raise NotImplementedError
 
@@ -91,7 +95,48 @@ class BruteGridSearch():
     
         return train, test
 
-    def test(self, debug = False):
+    def apply(self, params, train, test, pos_label):
+        for j, v in params.items(): self.regr.__dict__[j] = v
+
+        self.regr.fit( train.drop(columns = self.target), train[self.target] )
+
+        predict = self.regr.predict( test.drop(columns = self.target) )
+
+        if pos_label:
+            error = self.error( test[ self.target ], predict , pos_label = pos_label)
+        else:
+            error = self.error( test[ self.target ], predict )
+        
+        return error
+
+    def parallel(self, train, test, pos_label, **kwargs):
+        import multiprocess as mp
+
+        with mp.Pool( kwargs.get("cpus", mp.cpu_count()) ) as pool:
+                cache = pool.starmap(
+                    self.apply,
+                    [(
+                        i, 
+                        train,
+                        test,
+                        pos_label
+                    ) for i in self.parameters ]
+                )
+        
+        return cache
+
+    def series(self, train, test, pos_label, **kwargs):
+        cache = []
+        for i in self.parameters:
+            error = self.apply( i, train, test, pos_label )
+
+            cache.append([
+                i, error
+            ])
+        
+        return cache
+
+    def test(self, parallel = False, debug = False, **kwargs):
         train, test = self.train_test(debug = debug )
 
         if debug:
@@ -103,18 +148,9 @@ class BruteGridSearch():
 
         if isinstance(self.cache, pd.DataFrame): self.cache = []
 
-        for i in self.parameters:
-            for j, v in i.items(): self.regr.__dict__[j] = v
+        pos_label = kwargs.get( "pos_label", None )
 
-            self.regr.fit( train.drop(columns = self.target), train[self.target] )
-
-            predict = self.regr.predict( test.drop(columns = self.target) )
-
-            error = self.error( test[ self.target ], predict )
-
-            self.cache.append([
-                i, error
-            ])
+        self.cache = self.series( train, test, pos_label ) if not parallel else self.parallel( train, test, pos_label, **kwargs )
         
         self.cache = pd.DataFrame( self.cache )
         self.cache.columns = ["param", "error"]
@@ -134,6 +170,8 @@ class BruteGridSearch():
         train = train.replace( [np.inf, -np.inf], np.nan ).dropna()
 
         self.regr.fit( train.drop(columns = self.target), train[self.target] )
+
+        test = test.replace( [np.inf, -np.inf], 0 )
 
         predict = self.regr.predict( test.drop(columns = self.target) )
 

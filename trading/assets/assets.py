@@ -815,9 +815,16 @@ class Asset(TimeSeries):
     
     def engulfing(self):
         df = copy(self.df)
-        df["o"] = self.df["open"].diff().apply(lambda x : -1 if x > 0 else 1)
-        df["c"] = self.df["close"].diff().apply(lambda x : 1 if x > 0 else -1)
-        return df["o"] + df["c"]
+        df["o"] = df["open"].diff().apply(lambda x : -1 if x > 0 else 1)
+        df["c"] = df["close"].diff().apply(lambda x : 1 if x > 0 else -1)
+        df["oc"] = df["o"] + df["c"]
+        df["bear"] = ( df["open"] >= df["close"].shift(1) ) & ( df["close"] <= df["open"].shift(1) ) & ( df["oc"] == -2 )
+        df["bull"] = ( df["close"] >= df["open"].shift(1) ) & ( df["open"] <= df["close"].shift(1) ) & ( df["oc"] == 2 )
+        
+        df["bear"] = df["bear"].apply(lambda x : -1 if x else 0)
+        df["bull"] = df["bull"].apply(lambda x : 1 if x else 0)
+
+        return df["bear"] + df["bull"]
 
     def force_index(self, length, close='close', volume='volume'):
         """ Regresa una SERIe del Force Index 
@@ -1048,4 +1055,22 @@ class Asset(TimeSeries):
         return ta.momentum.WilliamsRIndicator(high=self.df[high], low=self.df[low], close=self.df[close], \
             lbp=lookback_p).williams_r()
 
-    
+    def william_fractals(self, period = 2):
+        """Indicate bearish and bullish fractal patterns using shifted Series.
+
+        :param df: OHLC data
+        :param period: number of lower (or higher) points on each side of a high (or low)
+        :return: tuple of boolean Series (bearish, bullish) where True marks a fractal pattern
+        """
+
+        df = self.df
+
+        periods = [p for p in range(-period, period + 1) if p != 0] # default [-2, -1, 1, 2]
+
+        highs = [df['high'] > df['high'].shift(p) for p in periods]
+        bears = pd.Series(np.logical_and.reduce(highs), index=df.index)
+
+        lows = [df['low'] < df['low'].shift(p) for p in periods]
+        bulls = pd.Series(np.logical_and.reduce(lows), index=df.index)
+
+        return bears, bulls

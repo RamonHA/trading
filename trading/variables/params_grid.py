@@ -1,3 +1,4 @@
+
 DT_R_GRID = {
     "criterion":[ "poisson"],
     "splitter":["best"],
@@ -29,9 +30,14 @@ LSTM_R_GRID = {
     "neurons":[3,5,7,9]
 }
 
+RF_C_GRID = {
+    "n_estimators":[10, 20, 50, 100, 200, 500],
+    "criterion":["gini", "entropy", "log_loss"],
+}
+
 RF_R_GRID = {
     "n_estimators":[10, 20, 50, 100, 200, 500],
-    "criterion":["poisson"],
+    "criterion":["squared_error", "absolute_error", "poisson"],
     "bootstrap":[False],
 }
 
@@ -45,6 +51,14 @@ SVM_R_GRID = {
     "shrinking":[True, False]
 }
 
+GRIDS = {
+    "dt_r":DT_R_GRID,
+    "mlp_r":MLP_R_GRID,
+    "log_r":LOG_R_GRID,
+    "lstm_r":LSTM_R_GRID,
+    "rf_r":RF_R_GRID,
+    "svm_r":SVM_R_GRID
+}
 
 # Posible class to manually modify the grid, but could be useless as it can be modified by the user
 class GenerateGrid():

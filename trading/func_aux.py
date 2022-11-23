@@ -136,18 +136,21 @@ def dropna(df, axis = 1):
 
     return df.drop(columns = names)
 
+def pretty_time(t):
+    h = int(t // 3600)
+    a = (t % 3600)
+    m = int( a / 60 )
+    s = a % 60
+    
+    print( "{}:{}:{:0.2f}".format(h, m, s ) )
+
 def timing(func):
     def wrapper(*arg, **kw):
         '''source: http://www.daniweb.com/code/snippet368.html'''
         t1 = time.time()
         res = func(*arg, **kw)
         t2 = time.time() - t1
-        h = int(t2 // 3600)
-        a = (t2 % 3600)
-        m = int( a / 60 )
-        s = a % 60
-        
-        print( "{}:{}:{:0.2f}".format(h, m, s ) )
+        pretty_time(t2)
 
         return res
 

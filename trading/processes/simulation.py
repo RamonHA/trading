@@ -152,6 +152,8 @@ class Simulation(BaseProcess):
             limits = (0,1),
             min_qty = 0,
             run = True,
+            track = False,
+            max_positions = 0,
             **kwargs
         ):
         """  
@@ -185,6 +187,8 @@ class Simulation(BaseProcess):
                 objective = objective,
                 limits = limits,
                 min_qty = min_qty,
+                track = track,
+                max_positions = max_positions,
                 **kwargs
             )
 
@@ -199,6 +203,8 @@ class Simulation(BaseProcess):
             objective = "maxsharpe",
             limits = (0,1),
             min_qty = 0,
+            track = False,
+            max_positions = 0,
             **kwargs
         ):
 
@@ -208,6 +214,7 @@ class Simulation(BaseProcess):
         
         period, interval = re.findall(r'(\d+)(\w+)', frequency)[0]
         period = int(period)
+        tracker = []
 
         tr = 1
 
