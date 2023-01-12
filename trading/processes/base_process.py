@@ -247,7 +247,7 @@ class BaseProcess(Setter):
         n = kwargs.get("filter_qty", 3)
         n = math.floor( len(data)*n ) if n < 1 else n
 
-        if n < len(data): 
+        if n > len(data): 
             n = len(data)
             warnings.warn( "Filter qty ({}) exceed the number of assets ({}).".format( n, len(data) ) )
 

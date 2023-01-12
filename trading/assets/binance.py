@@ -15,7 +15,7 @@ from trading.func_aux import PWD, time_diff, get_config
 class Binance(BaseAsset):
     def __init__(
         self, 
-        symbol = None, 
+        symbol = "", 
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
@@ -36,7 +36,7 @@ class Binance(BaseAsset):
             social_media=social_media
         )
 
-        self.fiat = fiat.lower() if fiat is not None else "usdt"
+        self.fiat = fiat if fiat is not None else "usdt"
         self.symbol_aux = self.symbol + self.fiat
         self.broker = broker
 
@@ -306,4 +306,13 @@ class Binance(BaseAsset):
         
         return portfolio_value
 
+    def wait(self, orderSell):
+        
+        df_trades = pd.DataFrame(self.client.futures_account_trades())
 
+        df_trades = df_trades[ df_trades["orderId"] == orderSell["orderId"] ]
+
+        if len(df_trades) > 0:
+            return True
+            
+        return False

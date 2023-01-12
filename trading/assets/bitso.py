@@ -8,7 +8,7 @@ class Bitso(BaseAsset):
 
     def __init__(
         self, 
-        symbol = None, 
+        symbol = "", 
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 

@@ -107,32 +107,28 @@ class BruteGridSearch():
         else:
             error = self.error( test[ self.target ], predict )
         
-        return error
+        return [params, error]
 
-    def parallel(self, train, test, pos_label, **kwargs):
+    def parallel(self, train, test, **kwargs):
         import multiprocess as mp
 
-        with mp.Pool( kwargs.get("cpus", mp.cpu_count()) ) as pool:
+        with mp.Pool( kwargs.get("cpus", mp.cpu_count() // 2) ) as pool:
                 cache = pool.starmap(
                     self.apply,
                     [(
                         i, 
                         train,
                         test,
-                        pos_label
+                        kwargs.get("pos_label")
                     ) for i in self.parameters ]
                 )
         
         return cache
 
-    def series(self, train, test, pos_label, **kwargs):
-        cache = []
-        for i in self.parameters:
-            error = self.apply( i, train, test, pos_label )
-
-            cache.append([
-                i, error
-            ])
+    def series(self, train, test, **kwargs):
+        cache = [ 
+            self.apply( i, train, test, kwargs.get("pos_label") ) for i in self.parameters 
+        ]
         
         return cache
 
@@ -148,9 +144,9 @@ class BruteGridSearch():
 
         if isinstance(self.cache, pd.DataFrame): self.cache = []
 
-        pos_label = kwargs.get( "pos_label", None )
+        # pos_label = kwargs.get( "pos_label", None )
 
-        self.cache = self.series( train, test, pos_label ) if not parallel else self.parallel( train, test, pos_label, **kwargs )
+        self.cache = self.series( train, test ) if not parallel else self.parallel( train, test, **kwargs )
         
         self.cache = pd.DataFrame( self.cache )
         self.cache.columns = ["param", "error"]
@@ -174,6 +170,9 @@ class BruteGridSearch():
         test = test.replace( [np.inf, -np.inf], 0 )
 
         predict = self.regr.predict( test.drop(columns = self.target) )
+
+        self.trainset = train
+        self.testset = test
 
         if one: return predict[-1]
         else: return predict

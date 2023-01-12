@@ -10,7 +10,7 @@ from trading.func_aux import PWD, get_assets
 class BaseAsset(TimeSeries):
     def __init__(
         self, 
-        symbol = None, 
+        symbol = "", 
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
@@ -23,9 +23,8 @@ class BaseAsset(TimeSeries):
         super().__init__()
 
         self.broker = broker
-        self.fiat = fiat.lower() if fiat is not None else None
-
-        self.symbol = symbol.lower() if symbol is not None else None
+        self.fiat = fiat 
+        self.symbol = symbol 
         self.start = start
         self.end = end
         self.frequency = frequency
@@ -34,6 +33,7 @@ class BaseAsset(TimeSeries):
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0] if frequency is not None else (None, None)
         self.period = int(self.period) if self.period is not None else None
 
+        self.symbol_aux = f"{self.symbol}.{self.fiat}"
         # Fix variables
         self.default_source = "yahoo"
 
@@ -141,7 +141,7 @@ class BaseAsset(TimeSeries):
 
         return df
 
-    def df_db_(self, verbose = False):
+    def df_db_(self, verbose = True):
         aux = {
             'min':'minutes',
             'h':'hour',
@@ -173,7 +173,7 @@ class BaseAsset(TimeSeries):
 
         return df
 
-    def df_db(self,verbose = False):
+    def df_db(self,verbose = True):
         
         df = self.df_db_(verbose = verbose)
 
@@ -198,7 +198,6 @@ class BaseAsset(TimeSeries):
         }
 
         pwd = pwd if pwd is not None else PWD("/{}/data/{}/{}.csv".format(self.broker, aux[ self.interval ], self.symbol_aux ))
-
         if value == "df":
             df_source = self.get( self.default_source )
             if df_source is None or df_source.empty:
@@ -254,7 +253,6 @@ class BaseAsset(TimeSeries):
         raise NotImplementedError
 
     def save(self, value, pwd = None):
-
         if isinstance( value, pd.DataFrame ):
             value.to_csv( pwd )
         elif isinstance( value, dict ):

@@ -37,3 +37,4 @@ def pct(obj, cols = "all", lags = 3, shift = False):
                 obj[ f"{c}_pct_{i}" ] = obj[c].pct_change(i)
 
     return obj
+

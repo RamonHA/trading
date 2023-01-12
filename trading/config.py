@@ -355,3 +355,18 @@ def octetos():
         json.dump(data, fp)
         
     print("Done!")
+
+def register_futures():
+    from trading.assets.binance import Binance
+    from datetime import datetime
+    import pandas as pd
+    from trading.func_aux import PWD
+
+    bi = Binance()
+
+    value = [ i["balance"] for i in bi.client.futures_account_balance() if i["asset"] == "USDT"][0]
+
+    registro = [ datetime.today().strftime( "%Y-%m-%d %H:%M" ), value ]
+    df  = pd.DataFrame([registro])
+
+    df.to_csv( PWD("binance/futures.csv") , index = False, header=False, mode = "a")

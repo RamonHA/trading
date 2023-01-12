@@ -111,8 +111,7 @@ class Simulation(BaseProcess):
                     with open( pwd, "w" ) as fp:
                         json.dump( self.results, fp )
                 except Exception as e:
-                    print("Exception in json dump: {}. \nAnalysis json: {}".format(e, self.results))
-                    raise ValueError("")
+                    raise ValueError("Exception in json dump: {}. \nAnalysis json: {}\nType: {}".format(e, self.results, type(self.results)))
 
             self.analysis_times["simulations"].append( [simulation, time.time() - s_st] )
 
