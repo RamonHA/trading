@@ -1,7 +1,9 @@
 
 
 import numpy as np
-from pymoo.model.problem import Problem
+# from pymoo.model.problem import Problem
+from pymoo.core.problem import ElementwiseProblem
+
 
 from .metaheuristics import Metaheuristic
 
@@ -34,7 +36,7 @@ class StrategyTunning(Metaheuristic):
             type_var = type_var
         )
 
-class StrategyTunningProblem(Problem):
+class StrategyTunningProblem(ElementwiseProblem):
     def __init__(
             self,
             strategy,
