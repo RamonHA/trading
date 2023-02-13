@@ -81,6 +81,9 @@ class Bot(BaseProcess):
 
         self.analysis_params = kwargs
 
+        if run:
+            self._analyze( **kwargs )
+
     def _analyze(self, **kwargs):
 
         self.results = self.strategy( self.end, **kwargs )
@@ -126,6 +129,7 @@ class Bot(BaseProcess):
             objective = "maxsharpe",
             limits = (0,1),
             min_qty = 0,
+            run = True,
             **kwargs
         ):
 
@@ -150,6 +154,9 @@ class Bot(BaseProcess):
         )
 
         self.optimize_params = kwargs
+
+        if run:
+            self._optimize( **kwargs )
 
     def _optimize(self, **kwargs):
 
@@ -217,7 +224,10 @@ class Bot(BaseProcess):
 
         # return self.allocation, self.qty, self.pct
 
-    def choose(self, value, filter, filter_qty, allocation = 1, source = "db" ):
+    def choose(self, value, filter, filter_qty, allocation = 1, source = "db", run = True ):
+        """  
+
+        """
         
         if filter_qty >= 1:
             if type(allocation) in [ int, float ]:
