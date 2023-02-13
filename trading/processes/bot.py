@@ -192,7 +192,7 @@ class Bot(BaseProcess):
             objective= kwargs["objective"],
             broker = self.broker,
             fiat = self.fiat,
-            from_ = kwargs.get("from_", "db"),
+            source = kwargs.get("source", "db"),
             interpolate=kwargs.get("interpolate", True),
             verbose = self.verbose,
             **kwargs
@@ -278,7 +278,7 @@ class Bot(BaseProcess):
                     frequency=self.frequency_analysis,
                     broker = self.broker,
                     fiat = self.fiat,
-                    from_ = source
+                    source = source
                 )
 
                 if inst.df is None or len(inst.df) == 0: continue

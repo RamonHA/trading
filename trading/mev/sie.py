@@ -13,7 +13,7 @@ class SIE(BaseMEV):
             frequency = None,
             start = None,
             end = None,
-            from_= "db", 
+            source= "db", 
             token = None,
             interpolate = "linear",
         ):
@@ -22,7 +22,7 @@ class SIE(BaseMEV):
             frequency = frequency,
             start = start,
             end = end,
-            from_ = from_,
+            source = source,
             interpolate = interpolate
         )
         self.source = "sie"

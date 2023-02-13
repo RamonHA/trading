@@ -10,7 +10,7 @@ from trading.mev import MEV
 #     m = MEV(
 #         data = data,
 #         source = source,
-#         from_ = "api"
+#         source = "api"
 #     )
 
 #     df = m.df
@@ -24,7 +24,7 @@ def test_freq(data, source):
     m = MEV(
         data = data,
         source = source,
-        from_ = "api",
+        source = "api",
         frequency="1m"
     )
 

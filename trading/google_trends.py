@@ -26,7 +26,7 @@ class GoogleTrend():
             start = date(2000,1,1),
             end = date.today(),
             frequency = "1m",
-            from_ = "api",
+            source = "api",
             **kwargs
         ):
 
@@ -42,7 +42,7 @@ class GoogleTrend():
         self.frequency = frequency
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0]
         self.period = int(self.period)
-        self.from_ = from_
+        self.source = source
 
         self.__dict__.update( kwargs )
     
@@ -65,7 +65,7 @@ class GoogleTrend():
         self._df = value
 
     def get(self):
-        if self.from_ == "db":
+        if self.source == "db":
             return self.df_db()
         else:
             df = {

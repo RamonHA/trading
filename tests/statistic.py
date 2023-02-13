@@ -10,7 +10,7 @@ def test_asset_ur():
         frequency="1m",
         broker = "gbm",
         fiat = "mx",
-        from_ = "db"
+        source = "db"
     )
 
     r = inst.unit_roots()
@@ -25,7 +25,7 @@ def test_asset_durbin_watson():
         frequency="1m",
         broker = "gbm",
         fiat = "mx",
-        from_ = "db"
+        source = "db"
     )
 
     r = inst.durbin_watson()
@@ -41,7 +41,7 @@ def test_asset_causality(targets):
         frequency="1m",
         broker = "gbm",
         fiat = "mx",
-        from_ = "db"
+        source = "db"
     )
 
     r = inst.causality()

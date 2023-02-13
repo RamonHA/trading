@@ -14,7 +14,7 @@ def mevs_to_csv(mode, frequency = "1m"):
                 data = i,
                 source = v,
                 frequency = "1m",
-                from_="db"
+                source="db"
             ).df
 
         if "close" in df.columns:
@@ -61,13 +61,13 @@ class MEV(TimeSeries):
             frequency = None,
             start = None,
             end = None,
-            from_ = "api",
+            source = "api",
             token = None,
             interpolate = "linear",
         ):
         """  
             source (str): inegi, sie (Banxico)
-            from_ (str): db or api
+            source (str): db or api
 
         """
         super().__init__()
@@ -76,7 +76,7 @@ class MEV(TimeSeries):
         self.start = start
         self.end = end
 
-        self.from_ = from_
+        self.source = source
         self.data = data
         self.token = token
         self.source = source
@@ -116,7 +116,7 @@ class MEV(TimeSeries):
             frequency = self.frequency,
             start = self.start,
             end = self.end,
-            from_ = self.from_,
+            source = self.source,
             token = self.token,
             interpolate = self.interpolate,
         )

@@ -11,7 +11,7 @@ def test_strategy():
         frequency = "1d",
         fiat = "usdt",
         broker = "binance",
-        from_ = "ext_api"
+        source = "ext_api"
     )
 
     st = Strategy(

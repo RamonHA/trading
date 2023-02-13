@@ -20,10 +20,8 @@ class Binance(BaseAsset):
         end = datetime.today(), 
         frequency = "1d", 
         broker = "binance",
-        fiat = "usdt", 
-        from_ = "yahoo",
-        sentiment = False,
-        social_media = None,
+        fiat = "USDT", 
+        source = "ext_api",
     ):
         
         super().__init__(
@@ -31,14 +29,12 @@ class Binance(BaseAsset):
             start = start,
             end = end,
             frequency = frequency,
-            from_ = from_,
-            sentiment=sentiment,
-            social_media=social_media
+            source = source,
+            broker = broker,
+            fiat = fiat,
         )
 
-        self.fiat = fiat if fiat is not None else "usdt"
         self.symbol_aux = self.symbol + self.fiat
-        self.broker = broker
 
         self.default_source = "ext_api"
 

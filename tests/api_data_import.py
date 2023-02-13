@@ -10,7 +10,7 @@ def test_binance():
         end = date(2021,11,1), 
         frequency = "1d", 
         broker = "Binance",
-        from_="ext_api"
+        source="ext_api"
     )
 
     df = inst.df
