@@ -255,7 +255,7 @@ class Simulation(BaseProcess):
                     objective=objective,
                     broker = self.broker,
                     fiat = self.fiat,
-                    from_ = kwargs.get("from_", "db"),
+                    source = kwargs.get("source", "db"),
                     interpolate=kwargs.get("interpolate", True),
                     verbose = self.verbose,
                     **kwargs
@@ -308,7 +308,7 @@ class Simulation(BaseProcess):
 
         self.df.to_csv( self.pwd_balance.format("resume.csv"), index = False )
 
-    def test(self, assets, start, end, frequency = "1d", from_ = "db"):
+    def test(self, assets, start, end, frequency = "1d", source = "db"):
         """  
             allocation (dict): If None (Defualt) assume 1/N allocation
         """
@@ -330,7 +330,7 @@ class Simulation(BaseProcess):
                 frequency=frequency,
                 broker = self.broker,
                 fiat = self.fiat,
-                from_ = from_
+                source = source
             )
 
 
@@ -354,7 +354,7 @@ class Simulation(BaseProcess):
     def results_compilation(self, pwd = None, extend = False):
         """  """
         pwd = pwd if pwd is not None else self.pwd_analysis[:-3]
-        dicc = pd.DataFrame.from_dict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
+        dicc = pd.DataFrame.sourcedict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
 
         if dicc.empty:
             return dicc

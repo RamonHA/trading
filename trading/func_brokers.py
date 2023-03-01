@@ -11,7 +11,7 @@ DATA = get_config()
 
 def cantidad_por_sector(acciones, porcentaje = True):
 
-    counter = pd.DataFrame.from_dict( acciones, orient = "index")["sector"].value_counts()
+    counter = pd.DataFrame.sourcedict( acciones, orient = "index")["sector"].value_counts()
     
     if porcentaje: counter = counter//10 + 2
 
@@ -62,10 +62,10 @@ def octetos(broker, fiat):
 
     return octetos
 
-def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ = "yahoo", verbose = False):
+def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), source = "yahoo", verbose = False):
     
     if verbose:
-        print("Historic Download for {} {} in {} from {} to today, through {}".format( broker, fiat, frequency, start, from_ ))
+        print("Historic Download for {} {} in {} from {} to today, through {}".format( broker, fiat, frequency, start, source ))
 
     carpeta = {
         '1min':'minutes',
@@ -104,7 +104,7 @@ def historic_download(broker, fiat, frequency, start = date(1990, 1, 1), from_ =
                 frequency = frequency,
                 broker = broker,
                 fiat = fiat,
-                from_ = from_
+                source = source
             ).update()
         except Exception as e:
             print("No download for {}. Exception: {}".format(i, e) )
@@ -152,7 +152,7 @@ def mev_download(mode = "all", frequency = "1m", verbose = False):
             data = mevs[ d ][ s ],
             source = s,
             frequency = frequency,
-            from_="api"
+            source="api"
         )
 
         mevv.df.to_csv( 

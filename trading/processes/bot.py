@@ -22,6 +22,11 @@ class Bot(BaseProcess):
             account = None,
             **kwargs
         ):
+        """  
+        
+            account: Refers if bot is going to be set up on spot waller, futures, etc.
+                    Depends on declaration of brokers/asset class.
+        """
         super().__init__(
             broker = broker, 
             fiat = fiat, 
@@ -38,6 +43,7 @@ class Bot(BaseProcess):
         self.bot_date = self.clean_date( self.end )
 
         self.account = account
+        self.account_config = kwargs.get("account_config", {})
 
         self.resume = {
             "date":str(self.end),
@@ -45,8 +51,6 @@ class Bot(BaseProcess):
             # "comission":self.commission
         }
     
-        self.asset = self.set_asset()()
-
         self.verbose = verbose
 
         self.cache = {}
@@ -54,7 +58,7 @@ class Bot(BaseProcess):
     def clean_date(self, d):
         return str(d).replace(":", " ").split(".")[0]
 
-    def set_asset(self):
+    def get_asset(self, **kwargs):
         if self.broker == "binance":
             from trading.assets.binance import Binance
             asset = Binance
@@ -65,7 +69,7 @@ class Bot(BaseProcess):
             from trading.assets.base_asset import BaseAsset
             asset = BaseAsset
         
-        return asset
+        return asset( **kwargs )
     
     def analyze(
             self,
@@ -192,7 +196,7 @@ class Bot(BaseProcess):
             objective= kwargs["objective"],
             broker = self.broker,
             fiat = self.fiat,
-            from_ = kwargs.get("from_", "db"),
+            source = kwargs.get("source", "db"),
             interpolate=kwargs.get("interpolate", True),
             verbose = self.verbose,
             **kwargs
@@ -226,7 +230,8 @@ class Bot(BaseProcess):
 
     def choose(self, value, filter, filter_qty, allocation = 1, source = "db", run = True ):
         """  
-
+            value: portfolio value
+            
         """
         
         if filter_qty >= 1:
@@ -247,38 +252,53 @@ class Bot(BaseProcess):
         data = self.filter( data = self.results, **kwargs )
         assets = list(data.keys())
 
-        allocation = kwargs.get("allocation")
+        allocation = kwargs.get("allocation", None)
         filter_qty = kwargs.get("filter_qty")
-        source = kwargs.get("source")
+        source = kwargs.get("source", "api")
         value = kwargs.get("value")
 
         if filter_qty >= 1:
             if type(allocation) in [ int, float ]:
                 pct = { a:allocation for a in assets } 
-
-        start = self.end - relativedelta( 
-            **{
-                {
-                   "min":"minutes",
-                   "h":"hours",  
-                   "d":"days", 
-                   "w":"weeks",
-                   "m":"months"
-                }[ kwargs["interval"] ]:2
-            }
-        )
+            elif allocation is None:
+                allocation = 1 / filter_qty
+                pct = { a:allocation for a in assets } 
 
         qty = {}
-        if source not in ["api"]:
+        if source == "api":
             for i, v in pct.items():
-                inst = Asset(
-                    i,
+                asset = Asset(
+                    symbol = i,
+                    fiat = self.fiat,
+                    broker = self.broker,
+                    source = source
+                )
+
+                qty[i] = (value*v) / price
+
+        else:
+            # Get two candles of history just to have data
+            start = self.end - relativedelta( 
+                **{
+                    {
+                    "min":"minutes",
+                    "h":"hours",  
+                    "d":"days", 
+                    "w":"weeks",
+                    "m":"months"
+                    }[ kwargs["interval"] ]:2
+                }
+            )
+
+            for i, v in pct.items():
+                inst = self.get_asset(
+                    symbol = i,
                     start = start,
                     end = self.end,
                     frequency=self.frequency_analysis,
                     broker = self.broker,
                     fiat = self.fiat,
-                    from_ = source
+                    source = source
                 )
 
                 if inst.df is None or len(inst.df) == 0: continue
@@ -287,17 +307,42 @@ class Bot(BaseProcess):
                 qty[i] = (value*v) / price
 
         self.resume["choose"] = self.qty
-        
-
+    
     def run(self):
         pass
 
-    def buy(self, positions, **kwargs):
-        return self.asset.buy( positions, **kwargs )
+    def buy(self, **kwargs):
+
+        selected_cryptos = self.resume["choose"]
+        buy_orders = {}
+
+        for symbol, qty in selected_cryptos.items():
+            asset = Asset(
+                broker=self.broker,
+                fiat = self.fiat,
+                account = self.account,
+                symbol = symbol
+            )
+
+            # Set account config
+            for i,v in self.account_config: 
+                setattr( asset.asset, i, v )
+
+            # Need change
+            buy_orders[symbol] =  asset.asset.buy()
+        
+        self.buy_orders = buy_orders
     
-    def sell(self, positions, **kwargs):
+    def sell(self, sell_price, **kwargs):
         """ Returns orders that were not closed (no sold) """
-        return self.asset.sell( positions, **kwargs )
+
+        if type(sell_price) in [int, float]:
+            for symbol, buy_order in self.buy_orders.items():
+                pass
+        
+        elif isinstance(sell_price, dict):
+            for symbol in list(sell_price.keys()):
+                pass
 
     def past_resume(self):
         

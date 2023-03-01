@@ -21,7 +21,7 @@ def strategy(
         frequency,
         fiat,
         broker,
-        from_ = "db",
+        source = "db",
         sentiment = False,
         verbose = False
     ):
@@ -51,7 +51,7 @@ def strategy(
         frequency = frequency, 
         fiat = fiat, 
         broker = broker, 
-        from_ = from_, 
+        source = source, 
         sentiment = sentiment
     )
 
@@ -159,7 +159,7 @@ class BaseProcess(Setter):
         else:
             raise ValueError("End must be date, datetime, or str with valid format. Type {}.".format(type(value)))
 
-    def strategy(self, end, from_ = "db", **kwargs):
+    def strategy(self, end, source = "db", **kwargs):
 
         cpus = kwargs.get( "cpus", mp.cpu_count() )
 
@@ -186,7 +186,7 @@ class BaseProcess(Setter):
                             v.get( "frequency", self.frequency_analysis ),
                             self.fiat,
                             self.broker,
-                            from_,
+                            source,
                             kwargs.get("sentiment", False),
                             True if self.verbose > 2 else False
                         ) for i in or_assets ]
@@ -200,7 +200,7 @@ class BaseProcess(Setter):
                             v.get( "frequency", self.frequency_analysis ),
                             self.fiat,
                             self.broker,
-                            from_,
+                            source,
                             kwargs.get("sentiment", False),
                             True if self.verbose > 2 else False
                         ) for i in or_assets ]

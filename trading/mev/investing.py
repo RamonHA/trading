@@ -13,7 +13,7 @@ class Investing(BaseMEV):
             frequency = None,
             start = None,
             end = None,
-            from_= "db", 
+            source= "db", 
             token = None,
             interpolate = "linear",
         ):
@@ -22,7 +22,7 @@ class Investing(BaseMEV):
             frequency = frequency,
             start = start,
             end = end,
-            from_ = from_,
+            source = source,
             interpolate = interpolate
         )
         self.source = "investing"
@@ -61,7 +61,7 @@ class Investing(BaseMEV):
             raise Exception( e )
 
         data = data["data"]
-        df = pd.DataFrame.from_dict(data)
+        df = pd.DataFrame.sourcedict(data)
         df.columns = ["date", "open", "high", "low", "close", "volume", "adj"]
         df["date"] = df["date"].apply(lambda x: datetime.fromtimestamp(x/1000).date().replace(day = 1) )
 

@@ -20,27 +20,31 @@ class Binance(BaseAsset):
         end = datetime.today(), 
         frequency = "1d", 
         broker = "binance",
-        fiat = "usdt", 
-        from_ = "yahoo",
-        sentiment = False,
-        social_media = None,
-    ):
+        fiat = "USDT", 
+        source = "ext_api",
+        **kwargs
+    ):  
+        """  
+
+            account: spot/futures
+        """
         
         super().__init__(
             symbol = symbol,
             start = start,
             end = end,
             frequency = frequency,
-            from_ = from_,
-            sentiment=sentiment,
-            social_media=social_media
+            source = source,
+            broker = broker,
+            fiat = fiat,
         )
 
-        self.fiat = fiat if fiat is not None else "usdt"
         self.symbol_aux = self.symbol + self.fiat
-        self.broker = broker
-
         self.default_source = "ext_api"
+        self.account = self.get_account(kwargs.get("account", "spot"))(
+            symbol = symbol,
+            fiat = fiat
+        )
 
     def df_api(self):
         raise NotImplementedError
@@ -121,6 +125,11 @@ class Binance(BaseAsset):
         return df
 
     # Bot Functions
+    def get_account(self, account):
+        if account == "spot":
+            return BinanceSpot
+        elif account == "futures":
+            return BinanceFutures
 
     @property
     def client(self):
@@ -133,7 +142,7 @@ class Binance(BaseAsset):
     @client.setter
     def client(self, value):
         self._client = value
-    
+
     def get_client(self):
         try:
             api = Client(get_config()[self.broker]["api_key"], get_config()[self.broker]["secret_key"])
@@ -141,6 +150,37 @@ class Binance(BaseAsset):
             raise Exception("Problemas Cliente Binance")
         
         return api
+
+    def trading_pairs(self):
+        return self.account.trading_pairs(self.client)
+
+    def wallet_balance(self, account = None):
+        if account is not None:
+            self.account = self.get_account(account)(
+                symbol = self.symbol,
+                fiat = self.fiat
+            )
+        
+        return self.account.wallet_balance(self.client)
+
+    def buy(self, qty, recursive = True, recursive_step = 1, **kwargs):
+        return self.account.buy(self.client, qty, recursive = recursive, recursive_step = recursive_step, **kwargs)
+
+    @property
+    def leverage(self):
+        return self.__leverage
+    
+    @leverage.setter
+    def leverage(self, value):
+        self.__leverage = self.account.set_leverage( self.client, value )
+
+    @property
+    def margin_type(self):
+        return self.__margin_type
+    
+    @margin_type.setter
+    def margin_type(self, value):
+        self.__margin_type = self.account.set_margin_type( self.client, value )
 
     def order_complete(self, orders, api, wait = 5):
         
@@ -168,6 +208,7 @@ class Binance(BaseAsset):
             # Avoid system overcharge
             time.sleep(1)
 
+class BinanceSpot():
     def buy(self, positions, orders_closed = True, wait = 5):
         """ Positions to Buy 
         
@@ -305,6 +346,88 @@ class Binance(BaseAsset):
             time.sleep(0.2)
         
         return portfolio_value
+
+class BinanceFutures():
+    def __init__(self, symbol, fiat):
+        """ 
+            Symbol to treat
+            Leverage
+            Share of total account to use
+        """
+        self.symbol = symbol
+        self.fiat = fiat
+
+    def trading_pairs(self, client):
+        futures_exchange_info = client.futures_exchange_info()  # request info on all futures symbols
+        trading_pairs = [info['symbol'] for info in futures_exchange_info['symbols']]
+        trading_pairs = [ ( t[:-4], t[-4:] ) for t in trading_pairs if t[-4:] == self.fiat]
+
+        return trading_pairs
+
+    def wallet_balance(self, client):
+        return float([ i["balance"] for i in client.futures_account_balance() if i["asset"] == self.fiat][0])
+
+    def set_leverage(self, client, leverage):
+        max_leverage = [i for i in client.futures_leverage_bracket() if self.symbol in i["symbol"]][0]["brackets"][0]["initialLeverage"]
+        leverage = leverage if max_leverage >= leverage else max_leverage
+
+        try:
+            client.futures_change_leverage(symbol=self.symbol, leverage=leverage)
+        except Exception as e:
+            print(f"Exception : {e}")
+            print(e.__dict__)
+            print(max_leverage)
+            return None
+
+        return leverage
+    
+    def set_margin_type(self, client, margin_type):
+        try:
+            client.futures_change_margin_type(symbol=self.symbol, marginType='ISOLATED')
+        except Exception as e:
+            print(f"Exception : {e}")
+            print(e.__dict__)
+        
+        return margin_type
+
+    def buy(self, client, qty, recursive = True, recursive_step = 1, **kwargs):
+
+        ticker_info = client.get_symbol_info(self.symbol)
+
+        qty_rouding = len(str(float([i["stepSize"] for i in ticker_info["filters"] if i["filterType"] == "LOT_SIZE"][0])).split(".")[-1])
+
+        def set_buy_order(symbol, qty, qty_rouding):
+            try:
+                qty = round( qty, qty_rouding   )
+
+                orderBuy = client.futures_create_order(
+                    symbol = symbol,
+                    type = "MARKET",
+                    # timeInForce ="GTC",
+                    side = "BUY",
+                    quantity = qty,
+                )
+            except Exception as e:
+                if e.code == -1111:
+                    print("Redo buy order")
+                    print(f"Quantity rounding: {qty_rouding}", end = "\t")
+                    qty_rouding -= 1
+                    print(f"New Quantity rounding: {qty_rouding}")
+                    if qty_rouding < 0:
+                        return None
+                    return set_buy_order(symbol, qty, qty_rouding)
+                else:
+                    print( f"No order for {symbol}. Exception: {e}")
+                    print(type(e), e, e.__dict__)
+                    if hasattr(e, "code"):
+                        print(e.code)
+                    return None
+
+            return orderBuy
+
+        orderBuy = set_buy_order(self.symbol, qty, qty_rouding)
+
+        return orderBuy
 
     def wait(self, orderSell):
         

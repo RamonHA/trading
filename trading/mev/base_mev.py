@@ -11,7 +11,7 @@ class BaseMEV(TimeSeries):
             frequency = None,
             start = None,
             end = None,
-            from_ = "db",
+            source = "db",
             interpolate = "linear",
             **kwargs
         ):
@@ -20,7 +20,7 @@ class BaseMEV(TimeSeries):
         self.source = "yahoo"
         self.data_orig = data
         self.data = data
-        self.from_ = from_
+        self.source = source
         self.frequency = frequency
         self.start = start
         self.end = end
@@ -44,9 +44,9 @@ class BaseMEV(TimeSeries):
         df = {
             "api":self.df_api,
             "db":self.df_db
-        }[ self.from_ ]()
+        }[ self.source ]()
 
-        if self.from_ != "db" and self.frequency is not None:
+        if self.source != "db" and self.frequency is not None:
             df = self.transform(df, self.frequency)
         else:
             df.set_index("date", inplace = True)
@@ -116,8 +116,8 @@ class BaseMEV(TimeSeries):
 
         return df
 
-    def update(self, value = "df", pwd = None, from_ = "api"):
-        self.from_ = from_
+    def update(self, value = "df", pwd = None, source = "api"):
+        self.source = source
         aux = {
             'min':'minutes',
             'h':'hour',
