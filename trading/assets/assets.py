@@ -42,6 +42,7 @@ class Asset(TimeSeries):
             broker = broker,
             fiat = fiat,
             source = source,
+            **kwargs
         )
 
     @property
