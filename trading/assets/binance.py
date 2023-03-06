@@ -209,6 +209,13 @@ class Binance(BaseAsset):
             time.sleep(1)
 
 class BinanceSpot():
+    def __init__(self, symbol, fiat):
+        """ 
+            Symbol to treat
+        """
+        self.symbol = symbol
+        self.fiat = fiat
+
     def buy(self, positions, orders_closed = True, wait = 5):
         """ Positions to Buy 
         
@@ -351,8 +358,6 @@ class BinanceFutures():
     def __init__(self, symbol, fiat):
         """ 
             Symbol to treat
-            Leverage
-            Share of total account to use
         """
         self.symbol = symbol
         self.fiat = fiat
