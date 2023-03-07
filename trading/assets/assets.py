@@ -468,6 +468,11 @@ class Asset(TimeSeries):
         """
         return ta.momentum.ROCIndicator(close=self.df[target], window=length).roc()
     
+
+    def rolling_fractals(self, lenght, period, shift = False, order = "buy"):
+        v = self.william_fractals(period, shift = shift, order = order)
+        return v.rolling( lenght ).sum()
+
     def rsi(self, length, target = 'close'):
         """ Regresa una SERIE del Relative Strength Index 
             

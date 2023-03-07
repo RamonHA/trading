@@ -243,7 +243,8 @@ class BaseAsset(TimeSeries):
         if df is None: return pd.DataFrame()
 
         # Maybe this will be done for all sources
-        if source == "db" and self.period > 1:
+        # source == "db" and 
+        if self.period > 1:
             df = self.transform( df, self.frequency )
 
         return df if df is not None else pd.DataFrame()

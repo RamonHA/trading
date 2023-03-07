@@ -5,8 +5,8 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import ParameterGrid
 from itertools import combinations
-import multiprocess as mp
-
+import multiprocessing as mp
+# 
 
 def rule_validation(asset):
     buy = False
