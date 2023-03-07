@@ -221,13 +221,13 @@ class RuleTesting():
         self.asset.df["buy"] = self.apply( rules, operators ) 
     
     def clean_buy(self):
-        asset = self.asset.df.copy()
+        df = self.asset.df.copy()
 
-        asset.df["extra_buy"] = asset.df["buy"] == asset.df["buy"].shift(1)
+        df["extra_buy"] = df["buy"] != df["buy"].shift(1)
 
-        asset.df["buy"] = asset.df["buy"] and asset.df["extra_buy"]
+        df["buy"] = df["buy"] & df["extra_buy"]
 
-        self.asset.df["buy"] = asset.df["buy"]
+        self.asset.df["buy"] = df["buy"]
 
     def sell_column(self):
         # Clean buy column because Buy orders can be subsequent period to period
