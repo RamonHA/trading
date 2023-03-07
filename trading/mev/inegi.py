@@ -14,7 +14,7 @@ class Inegi(BaseMEV):
             frequency = None,
             start = None,
             end = None,
-            from_= "db", 
+            source= "db", 
             token = None,
             interpolate = "linear",
         ):
@@ -23,7 +23,7 @@ class Inegi(BaseMEV):
             frequency = frequency,
             start = start,
             end = end,
-            from_ = from_,
+            source = source,
             interpolate = interpolate
         )
         self.source = "inegi"

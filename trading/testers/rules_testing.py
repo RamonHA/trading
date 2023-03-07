@@ -220,7 +220,19 @@ class RuleTesting():
         rules, operators = self.parse_rule( self.rules["buy"] )
         self.asset.df["buy"] = self.apply( rules, operators ) 
     
+    def clean_buy(self):
+        df = self.asset.df.copy()
+
+        df["extra_buy"] = df["buy"] != df["buy"].shift(1)
+
+        df["buy"] = df["buy"] & df["extra_buy"]
+
+        self.asset.df["buy"] = df["buy"]
+
     def sell_column(self):
+        # Clean buy column because Buy orders can be subsequent period to period
+        # So sell orders can be misguided when validating
+        self.clean_buy()
 
         if self.type_target == "places":
             self.asset.df["sell"] = self.asset.df["buy"].shift( self.target )

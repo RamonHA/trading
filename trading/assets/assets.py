@@ -20,11 +20,9 @@ class Asset(TimeSeries):
             start = None, 
             end = datetime.today(), 
             frequency = None,
-            broker = "yahoo_asset",
+            broker = "yahoo",
             fiat = None,
-            from_ = "yahoo",
-            sentiment = False,
-            social_media = None,
+            source = "yahoo",
             verbose = 0,
             **kwargs
             ):
@@ -33,7 +31,7 @@ class Asset(TimeSeries):
 
         super().__init__()
 
-        self.broker = broker.lower() 
+        self.broker = broker
         self.verbose = verbose
 
         self.asset = self.get_asset()(
@@ -43,9 +41,8 @@ class Asset(TimeSeries):
             frequency = frequency,
             broker = broker,
             fiat = fiat,
-            from_ = from_,
-            sentiment = sentiment,
-            social_media = social_media,
+            source = source,
+            **kwargs
         )
 
     @property
@@ -59,9 +56,11 @@ class Asset(TimeSeries):
         elif self.broker == "bitso":
             from .bitso import Bitso
             asset = Bitso
-        else:
+        elif self.broker == "yahoo":
             from .base_asset import BaseAsset
             asset = BaseAsset
+        else:
+            raise ValueError(f"No valid broker '{self.broker}'.")
         
         return asset
 
@@ -150,7 +149,7 @@ class Asset(TimeSeries):
 
         return df
 
-    def google_trends(self, keywords = [], from_ = "api", **kwargs):
+    def google_trends(self, keywords = [], source = "api", **kwargs):
         if len(keywords) == 0:
             keywords = self.asset.descr[ "google_trends" ]
 
@@ -161,7 +160,7 @@ class Asset(TimeSeries):
             start = self.asset.start,
             end = self.asset.end,
             frequency = self.asset.frequency,
-            from_ = from_,
+            source = source,
             **kwargs
         )
 

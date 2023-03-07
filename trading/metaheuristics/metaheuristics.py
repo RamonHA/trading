@@ -1,5 +1,7 @@
 import numpy as np
-from pymoo.model.problem import Problem
+# from pymoo.model.problem import Problem
+from pymoo.core.problem import ElementwiseProblem
+
 from pymoo.optimize import minimize
 
 class Metaheuristic():
@@ -9,7 +11,9 @@ class Metaheuristic():
         return self._algorithm
 
     def de(self):
-        from pymoo.algorithms.so_de import DE
+        # from pymoo.algorithms.so_de import DE
+        from pymoo.algorithms.soo.nonconvex.de import DE
+
         return  DE(
             pop_size = 100,
             variant="DE/best/2/bin",
@@ -46,7 +50,7 @@ class Metaheuristic():
         
         return res.X.astype(int)
 
-class MetaheuristicProblem(Problem):
+class MetaheuristicProblem(ElementwiseProblem):
     def __init__(
             self,
             objective_function,

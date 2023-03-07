@@ -14,7 +14,7 @@ class Bitso(BaseAsset):
         frequency = "1d", 
         broker = "bitso",
         fiat = "MXN", 
-        from_ = "ext_api",
+        source = "ext_api",
         sentiment = False,
         social_media = None,
     ):
@@ -23,7 +23,7 @@ class Bitso(BaseAsset):
             start = start,
             end = end,
             frequency = frequency,
-            from_ = from_,
+            source = source,
             sentiment=sentiment,
             social_media=social_media
         )

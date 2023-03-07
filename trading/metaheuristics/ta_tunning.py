@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 from trading.func_aux import min_max, dropna
-from pymoo.model.problem import Problem
+# from pymoo.model.problem import Problem
+from pymoo.core.problem import ElementwiseProblem
 from .metaheuristics import Metaheuristic
 
 class TATunning(Metaheuristic):
@@ -43,7 +44,7 @@ class TATunning(Metaheuristic):
             type_var = type_var
         )
 
-class TATunningProblem(Problem):
+class TATunningProblem(ElementwiseProblem):
 
     def __init__(
             self,
@@ -189,6 +190,11 @@ class TATunningProblem(Problem):
 
         if self.normalize:
             df = min_max( self.asset.df, exception=["target"] )
+        else:
+            df = self.asset.df
+
+        if df is None or len(df) == 0:
+            return None
 
         if self.verbose > 1: print("-- Len of df.dropna in Predict: ", len(df.dropna()))
 

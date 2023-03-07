@@ -18,7 +18,7 @@ class Optimization(Setter):
             objective = "maxsharpe",
             broker = "yahoo_asset",
             fiat = "mx",
-            from_ = "db",
+            source = "db",
             interpolate = True,
             verbose = 0 ,
             **kwargs
@@ -41,7 +41,7 @@ class Optimization(Setter):
         self.start = start
         self.end = end
         self.frequency = frequency.lower()
-        self.from_ = from_
+        self.source = source
 
         self.interpolate = interpolate
 
@@ -60,7 +60,7 @@ class Optimization(Setter):
         if isinstance(exp_returns, pd.Series):
             return exp_returns
         elif isinstance(exp_returns, dict):
-            exp_returns = pd.DataFrame.from_dict( exp_returns, orient="index" )
+            exp_returns = pd.DataFrame.sourcedict( exp_returns, orient="index" )
             return exp_returns[ exp_returns.columns[0] ]
         elif isinstance(exp_returns, pd.DataFrame):
             return exp_returns[ exp_returns.columns[0] ]
@@ -106,7 +106,7 @@ class Optimization(Setter):
                 frequency=self.frequency,
                 broker = self.broker,
                 fiat = self.fiat,
-                from_ = self.from_
+                source = self.source
             )
 
             if inst.df is None or len(inst.df) == 0: continue

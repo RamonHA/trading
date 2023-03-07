@@ -49,7 +49,9 @@ def min_max(df, exception = []):
     
     for i in df.columns:
         if i in exception: continue
-        df[i] = ( df[i] - df[i].min() ) / ( df[i].max() - df[i].min())
+        range_min_max = df[i].max() - df[i].min()
+        if range_min_max > 0:
+            df[i] = ( df[i] - df[i].min() ) / range_min_max
     
     return df
 

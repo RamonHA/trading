@@ -52,7 +52,7 @@ class PaperTrading():
                 frequency=self.frequency,
                 broker = self.broker,
                 fiat = self.fiat,
-                from_ = "db"
+                source = "db"
             )
 
             if asset.df is None or len(asset.df) == 0: continue

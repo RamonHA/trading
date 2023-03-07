@@ -6,5 +6,8 @@ multiprocess
 statsmodels
 sklearn
 pymoo==0.4.2
+python-ta
+ta
+
 PyPortfolioOpt
 riskfolio-lib

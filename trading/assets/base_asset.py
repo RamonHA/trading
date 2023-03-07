@@ -14,11 +14,10 @@ class BaseAsset(TimeSeries):
         start = None, 
         end = datetime.today(), 
         frequency = "1d", 
-        broker = "yahoo_asset",
+        broker = "yahoo",
         fiat = None,
-        from_ = "yahoo",
-        sentiment = False,
-        social_media = None,
+        source = "yahoo",
+
     ):
         super().__init__()
 
@@ -28,7 +27,7 @@ class BaseAsset(TimeSeries):
         self.start = start
         self.end = end
         self.frequency = frequency
-        self.from_ = from_
+        self.source = source
 
         self.period, self.interval = re.findall(r'(\d+)(\w+)', frequency)[0] if frequency is not None else (None, None)
         self.period = int(self.period) if self.period is not None else None
@@ -187,7 +186,7 @@ class BaseAsset(TimeSeries):
     def df_ext_api(self):
         raise NotImplementedError
 
-    def update(self, value = "df", pwd = None, from_ = "yahoo"):
+    def update(self, value = "df", pwd = None, source = "yahoo"):
         
         aux = {
             'min':'minutes',
@@ -231,7 +230,7 @@ class BaseAsset(TimeSeries):
     def get(self, source = None):
         assert all([ self.symbol, self.start, self.fiat ]), "Either symbol, start, or fiat missing."
         
-        if source is None: source = self.from_
+        if source is None: source = self.source
 
         df = {
             "yahoo":self.df_yahoo,
