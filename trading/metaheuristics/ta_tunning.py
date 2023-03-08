@@ -134,7 +134,7 @@ class TATunningProblem(ElementwiseProblem):
 
         if self.verbose > 1: print("-- Error is ", error)
 
-        return error
+        return error if error is not None else np.inf
 
     def update_ta(self, vector):
         """ Modified the asset object from the new vector parameters """
@@ -236,6 +236,9 @@ class TATunningProblem(ElementwiseProblem):
 
         y_true = y_true.iloc[1:]
         y_true.reset_index(drop = True, inplace = True)
+
+        if (len(y_true) != len(predicted)) or len(y_true) == 0:
+            return None
 
         return self.error_func( y_true, predicted )
 
