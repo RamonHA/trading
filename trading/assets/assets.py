@@ -56,7 +56,7 @@ class Asset(TimeSeries):
         elif self.broker == "bitso":
             from .bitso import Bitso
             asset = Bitso
-        elif self.broker == "yahoo":
+        elif self.broker in ["yahoo", "gbm"]:
             from .base_asset import BaseAsset
             asset = BaseAsset
         else:
