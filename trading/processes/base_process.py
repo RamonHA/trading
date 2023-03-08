@@ -22,7 +22,7 @@ def strategy(
         fiat,
         broker,
         source = "db",
-        sentiment = False,
+        # sentiment = False,
         verbose = False
     ):
 
@@ -52,7 +52,7 @@ def strategy(
         fiat = fiat, 
         broker = broker, 
         source = source, 
-        sentiment = sentiment
+        # sentiment = sentiment
     )
 
     if inst.df is None or len(inst.df) <= 3: 
@@ -187,7 +187,7 @@ class BaseProcess(Setter):
                             self.fiat,
                             self.broker,
                             source,
-                            kwargs.get("sentiment", False),
+                            # kwargs.get("sentiment", False),
                             True if self.verbose > 2 else False
                         ) for i in or_assets ]
                     )
@@ -201,7 +201,7 @@ class BaseProcess(Setter):
                             self.fiat,
                             self.broker,
                             source,
-                            kwargs.get("sentiment", False),
+                            # kwargs.get("sentiment", False),
                             True if self.verbose > 2 else False
                         ) for i in or_assets ]
 
