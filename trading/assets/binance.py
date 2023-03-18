@@ -167,7 +167,7 @@ class Binance(BaseAsset):
         return self.account.buy(self.client, qty, recursive = recursive, recursive_step = recursive_step, **kwargs)
 
     def wait(self, orderSell):
-        return self.account.wait(orderSell)
+        return self.account.wait(self.client, orderSell)
 
     @property
     def leverage(self):
@@ -437,9 +437,9 @@ class BinanceFutures():
 
         return orderBuy
 
-    def wait(self, orderSell):
+    def wait(self, client, orderSell):
         
-        df_trades = pd.DataFrame(self.client.futures_account_trades())
+        df_trades = pd.DataFrame(client.futures_account_trades())
 
         df_trades = df_trades[ df_trades["orderId"] == orderSell["orderId"] ]
 
