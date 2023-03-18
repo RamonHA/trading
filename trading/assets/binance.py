@@ -166,6 +166,9 @@ class Binance(BaseAsset):
     def buy(self, qty, recursive = True, recursive_step = 1, **kwargs):
         return self.account.buy(self.client, qty, recursive = recursive, recursive_step = recursive_step, **kwargs)
 
+    def wait(self, orderSell):
+        return self.account.wait(orderSell)
+
     @property
     def leverage(self):
         return self.__leverage
