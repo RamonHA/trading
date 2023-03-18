@@ -4,7 +4,7 @@ import json
 
 from trading.assets import Asset
 from trading.func_aux import PWD
-from trading.processes.base_process import Setter
+from trading.base.setter import Setter
 
 class Optimization(Setter):
     def __init__(

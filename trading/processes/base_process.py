@@ -11,6 +11,7 @@ import math
 from dateutil import parser
 from trading.func_aux import PWD, folder_creation, get_config
 from trading.assets import Asset
+from trading.base.setter import Setter
 
 
 def strategy(
@@ -67,57 +68,6 @@ def strategy(
 
     return r
 
-class Setter():
-    def __init__(
-            self,
-            broker = "yahoo_asset",
-            fiat = None,
-            commission = None,
-            assets = None,
-            **kwargs
-        ):
-        self.broker = broker.lower()
-        self.commission = commission if commission is not None else get_config()[ self.broker ][ "commission" ]
-        self.fiat = fiat if fiat is not None else self.set_fiat()
-        self.assets = assets if assets is not None else self.get_assets()
-
-        self.verbose = kwargs.get("verbose", 0)
-
-    def print_func(self, value):
-        print( "\n\n", "#"*20, value, "#"*20 )
-    
-    def print_0(self, value):
-        print("- ", value)
-
-    @property
-    def assets(self):
-        if hasattr(self, "_assets"):
-            return self._assets
-        else:
-            self.assets = self.get_assets()
-            return self._assets
-    
-    @assets.setter
-    def assets(self, value):
-        if value is not None:
-            assert type(value) in [list, dict], "Asset must be a list or dictionary"
-            self._assets = value
-        else:
-            warnings.warn("Asset list is empty")
-            self._assets = {}
-
-    def get_assets(self):
-        from trading.func_aux import get_assets
-        return get_assets().get( self.broker.lower(), None )
-
-    def set_fiat(self):
-        # Defaults values
-        return {
-            "gbm":"mx",
-            "bitso":"mx",
-            "binance":"usdt"
-        }.get(self.broker, None)
-
 class BaseProcess(Setter):
     def __init__(
             self,
@@ -161,8 +111,6 @@ class BaseProcess(Setter):
 
     def strategy(self, end, source = "db", **kwargs):
 
-        cpus = kwargs.get( "cpus", mp.cpu_count() )
-
         or_assets = copy( self.assets )
         for a, v in self.analysis.items():
 
@@ -174,36 +122,50 @@ class BaseProcess(Setter):
 
             next_assets = {}
 
-            if self.parallel:
-                with mp.Pool( cpus ) as pool:
-                    r = pool.starmap(
-                        strategy,
-                        [(
-                            i, 
-                            v["time"],
-                            v["function"],
-                            end,
-                            v.get( "frequency", self.frequency_analysis ),
-                            self.fiat,
-                            self.broker,
-                            source,
-                            # kwargs.get("sentiment", False),
-                            True if self.verbose > 2 else False
-                        ) for i in or_assets ]
-                    )
-            else:
-                r = [   strategy(
-                            i, 
-                            v["time"],
-                            v["function"],
-                            end,
-                            v.get( "frequency", self.frequency_analysis ),
-                            self.fiat,
-                            self.broker,
-                            source,
-                            # kwargs.get("sentiment", False),
-                            True if self.verbose > 2 else False
-                        ) for i in or_assets ]
+            if v.get("offline", False):
+                if "path" in v:
+                    path = v["path"]
+                else:
+                    path = self.pwd_analysis.format(  )
+                
+                with open(path, "r") as fp:
+                    next_assets = json.load(fp)
+                
+                # Make the filter ask, if online analysis are presented before this one
+                next_assets = { inst:value for inst, value in next_assets.items() if inst in or_assets }
+
+            else: # offline
+                if self.parallel:
+                    cpus = kwargs.get( "cpus", mp.cpu_count() )
+                    with mp.Pool( cpus ) as pool:
+                        r = pool.starmap(
+                            strategy,
+                            [(
+                                i, 
+                                v["time"],
+                                v["function"],
+                                end,
+                                v.get( "frequency", self.frequency_analysis ),
+                                self.fiat,
+                                self.broker,
+                                source,
+                                # kwargs.get("sentiment", False),
+                                True if self.verbose > 2 else False
+                            ) for i in or_assets ]
+                        )
+                else:
+                    r = [   strategy(
+                                i, 
+                                v["time"],
+                                v["function"],
+                                end,
+                                v.get( "frequency", self.frequency_analysis ),
+                                self.fiat,
+                                self.broker,
+                                source,
+                                # kwargs.get("sentiment", False),
+                                True if self.verbose > 2 else False
+                            ) for i in or_assets ]
 
             # if not all(r):
             #     if self.verbose > 0:
@@ -211,7 +173,7 @@ class BaseProcess(Setter):
                 
             #     return {}
 
-            next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
+                next_assets = { inst:value for inst, value in zip( or_assets, r ) if value }
 
             if v.get("filter", "all") != "all":
 
