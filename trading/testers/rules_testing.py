@@ -253,9 +253,9 @@ class RuleTesting():
                     # nos moveremos a los siguientes puesto
                     # que al no cerrarse esta orden, no podemos abrir ni cerrar las demas.
                     # raise Exception( "Testing did not prove a better return." )
-                    break
-                
-                pct_index = pct_index.index[0]
+                    pct_index = -1
+                else:
+                    pct_index = pct_index.index[0]
 
                 try:
                     self.asset.df.loc[ pct_index, "sell" ] = True
