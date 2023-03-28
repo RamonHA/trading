@@ -123,7 +123,7 @@ class PyPort(BaseOptimizer):
         return ef
     
     def efficient_semivariance(self):
-        h = expected_returns.returns_sourceprices(self.df)
+        h = expected_returns.returns_from_prices(self.df)
 
         ef = EfficientSemivariance( self.exp_returns, h, weight_bounds = self.limits)
 
@@ -138,9 +138,9 @@ class PyPort(BaseOptimizer):
     def efficient_cvar(self, beta = 0.95):
 
         try:
-            h = expected_returns.returns_sourceprices(self.df)
+            h = expected_returns.returns_from_prices(self.df)
         except Exception as e:
-            warnings.warn("Error with returns_sourceprices. Exception: {}".format(e) )
+            warnings.warn("Error with returns_from_prices. Exception: {}".format(e) )
 
         ef = EfficientCVaR( 
                     self.exp_returns, 
@@ -159,7 +159,7 @@ class PyPort(BaseOptimizer):
 
     def efficient_cdar(self, beta = 0.95):
 
-        h = expected_returns.returns_sourceprices(self.df)
+        h = expected_returns.returns_from_prices(self.df)
 
         ef = EfficientCDaR( 
                     self.exp_returns, 

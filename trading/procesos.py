@@ -692,7 +692,7 @@ class Proceso(Setter):
         plt.show()
 
     def efficient_semivariance(self, df, mu , optimizacion, tiempo_testeo = None, **kwargs):
-        h = expected_returns.returns_sourceprices(df)
+        h = expected_returns.returns_from_prices(df)
 
         ef = EfficientSemivariance( mu, h, weight_bounds = kwargs["limites"], solver = kwargs.get("solver", None) )
 
@@ -710,9 +710,9 @@ class Proceso(Setter):
     def efficient_cvar(self, df, mu, optimizacion = "MinCVaR", tiempo_testeo = None, **kwargs):
 
         try:
-            h = expected_returns.returns_sourceprices(df)
+            h = expected_returns.returns_from_prices(df)
         except Exception as e:
-            print("Error con returns_sourceprices. Exception: {}".format(e) )
+            print("Error con returns_from_prices. Exception: {}".format(e) )
 
         ef = EfficientCVaR( 
                     mu, 
@@ -735,7 +735,7 @@ class Proceso(Setter):
 
     def efficient_cdar(self, df, mu, optimizacion = "MinCDaR", tiempo_testeo = None, **kwargs):
 
-        h = expected_returns.returns_sourceprices(df)
+        h = expected_returns.returns_from_prices(df)
 
         ef = EfficientCDaR( 
                     mu, 
