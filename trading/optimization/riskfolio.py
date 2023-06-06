@@ -113,11 +113,12 @@ class Riskfolio(BaseOptimizer):
             **kwargs
         )
 
-        self.risk = risk
         self.objective = objective
 
-        assert self.risk in self.__RISK, f"No risk with name '{self.risk}'."
+        assert risk in self.__RISK, f"No risk with name '{self.risk}'."
         assert self.objective in self.__OBJECTIVES, f"No objective with name '{self.objective}'."
+
+        self.risk = risk.upper()
 
         if exp_returns is None:
             self.exp_returns = None # self.df.pct_change()

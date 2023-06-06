@@ -61,7 +61,7 @@ class Investing(BaseMEV):
             raise Exception( e )
 
         data = data["data"]
-        df = pd.DataFrame.sourcedict(data)
+        df = pd.DataFrame.from_dict(data)
         df.columns = ["date", "open", "high", "low", "close", "volume", "adj"]
         df["date"] = df["date"].apply(lambda x: datetime.fromtimestamp(x/1000).date().replace(day = 1) )
 

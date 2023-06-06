@@ -363,7 +363,7 @@ class Proceso(Setter):
             elif filtro == "Greatest":
                 aux = pd.DataFrame()
                 for i in analisis:
-                    auxx = pd.DataFrame.sourcedict( analisis[i], orient="index" ).sort_values(by = 0, ascending=True).iloc[ -kwargs["filtro_qty"][i]: ]
+                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).sort_values(by = 0, ascending=True).iloc[ -kwargs["filtro_qty"][i]: ]
                     aux = pd.concat([aux, auxx[ auxx[0] > 0 ]], axis = 0)
                 
                 aux = aux.to_dict(orient = "index")
@@ -381,7 +381,7 @@ class Proceso(Setter):
             elif filtro == "Lowest":
                 aux = pd.DataFrame()
                 for i in analisis:
-                    auxx = pd.DataFrame.sourcedict( analisis[i], orient="index" ).sort_values(by = 0, ascending=False).iloc[ -kwargs["filtro_qty"][i]: ]
+                    auxx = pd.DataFrame.from_dict( analisis[i], orient="index" ).sort_values(by = 0, ascending=False).iloc[ -kwargs["filtro_qty"][i]: ]
                     aux = pd.concat([aux, auxx[ auxx[0] > 0 ]], axis = 0)
                 
                 aux = aux.to_dict(orient = "index")
@@ -436,7 +436,7 @@ class Proceso(Setter):
 
         if exp_return:
             assert isinstance(data, dict), "Data tiene que ser un tipo diccionario, pero se entrego {}".format(type(data))
-            data = pd.DataFrame.sourcedict(data, orient = "index")
+            data = pd.DataFrame.from_dict(data, orient = "index")
 
             try:
                 data = data.loc[ df.columns ][0]
@@ -1222,7 +1222,7 @@ class Simulacion(Proceso):
     
     def recopilador_resultados(self, path = None):
         path = path if path is not None else PWD( "/{}/Resultados/{}/{}_{}".format( self.broker, self.fiat, self.frecuencia_analisis, self.tiempo_analisis ) )
-        dicc = pd.DataFrame.sourcedict( bring_results(path, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
+        dicc = pd.DataFrame.from_dict( bring_results(path, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
 
         return dicc.sort_values(by = "acc", ascending=False).reset_index(drop = True)
 

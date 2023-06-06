@@ -60,7 +60,7 @@ class Optimization(Setter):
         if isinstance(exp_returns, pd.Series):
             return exp_returns
         elif isinstance(exp_returns, dict):
-            exp_returns = pd.DataFrame.sourcedict( exp_returns, orient="index" )
+            exp_returns = pd.DataFrame.from_dict( exp_returns, orient="index" )
             return exp_returns[ exp_returns.columns[0] ]
         elif isinstance(exp_returns, pd.DataFrame):
             return exp_returns[ exp_returns.columns[0] ]
