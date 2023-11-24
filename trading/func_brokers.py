@@ -11,7 +11,7 @@ DATA = get_config()
 
 def cantidad_por_sector(acciones, porcentaje = True):
 
-    counter = pd.DataFrame.sourcedict( acciones, orient = "index")["sector"].value_counts()
+    counter = pd.DataFrame.from_dict( acciones, orient = "index")["sector"].value_counts()
     
     if porcentaje: counter = counter//10 + 2
 

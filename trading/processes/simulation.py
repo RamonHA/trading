@@ -335,7 +335,7 @@ class Simulation(BaseProcess):
 
 
             if inst.df is None or len(inst.df) == 0: 
-                print( "Issues to download {} from {} to {}".format(i, start, end) )
+                # print( "Issues to download {} from {} to {}".format(i, start, end) )
                 continue
 
             # Here should be immplemented realistic

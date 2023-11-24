@@ -360,8 +360,13 @@ class RulesGenerator():
                 elif isinstance(universe, list):
                     # When universe of parameter has a inside list that correspond to a str with two formatting areas
                     # From universe of params, create list of them and transform the universe to a grid of tupples to feed to formatting str
-                    uni_param_grid = self.create_grid_from_list( universe )
-                    modified_rules.append( [ self.rules[ rules2format[i] ].format( *u ) for u in uni_param_grid ] )
+                    
+                    if type(universe[0]) not in [list, tuple]:
+                        modified_rules.append( [ self.rules[ rules2format[i] ].format( pu ) for pu in universe ] )
+                        
+                    else:
+                        uni_param_grid = self.create_grid_from_list( universe )
+                        modified_rules.append( [ self.rules[ rules2format[i] ].format( *u ) for u in uni_param_grid ] )
                     
                 else:
                     raise ValueError( f"Invalid universe of parameters")
