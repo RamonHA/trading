@@ -11,6 +11,7 @@ class BaseOptimizer():
             limits = (0, 1),
             target_return = 0,
             verbose = 0,
+            risk = "1/n",
             **kwargs
         ):
         self.value = value
@@ -19,6 +20,7 @@ class BaseOptimizer():
         self.limits = limits
         self.target_return = target_return
         self.verbose = verbose
+        self.risk = risk
 
     @property
     def df(self):

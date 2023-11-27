@@ -354,7 +354,7 @@ class Simulation(BaseProcess):
     def results_compilation(self, pwd = None, extend = False):
         """  """
         pwd = pwd if pwd is not None else self.pwd_analysis[:-3]
-        dicc = pd.DataFrame.sourcedict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
+        dicc = pd.DataFrame.from_dict( bring_results(pwd, data = {}) , orient="index").reset_index().rename(columns = {"index":"route"})
 
         if dicc.empty:
             return dicc

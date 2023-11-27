@@ -163,7 +163,7 @@ class BaseAsset(TimeSeries):
                         pwd
                     )
                 )
-            return None
+            return None 
         
         if df is None or len(df) == 0: return None
 
